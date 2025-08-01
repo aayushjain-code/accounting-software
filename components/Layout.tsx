@@ -1,33 +1,38 @@
 "use client";
 
-import { useState } from "react";
-import Link from "next/link";
-import { usePathname } from "next/navigation";
+import React from "react";
 import {
   HomeIcon,
-  UsersIcon,
   UserGroupIcon,
+  BuildingOfficeIcon,
   FolderIcon,
   DocumentTextIcon,
-  BanknotesIcon,
+  ReceiptRefundIcon,
+  CalendarIcon,
   ChartBarIcon,
-  Bars3Icon,
+  ClockIcon,
   XMarkIcon,
+  Bars3Icon,
 } from "@heroicons/react/24/outline";
-import { clsx } from "clsx";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import clsx from "clsx";
+import { ErrorBoundary } from "./ErrorBoundary";
 
 const navigation = [
   { name: "Dashboard", href: "/", icon: HomeIcon },
-  { name: "Clients", href: "/clients", icon: UsersIcon },
+  { name: "Clients", href: "/clients", icon: BuildingOfficeIcon },
   { name: "Staff", href: "/staff", icon: UserGroupIcon },
   { name: "Projects", href: "/projects", icon: FolderIcon },
+  { name: "Timesheets", href: "/timesheet", icon: ClockIcon },
   { name: "Invoices", href: "/invoices", icon: DocumentTextIcon },
-  { name: "Expenses", href: "/expenses", icon: BanknotesIcon },
+  { name: "Expenses", href: "/expenses", icon: ReceiptRefundIcon },
   { name: "Reports", href: "/reports", icon: ChartBarIcon },
+  { name: "Calendar", href: "/calendar", icon: CalendarIcon },
 ];
 
 export default function Layout({ children }: { children: React.ReactNode }) {
-  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [sidebarOpen, setSidebarOpen] = React.useState(false);
   const pathname = usePathname();
 
   return (

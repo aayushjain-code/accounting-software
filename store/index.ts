@@ -6,7 +6,10 @@ import {
   Project,
   Invoice,
   InvoiceItem,
+  InvoiceFile,
   Expense,
+  Timesheet,
+  TimesheetEntry,
   DashboardStats,
 } from "@/types";
 
@@ -17,7 +20,10 @@ interface AccountingStore {
   projects: Project[];
   invoices: Invoice[];
   invoiceItems: InvoiceItem[];
+  invoiceFiles: InvoiceFile[];
   expenses: Expense[];
+  timesheets: Timesheet[];
+  timesheetEntries: TimesheetEntry[];
 
   // Actions
   addClient: (client: Omit<Client, "id" | "createdAt" | "updatedAt">) => void;
@@ -34,6 +40,18 @@ interface AccountingStore {
   updateProject: (id: string, project: Partial<Project>) => void;
   deleteProject: (id: string) => void;
 
+  addTimesheet: (
+    timesheet: Omit<Timesheet, "id" | "createdAt" | "updatedAt">
+  ) => void;
+  updateTimesheet: (id: string, timesheet: Partial<Timesheet>) => void;
+  deleteTimesheet: (id: string) => void;
+
+  addTimesheetEntry: (
+    entry: Omit<TimesheetEntry, "id" | "createdAt" | "updatedAt">
+  ) => void;
+  updateTimesheetEntry: (id: string, entry: Partial<TimesheetEntry>) => void;
+  deleteTimesheetEntry: (id: string) => void;
+
   addInvoice: (
     invoice: Omit<Invoice, "id" | "createdAt" | "updatedAt">
   ) => void;
@@ -43,6 +61,12 @@ interface AccountingStore {
   addInvoiceItem: (item: Omit<InvoiceItem, "id">) => void;
   updateInvoiceItem: (id: string, item: Partial<InvoiceItem>) => void;
   deleteInvoiceItem: (id: string) => void;
+
+  addInvoiceFile: (
+    file: Omit<InvoiceFile, "id" | "createdAt" | "updatedAt">
+  ) => void;
+  updateInvoiceFile: (id: string, file: Partial<InvoiceFile>) => void;
+  deleteInvoiceFile: (id: string) => void;
 
   addExpense: (
     expense: Omit<Expense, "id" | "createdAt" | "updatedAt">
@@ -55,8 +79,13 @@ interface AccountingStore {
   getClientById: (id: string) => Client | undefined;
   getStaffById: (id: string) => Staff | undefined;
   getProjectById: (id: string) => Project | undefined;
+  getTimesheetById: (id: string) => Timesheet | undefined;
+  getTimesheetEntries: (timesheetId: string) => TimesheetEntry[];
   getInvoicesByClient: (clientId: string) => Invoice[];
+  getInvoiceFilesByInvoice: (invoiceId: string) => InvoiceFile[];
+  getInvoiceFilesByMonth: (month: string) => InvoiceFile[];
   getExpensesByProject: (projectId: string) => Expense[];
+  generateInvoiceFromTimesheet: (timesheetId: string) => Invoice;
 }
 
 const generateId = () => Math.random().toString(36).substr(2, 9);
@@ -72,7 +101,16 @@ export const useAccountingStore = create<AccountingStore>()(
           phone: "+91-98765-43210",
           company: "TechCorp Solutions Pvt Ltd",
           address: "123 Tech Park, Bangalore, Karnataka 560001",
-          taxId: "GST123456789",
+          gstId: "GST123456789",
+          companyAddress:
+            "123 Tech Park, Whitefield, Bangalore, Karnataka 560066",
+          companyWebsite: "https://techcorp.com",
+          companyLinkedin: "https://linkedin.com/company/techcorp-solutions",
+          companyOwner: "Rajesh Kumar",
+          pocName: "Priya Sharma",
+          pocEmail: "priya.sharma@techcorp.com",
+          pocContact: "+91-98765-43211",
+          companyLogo: "https://techcorp.com/logo.png",
           createdAt: new Date("2024-01-01"),
           updatedAt: new Date("2024-01-01"),
         },
@@ -83,18 +121,36 @@ export const useAccountingStore = create<AccountingStore>()(
           phone: "+91-87654-32109",
           company: "Digital Innovations Ltd",
           address: "456 Innovation Hub, Mumbai, Maharashtra 400001",
-          taxId: "GST987654321",
+          gstId: "GST987654321",
+          companyAddress:
+            "456 Innovation Hub, Andheri West, Mumbai, Maharashtra 400058",
+          companyWebsite: "https://digitalinnovations.com",
+          companyLinkedin: "https://linkedin.com/company/digital-innovations",
+          companyOwner: "Amit Patel",
+          pocName: "Neha Singh",
+          pocEmail: "neha.singh@digitalinnovations.com",
+          pocContact: "+91-87654-32110",
+          companyLogo: "https://digitalinnovations.com/logo.png",
           createdAt: new Date("2024-01-01"),
           updatedAt: new Date("2024-01-01"),
         },
         {
           id: "client3",
           name: "Global Systems",
-          email: "billing@globalsystems.com",
+          email: "accounts@globalsystems.com",
           phone: "+91-76543-21098",
-          company: "Global Systems Inc",
-          address: "789 Corporate Tower, Delhi, NCR 110001",
-          taxId: "GST456789123",
+          company: "Global Systems Pvt Ltd",
+          address: "789 Business Park, Delhi, Delhi 110001",
+          gstId: "GST456789123",
+          companyAddress:
+            "789 Business Park, Connaught Place, Delhi, Delhi 110001",
+          companyWebsite: "https://globalsystems.com",
+          companyLinkedin: "https://linkedin.com/company/global-systems",
+          companyOwner: "Vikram Malhotra",
+          pocName: "Rahul Verma",
+          pocEmail: "rahul.verma@globalsystems.com",
+          pocContact: "+91-76543-21099",
+          companyLogo: "https://globalsystems.com/logo.png",
           createdAt: new Date("2024-01-01"),
           updatedAt: new Date("2024-01-01"),
         },
@@ -157,12 +213,11 @@ export const useAccountingStore = create<AccountingStore>()(
           description:
             "Full-stack e-commerce platform with payment integration",
           startDate: new Date("2024-01-15"),
-          endDate: new Date("2024-06-30"),
           status: "active",
           budget: 2500000,
-          hourlyRate: 2500,
-          createdAt: new Date("2024-01-15"),
-          updatedAt: new Date("2024-01-15"),
+          billingTerms: 30,
+          createdAt: new Date("2024-01-01"),
+          updatedAt: new Date("2024-01-01"),
         },
         {
           id: "project2",
@@ -170,24 +225,23 @@ export const useAccountingStore = create<AccountingStore>()(
           clientId: "client2",
           description: "Cross-platform mobile application for iOS and Android",
           startDate: new Date("2024-02-01"),
-          endDate: new Date("2024-08-31"),
           status: "active",
           budget: 1800000,
-          hourlyRate: 2200,
-          createdAt: new Date("2024-02-01"),
-          updatedAt: new Date("2024-02-01"),
+          billingTerms: 45,
+          createdAt: new Date("2024-01-01"),
+          updatedAt: new Date("2024-01-01"),
         },
         {
           id: "project3",
           name: "Cloud Migration Project",
           clientId: "client3",
-          description: "Legacy system migration to AWS cloud infrastructure",
+          description: "Legacy system migration to cloud infrastructure",
           startDate: new Date("2024-03-01"),
           status: "active",
           budget: 3200000,
-          hourlyRate: 3000,
-          createdAt: new Date("2024-03-01"),
-          updatedAt: new Date("2024-03-01"),
+          billingTerms: 60,
+          createdAt: new Date("2024-01-01"),
+          updatedAt: new Date("2024-01-01"),
         },
       ],
       invoices: [
@@ -241,6 +295,7 @@ export const useAccountingStore = create<AccountingStore>()(
         },
       ],
       invoiceItems: [],
+      invoiceFiles: [],
       expenses: [
         {
           id: "expense1",
@@ -301,6 +356,125 @@ export const useAccountingStore = create<AccountingStore>()(
           projectId: "project3",
           createdAt: new Date("2024-03-10"),
           updatedAt: new Date("2024-03-10"),
+        },
+      ],
+      timesheets: [
+        {
+          id: "timesheet1",
+          staffId: "staff1",
+          projectId: "project1",
+          month: "2024-01",
+          year: 2024,
+          status: "approved",
+          totalHours: 160,
+          workingDays: 20,
+          leaveDays: 0,
+          submittedAt: new Date("2024-01-31"),
+          approvedAt: new Date("2024-02-01"),
+          approvedBy: "admin",
+          createdAt: new Date("2024-01-01"),
+          updatedAt: new Date("2024-02-01"),
+        },
+        {
+          id: "timesheet2",
+          staffId: "staff2",
+          projectId: "project2",
+          month: "2024-02",
+          year: 2024,
+          status: "submitted",
+          totalHours: 144,
+          workingDays: 18,
+          leaveDays: 2,
+          submittedAt: new Date("2024-02-29"),
+          createdAt: new Date("2024-02-01"),
+          updatedAt: new Date("2024-02-29"),
+        },
+        {
+          id: "timesheet3",
+          staffId: "staff3",
+          projectId: "project3",
+          month: "2024-03",
+          year: 2024,
+          status: "draft",
+          totalHours: 120,
+          workingDays: 15,
+          leaveDays: 5,
+          createdAt: new Date("2024-03-01"),
+          updatedAt: new Date("2024-03-15"),
+        },
+      ],
+      timesheetEntries: [
+        {
+          id: "entry1",
+          timesheetId: "timesheet1",
+          date: new Date("2024-01-01"),
+          day: "Monday",
+          task: "Development work on e-commerce platform - API integration",
+          hours: 8,
+          isApproved: true,
+          approvedBy: "admin",
+          approvedAt: new Date("2024-01-02"),
+          createdAt: new Date("2024-01-01"),
+          updatedAt: new Date("2024-01-02"),
+        },
+        {
+          id: "entry2",
+          timesheetId: "timesheet1",
+          date: new Date("2024-01-02"),
+          day: "Tuesday",
+          task: "Testing and bug fixing - Payment module",
+          hours: 8,
+          isApproved: true,
+          approvedBy: "admin",
+          approvedAt: new Date("2024-01-03"),
+          createdAt: new Date("2024-01-02"),
+          updatedAt: new Date("2024-01-03"),
+        },
+        {
+          id: "entry3",
+          timesheetId: "timesheet1",
+          date: new Date("2024-01-03"),
+          day: "Wednesday",
+          task: "Database optimization and performance tuning",
+          hours: 8,
+          isApproved: true,
+          approvedBy: "admin",
+          approvedAt: new Date("2024-01-04"),
+          createdAt: new Date("2024-01-03"),
+          updatedAt: new Date("2024-01-04"),
+        },
+        {
+          id: "entry4",
+          timesheetId: "timesheet2",
+          date: new Date("2024-02-01"),
+          day: "Thursday",
+          task: "UI/UX design work for mobile app - Wireframing",
+          hours: 8,
+          isApproved: false,
+          createdAt: new Date("2024-02-01"),
+          updatedAt: new Date("2024-02-01"),
+        },
+        {
+          id: "entry5",
+          timesheetId: "timesheet2",
+          date: new Date("2024-02-02"),
+          day: "Friday",
+          task: "Research and competitor analysis",
+          hours: 8,
+          isApproved: false,
+          createdAt: new Date("2024-02-02"),
+          updatedAt: new Date("2024-02-02"),
+        },
+        {
+          id: "entry6",
+          timesheetId: "timesheet3",
+          date: new Date("2024-03-01"),
+          day: "Monday",
+          task: "Cloud infrastructure setup and configuration",
+          hours: 8,
+          isApproved: false,
+          createdAt: new Date("2024-03-01"),
+          updatedAt: new Date("2024-03-01"),
         },
       ],
 
@@ -376,6 +550,56 @@ export const useAccountingStore = create<AccountingStore>()(
         }));
       },
 
+      addTimesheet: (timesheet) => {
+        const newTimesheet: Timesheet = {
+          ...timesheet,
+          id: generateId(),
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        };
+        set((state) => ({ timesheets: [...state.timesheets, newTimesheet] }));
+      },
+
+      updateTimesheet: (id, timesheet) => {
+        set((state) => ({
+          timesheets: state.timesheets.map((t) =>
+            t.id === id ? { ...t, ...timesheet, updatedAt: new Date() } : t
+          ),
+        }));
+      },
+
+      deleteTimesheet: (id) => {
+        set((state) => ({
+          timesheets: state.timesheets.filter((t) => t.id !== id),
+        }));
+      },
+
+      addTimesheetEntry: (entry) => {
+        const newEntry: TimesheetEntry = {
+          ...entry,
+          id: generateId(),
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        };
+        set((state) => ({
+          timesheetEntries: [...state.timesheetEntries, newEntry],
+        }));
+      },
+
+      updateTimesheetEntry: (id, entry) => {
+        set((state) => ({
+          timesheetEntries: state.timesheetEntries.map((e) =>
+            e.id === id ? { ...e, ...entry } : e
+          ),
+        }));
+      },
+
+      deleteTimesheetEntry: (id) => {
+        set((state) => ({
+          timesheetEntries: state.timesheetEntries.filter((e) => e.id !== id),
+        }));
+      },
+
       addInvoice: (invoice) => {
         const newInvoice: Invoice = {
           ...invoice,
@@ -422,6 +646,30 @@ export const useAccountingStore = create<AccountingStore>()(
         }));
       },
 
+      addInvoiceFile: (file) => {
+        const newFile: InvoiceFile = {
+          ...file,
+          id: generateId(),
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        };
+        set((state) => ({ invoiceFiles: [...state.invoiceFiles, newFile] }));
+      },
+
+      updateInvoiceFile: (id, file) => {
+        set((state) => ({
+          invoiceFiles: state.invoiceFiles.map((f) =>
+            f.id === id ? { ...f, ...file, updatedAt: new Date() } : f
+          ),
+        }));
+      },
+
+      deleteInvoiceFile: (id) => {
+        set((state) => ({
+          invoiceFiles: state.invoiceFiles.filter((f) => f.id !== id),
+        }));
+      },
+
       addExpense: (expense) => {
         const newExpense: Expense = {
           ...expense,
@@ -447,29 +695,46 @@ export const useAccountingStore = create<AccountingStore>()(
       },
 
       getDashboardStats: () => {
-        const state = get();
-        const totalRevenue = state.invoices
-          .filter((i) => i.status === "paid")
-          .reduce((sum, i) => sum + i.total, 0);
+        const totalRevenue = get().invoices.reduce((sum, invoice) => {
+          return invoice.status === "paid" ? sum + invoice.total : sum;
+        }, 0);
 
-        const totalExpenses = state.expenses.reduce(
-          (sum, e) => sum + e.amount,
-          0
-        );
-        const netProfit = totalRevenue - totalExpenses;
-        const outstandingAmount = state.invoices
-          .filter((i) => i.status !== "paid")
-          .reduce((sum, i) => sum + i.total, 0);
+        const totalExpenses = get().expenses.reduce((sum, expense) => {
+          return sum + expense.amount;
+        }, 0);
+
+        const outstandingAmount = get().invoices.reduce((sum, invoice) => {
+          return invoice.status === "sent" ? sum + invoice.total : sum;
+        }, 0);
+
+        const activeProjects = get().projects.filter(
+          (project) => project.status === "active"
+        ).length;
+
+        const activeClients = get().clients.length;
+
+        const activeStaff = get().staff.filter(
+          (staff) => staff.isActive
+        ).length;
+
+        const pendingTimesheets = get().timesheets.filter(
+          (t) => t.status === "submitted"
+        ).length;
+
+        const approvedTimesheets = get().timesheets.filter(
+          (t) => t.status === "approved"
+        ).length;
 
         return {
           totalRevenue,
           totalExpenses,
-          netProfit,
+          netProfit: totalRevenue - totalExpenses,
           outstandingAmount,
-          activeProjects: state.projects.filter((p) => p.status === "active")
-            .length,
-          activeClients: state.clients.length,
-          activeStaff: state.staff.filter((s) => s.isActive).length,
+          activeProjects,
+          activeClients,
+          activeStaff,
+          pendingTimesheets,
+          approvedTimesheets,
         };
       },
 
@@ -485,12 +750,74 @@ export const useAccountingStore = create<AccountingStore>()(
         return get().projects.find((p) => p.id === id);
       },
 
+      getTimesheetById: (id) => {
+        return get().timesheets.find((t) => t.id === id);
+      },
+
+      getTimesheetEntries: (timesheetId) => {
+        return get().timesheetEntries.filter(
+          (e) => e.timesheetId === timesheetId
+        );
+      },
+
       getInvoicesByClient: (clientId) => {
         return get().invoices.filter((i) => i.clientId === clientId);
       },
 
+      getInvoiceFilesByInvoice: (invoiceId) => {
+        return get().invoiceFiles.filter((f) => f.invoiceId === invoiceId);
+      },
+
+      getInvoiceFilesByMonth: (month) => {
+        return get().invoiceFiles.filter((f) => f.month === month);
+      },
+
       getExpensesByProject: (projectId) => {
         return get().expenses.filter((e) => e.projectId === projectId);
+      },
+
+      generateInvoiceFromTimesheet: (timesheetId) => {
+        const timesheet = get().timesheets.find((t) => t.id === timesheetId);
+        if (!timesheet) {
+          throw new Error(`Timesheet with ID ${timesheetId} not found.`);
+        }
+
+        const project = get().projects.find(
+          (p) => p.id === timesheet.projectId
+        );
+        const staff = get().staff.find((s) => s.id === timesheet.staffId);
+
+        if (!project || !staff) {
+          throw new Error("Project or staff not found for timesheet.");
+        }
+
+        const entries = get().timesheetEntries.filter(
+          (e) => e.timesheetId === timesheetId
+        );
+        const totalHours = entries.reduce((sum, e) => sum + e.hours, 0);
+        const totalAmount = totalHours * staff.hourlyRate;
+
+        const newInvoice: Invoice = {
+          id: generateId(),
+          clientId: project.clientId,
+          projectId: timesheet.projectId,
+          timesheetId: timesheetId,
+          invoiceNumber: `INV-${new Date().getFullYear()}-${String(
+            get().invoices.length + 1
+          ).padStart(3, "0")}`,
+          issueDate: new Date(),
+          dueDate: new Date(new Date().setDate(new Date().getDate() + 30)), // 30 days from issue date
+          status: "draft",
+          subtotal: totalAmount,
+          taxRate: 18,
+          taxAmount: totalAmount * 0.18,
+          total: totalAmount * 1.18,
+          notes: `Timesheet for ${project.name} - ${staff.name} (${timesheet.month})`,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        };
+        set((state) => ({ invoices: [...state.invoices, newInvoice] }));
+        return newInvoice;
       },
     }),
     {

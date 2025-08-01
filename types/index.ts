@@ -5,7 +5,15 @@ export interface Client {
   phone: string;
   company: string;
   address: string;
-  taxId: string;
+  gstId: string;
+  companyAddress: string;
+  companyWebsite: string;
+  companyLinkedin: string;
+  companyOwner: string;
+  pocName: string;
+  pocEmail: string;
+  pocContact: string;
+  companyLogo: string;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -19,7 +27,6 @@ export interface Staff {
   hourlyRate: number;
   isActive: boolean;
   startDate: Date;
-  endDate?: Date;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -30,10 +37,42 @@ export interface Project {
   clientId: string;
   description: string;
   startDate: Date;
-  endDate?: Date;
-  status: "active" | "completed" | "on-hold";
+  status: "active" | "completed" | "on-hold" | "archived";
   budget: number;
-  hourlyRate: number;
+  billingTerms: number;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface TimesheetEntry {
+  id: string;
+  timesheetId: string;
+  date: Date;
+  day: string;
+  task: string;
+  hours: number;
+  isApproved: boolean;
+  approvedBy?: string;
+  approvedAt?: Date;
+  notes?: string;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface Timesheet {
+  id: string;
+  staffId: string;
+  projectId: string;
+  month: string; // Format: "YYYY-MM"
+  year: number;
+  status: "draft" | "submitted" | "approved" | "rejected";
+  totalHours: number;
+  workingDays: number;
+  leaveDays: number;
+  submittedAt?: Date;
+  approvedAt?: Date;
+  approvedBy?: string;
+  rejectionReason?: string;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -41,16 +80,17 @@ export interface Project {
 export interface Invoice {
   id: string;
   clientId: string;
-  projectId?: string;
+  projectId: string;
+  timesheetId?: string;
   invoiceNumber: string;
   issueDate: Date;
   dueDate: Date;
-  status: "draft" | "sent" | "paid" | "overdue";
+  status: "draft" | "sent" | "paid";
   subtotal: number;
   taxRate: number;
   taxAmount: number;
   total: number;
-  notes: string;
+  notes?: string;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -64,26 +104,44 @@ export interface InvoiceItem {
   total: number;
 }
 
+export interface InvoiceFile {
+  id: string;
+  invoiceId: string;
+  fileName: string;
+  originalName: string;
+  fileSize: number;
+  fileType: string;
+  uploadDate: Date;
+  month: string; // Format: "YYYY-MM"
+  year: number;
+  uploadedBy: string;
+  filePath: string;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
 export interface Expense {
   id: string;
   category: string;
   description: string;
   amount: number;
   date: Date;
-  receipt?: string;
-  projectId?: string;
+  projectId: string;
   createdAt: Date;
   updatedAt: Date;
 }
 
 export interface FinancialReport {
-  period: string;
-  revenue: number;
-  expenses: number;
-  profit: number;
-  profitMargin: number;
-  outstandingInvoices: number;
-  paidInvoices: number;
+  id: string;
+  title: string;
+  type: "monthly" | "quarterly" | "annual";
+  startDate: Date;
+  endDate: Date;
+  totalRevenue: number;
+  totalExpenses: number;
+  netProfit: number;
+  createdAt: Date;
+  updatedAt: Date;
 }
 
 export interface DashboardStats {
@@ -94,4 +152,6 @@ export interface DashboardStats {
   activeProjects: number;
   activeClients: number;
   activeStaff: number;
+  pendingTimesheets: number;
+  approvedTimesheets: number;
 }

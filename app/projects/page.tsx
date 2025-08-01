@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useAccountingStore } from "@/store";
+import { Project } from "@/types";
 import {
   PlusIcon,
   PencilIcon,
@@ -15,8 +16,9 @@ export default function ProjectsPage() {
   const { projects, clients, addProject, updateProject, deleteProject } =
     useAccountingStore();
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [editingProject, setEditingProject] = useState<any>(null);
+  const [editingProject, setEditingProject] = useState<Project | null>(null);
   const [formData, setFormData] = useState({
+    projectCode: "",
     name: "",
     clientId: "",
     description: "",
@@ -52,6 +54,7 @@ export default function ProjectsPage() {
     setIsModalOpen(false);
     setEditingProject(null);
     setFormData({
+      projectCode: "",
       name: "",
       clientId: "",
       description: "",
@@ -62,16 +65,17 @@ export default function ProjectsPage() {
     });
   };
 
-  const handleEdit = (project: any) => {
+  const handleEdit = (project: Project) => {
     setEditingProject(project);
     setFormData({
+      projectCode: project.projectCode,
       name: project.name,
       clientId: project.clientId,
       description: project.description,
       budget: project.budget.toString(),
       startDate: format(new Date(project.startDate), "yyyy-MM-dd"),
       status: project.status,
-      billingTerms: project.billingTerms,
+      billingTerms: project.billingTerms.toString(),
     });
     setIsModalOpen(true);
   };
@@ -128,6 +132,7 @@ export default function ProjectsPage() {
           <table className="table">
             <thead>
               <tr>
+                <th>Code</th>
                 <th>Name</th>
                 <th>Client</th>
                 <th>Budget</th>
@@ -142,6 +147,11 @@ export default function ProjectsPage() {
                 const client = clients.find((c) => c.id === project.clientId);
                 return (
                   <tr key={project.id}>
+                    <td>
+                      <span className="font-mono font-medium text-primary-600">
+                        {project.projectCode}
+                      </span>
+                    </td>
                     <td>
                       <div>
                         <div className="font-medium text-gray-900">
@@ -223,6 +233,24 @@ export default function ProjectsPage() {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Project Code *
+                    </label>
+                    <input
+                      type="text"
+                      required
+                      value={formData.projectCode}
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          projectCode: e.target.value,
+                        })
+                      }
+                      className="input"
+                      placeholder="e.g., BST-01, BST-02"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
                       Project Name
                     </label>
                     <input
@@ -265,7 +293,11 @@ export default function ProjectsPage() {
                       onChange={(e) =>
                         setFormData({
                           ...formData,
-                          status: e.target.value as any,
+                          status: e.target.value as
+                            | "active"
+                            | "completed"
+                            | "on-hold"
+                            | "archived",
                         })
                       }
                       className="input"
@@ -356,6 +388,7 @@ export default function ProjectsPage() {
                       setIsModalOpen(false);
                       setEditingProject(null);
                       setFormData({
+                        projectCode: "",
                         name: "",
                         clientId: "",
                         description: "",

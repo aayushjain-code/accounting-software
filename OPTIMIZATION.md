@@ -114,7 +114,7 @@ interface Staff {
   email: string;
   phone: string;
   role: string;
-  hourlyRate: number;
+  monthlySalary: number;
   isActive: boolean;
   startDate: Date;
   createdAt: Date;

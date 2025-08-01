@@ -2,7 +2,6 @@ import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import {
   Client,
-  Staff,
   Project,
   Invoice,
   InvoiceItem,
@@ -10,13 +9,14 @@ import {
   Expense,
   Timesheet,
   TimesheetEntry,
+  CompanyProfile,
   DashboardStats,
 } from "@/types";
 
 interface AccountingStore {
   // Data
+  companyProfile: CompanyProfile;
   clients: Client[];
-  staff: Staff[];
   projects: Project[];
   invoices: Invoice[];
   invoiceItems: InvoiceItem[];
@@ -26,13 +26,10 @@ interface AccountingStore {
   timesheetEntries: TimesheetEntry[];
 
   // Actions
+  updateCompanyProfile: (profile: Partial<CompanyProfile>) => void;
   addClient: (client: Omit<Client, "id" | "createdAt" | "updatedAt">) => void;
   updateClient: (id: string, client: Partial<Client>) => void;
   deleteClient: (id: string) => void;
-
-  addStaff: (staff: Omit<Staff, "id" | "createdAt" | "updatedAt">) => void;
-  updateStaff: (id: string, staff: Partial<Staff>) => void;
-  deleteStaff: (id: string) => void;
 
   addProject: (
     project: Omit<Project, "id" | "createdAt" | "updatedAt">
@@ -77,7 +74,7 @@ interface AccountingStore {
   // Computed
   getDashboardStats: () => DashboardStats;
   getClientById: (id: string) => Client | undefined;
-  getStaffById: (id: string) => Staff | undefined;
+
   getProjectById: (id: string) => Project | undefined;
   getTimesheetById: (id: string) => Timesheet | undefined;
   getTimesheetEntries: (timesheetId: string) => TimesheetEntry[];
@@ -93,6 +90,49 @@ const generateId = () => Math.random().toString(36).substr(2, 9);
 export const useAccountingStore = create<AccountingStore>()(
   persist(
     (set, get) => ({
+      companyProfile: {
+        id: "company1",
+        name: "Business Solutions Tech",
+        legalName: "Business Solutions Tech Private Limited",
+        email: "info@businesssolutionstech.com",
+        phone: "+91-98765-43210",
+        website: "https://businesssolutionstech.com",
+        address: "123 Business Park, Whitefield",
+        city: "Bangalore",
+        state: "Karnataka",
+        pincode: "560066",
+        country: "India",
+        gstNumber: "GST123456789",
+        panNumber: "ABCDE1234F",
+        cinNumber: "U12345KA2023PTC123456",
+        logo: "https://businesssolutionstech.com/logo.png",
+        description:
+          "Leading technology solutions provider specializing in custom software development, web applications, and digital transformation services.",
+        foundedYear: 2023,
+        industry: "Technology",
+        companySize: "medium",
+        annualRevenue: 25000000,
+        employeeCount: 25,
+        bankDetails: {
+          accountNumber: "1234567890",
+          ifscCode: "SBIN0001234",
+          bankName: "State Bank of India",
+          branch: "Whitefield Branch",
+        },
+        contactPerson: {
+          name: "Rajesh Kumar",
+          email: "rajesh@businesssolutionstech.com",
+          phone: "+91-98765-43211",
+          designation: "Founder & CEO",
+        },
+        socialMedia: {
+          linkedin: "https://linkedin.com/company/business-solutions-tech",
+          twitter: "https://twitter.com/bst_tech",
+          facebook: "https://facebook.com/businesssolutionstech",
+        },
+        createdAt: new Date("2023-01-01"),
+        updatedAt: new Date("2023-01-01"),
+      },
       clients: [
         {
           id: "client1",
@@ -111,6 +151,14 @@ export const useAccountingStore = create<AccountingStore>()(
           pocEmail: "priya.sharma@techcorp.com",
           pocContact: "+91-98765-43211",
           companyLogo: "https://techcorp.com/logo.png",
+          industry: "Technology",
+          companySize: "medium",
+          status: "active",
+          source: "Referral",
+          notes: "High-value client with multiple ongoing projects",
+          tags: ["technology", "e-commerce", "premium"],
+          annualRevenue: 50000000,
+          employeeCount: 150,
           createdAt: new Date("2024-01-01"),
           updatedAt: new Date("2024-01-01"),
         },
@@ -131,6 +179,14 @@ export const useAccountingStore = create<AccountingStore>()(
           pocEmail: "neha.singh@digitalinnovations.com",
           pocContact: "+91-87654-32110",
           companyLogo: "https://digitalinnovations.com/logo.png",
+          industry: "Digital Marketing",
+          companySize: "small",
+          status: "active",
+          source: "Website",
+          notes: "Startup client with potential for growth",
+          tags: ["startup", "mobile", "marketing"],
+          annualRevenue: 15000000,
+          employeeCount: 25,
           createdAt: new Date("2024-01-01"),
           updatedAt: new Date("2024-01-01"),
         },
@@ -151,63 +207,23 @@ export const useAccountingStore = create<AccountingStore>()(
           pocEmail: "rahul.verma@globalsystems.com",
           pocContact: "+91-76543-21099",
           companyLogo: "https://globalsystems.com/logo.png",
+          industry: "Enterprise Software",
+          companySize: "large",
+          status: "active",
+          source: "Cold Outreach",
+          notes: "Enterprise client with complex requirements",
+          tags: ["enterprise", "cloud", "legacy"],
+          annualRevenue: 200000000,
+          employeeCount: 500,
           createdAt: new Date("2024-01-01"),
           updatedAt: new Date("2024-01-01"),
         },
       ],
-      staff: [
-        {
-          id: "staff1",
-          name: "Rahul Sharma",
-          email: "rahul.sharma@company.com",
-          phone: "+91-98765-12345",
-          role: "Senior Developer",
-          hourlyRate: 2500,
-          isActive: true,
-          startDate: new Date("2023-01-15"),
-          createdAt: new Date("2023-01-15"),
-          updatedAt: new Date("2023-01-15"),
-        },
-        {
-          id: "staff2",
-          name: "Priya Patel",
-          email: "priya.patel@company.com",
-          phone: "+91-87654-23456",
-          role: "UI/UX Designer",
-          hourlyRate: 2000,
-          isActive: true,
-          startDate: new Date("2023-03-20"),
-          createdAt: new Date("2023-03-20"),
-          updatedAt: new Date("2023-03-20"),
-        },
-        {
-          id: "staff3",
-          name: "Amit Kumar",
-          email: "amit.kumar@company.com",
-          phone: "+91-76543-34567",
-          role: "DevOps Engineer",
-          hourlyRate: 3000,
-          isActive: true,
-          startDate: new Date("2023-02-10"),
-          createdAt: new Date("2023-02-10"),
-          updatedAt: new Date("2023-02-10"),
-        },
-        {
-          id: "staff4",
-          name: "Neha Singh",
-          email: "neha.singh@company.com",
-          phone: "+91-65432-45678",
-          role: "Project Manager",
-          hourlyRate: 3500,
-          isActive: true,
-          startDate: new Date("2023-01-05"),
-          createdAt: new Date("2023-01-05"),
-          updatedAt: new Date("2023-01-05"),
-        },
-      ],
+
       projects: [
         {
           id: "project1",
+          projectCode: "BST-01",
           name: "E-commerce Platform Development",
           clientId: "client1",
           description:
@@ -221,6 +237,7 @@ export const useAccountingStore = create<AccountingStore>()(
         },
         {
           id: "project2",
+          projectCode: "BST-02",
           name: "Mobile App Development",
           clientId: "client2",
           description: "Cross-platform mobile application for iOS and Android",
@@ -233,6 +250,7 @@ export const useAccountingStore = create<AccountingStore>()(
         },
         {
           id: "project3",
+          projectCode: "BST-03",
           name: "Cloud Migration Project",
           clientId: "client3",
           description: "Legacy system migration to cloud infrastructure",
@@ -502,27 +520,13 @@ export const useAccountingStore = create<AccountingStore>()(
         }));
       },
 
-      addStaff: (staff) => {
-        const newStaff: Staff = {
-          ...staff,
-          id: generateId(),
-          createdAt: new Date(),
-          updatedAt: new Date(),
-        };
-        set((state) => ({ staff: [...state.staff, newStaff] }));
-      },
-
-      updateStaff: (id, staff) => {
+      updateCompanyProfile: (profile) => {
         set((state) => ({
-          staff: state.staff.map((s) =>
-            s.id === id ? { ...s, ...staff, updatedAt: new Date() } : s
-          ),
-        }));
-      },
-
-      deleteStaff: (id) => {
-        set((state) => ({
-          staff: state.staff.filter((s) => s.id !== id),
+          companyProfile: {
+            ...state.companyProfile,
+            ...profile,
+            updatedAt: new Date(),
+          },
         }));
       },
 
@@ -713,10 +717,6 @@ export const useAccountingStore = create<AccountingStore>()(
 
         const activeClients = get().clients.length;
 
-        const activeStaff = get().staff.filter(
-          (staff) => staff.isActive
-        ).length;
-
         const pendingTimesheets = get().timesheets.filter(
           (t) => t.status === "submitted"
         ).length;
@@ -732,7 +732,6 @@ export const useAccountingStore = create<AccountingStore>()(
           outstandingAmount,
           activeProjects,
           activeClients,
-          activeStaff,
           pendingTimesheets,
           approvedTimesheets,
         };
@@ -740,10 +739,6 @@ export const useAccountingStore = create<AccountingStore>()(
 
       getClientById: (id) => {
         return get().clients.find((c) => c.id === id);
-      },
-
-      getStaffById: (id) => {
-        return get().staff.find((s) => s.id === id);
       },
 
       getProjectById: (id) => {
@@ -785,17 +780,16 @@ export const useAccountingStore = create<AccountingStore>()(
         const project = get().projects.find(
           (p) => p.id === timesheet.projectId
         );
-        const staff = get().staff.find((s) => s.id === timesheet.staffId);
 
-        if (!project || !staff) {
-          throw new Error("Project or staff not found for timesheet.");
+        if (!project) {
+          throw new Error("Project not found for timesheet.");
         }
 
-        const entries = get().timesheetEntries.filter(
-          (e) => e.timesheetId === timesheetId
-        );
-        const totalHours = entries.reduce((sum, e) => sum + e.hours, 0);
-        const totalAmount = totalHours * staff.hourlyRate;
+        // Use timesheet's total hours directly since we removed staff association
+        const totalHours = timesheet.totalHours;
+        // Use a standard hourly rate for billing (can be configured)
+        const standardHourlyRate = 1000; // ₹1000 per hour
+        const totalAmount = totalHours * standardHourlyRate;
 
         const newInvoice: Invoice = {
           id: generateId(),
@@ -812,7 +806,7 @@ export const useAccountingStore = create<AccountingStore>()(
           taxRate: 18,
           taxAmount: totalAmount * 0.18,
           total: totalAmount * 1.18,
-          notes: `Timesheet for ${project.name} - ${staff.name} (${timesheet.month})`,
+          notes: `Timesheet for ${project.name} (${timesheet.month}) - ${totalHours} hours`,
           createdAt: new Date(),
           updatedAt: new Date(),
         };

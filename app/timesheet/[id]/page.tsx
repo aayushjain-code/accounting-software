@@ -23,7 +23,7 @@ import {
   getDay,
 } from "date-fns";
 import toast from "react-hot-toast";
-import { Timesheet, TimesheetEntry, Staff, Project } from "@/types";
+import { Timesheet, TimesheetEntry, Project } from "@/types";
 import { formatCurrency } from "@/utils/helpers";
 import { ConfirmationDialog } from "@/components/ConfirmationDialog";
 import Link from "next/link";
@@ -323,7 +323,6 @@ export default function TimesheetDetailPage({
   const {
     timesheets,
     timesheetEntries,
-    staff,
     projects,
     addTimesheetEntry,
     updateTimesheetEntry,
@@ -345,9 +344,7 @@ export default function TimesheetDetailPage({
     return timesheetEntries.filter((e) => e.timesheetId === params.id);
   }, [timesheetEntries, params.id]);
 
-  const staffMember = useMemo(() => {
-    return staff.find((s) => s.id === timesheet?.staffId);
-  }, [staff, timesheet]);
+  // Staff member lookup removed since timesheets are no longer associated with specific staff
 
   const project = useMemo(() => {
     return projects.find((p) => p.id === timesheet?.projectId);
@@ -466,8 +463,8 @@ export default function TimesheetDetailPage({
             </h1>
           </div>
           <p className="text-gray-600">
-            {staffMember?.name} - {project?.name} (
-            {format(new Date(timesheet.month + "-01"), "MMMM yyyy")})
+            {project?.name} -{" "}
+            {format(new Date(timesheet.month + "-01"), "MMMM yyyy")}
           </p>
         </div>
         <div className="flex space-x-3">

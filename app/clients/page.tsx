@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useAccountingStore } from "@/store";
+import { Client } from "@/types";
 import { PlusIcon, PencilIcon, TrashIcon } from "@heroicons/react/24/outline";
 import { format } from "date-fns";
 import toast from "react-hot-toast";
@@ -10,7 +11,7 @@ export default function ClientsPage() {
   const { clients, addClient, updateClient, deleteClient } =
     useAccountingStore();
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [editingClient, setEditingClient] = useState<any>(null);
+  const [editingClient, setEditingClient] = useState<Client | null>(null);
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -26,16 +27,39 @@ export default function ClientsPage() {
     pocEmail: "",
     pocContact: "",
     companyLogo: "",
+    industry: "",
+    companySize: "small" as
+      | "startup"
+      | "small"
+      | "medium"
+      | "large"
+      | "enterprise",
+    status: "active" as "active" | "inactive" | "prospect" | "lead",
+    source: "",
+    notes: "",
+    tags: [] as string[],
+    annualRevenue: "",
+    employeeCount: "",
   });
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
+    const clientData = {
+      ...formData,
+      annualRevenue: formData.annualRevenue
+        ? parseInt(formData.annualRevenue)
+        : undefined,
+      employeeCount: formData.employeeCount
+        ? parseInt(formData.employeeCount)
+        : undefined,
+    };
+
     if (editingClient) {
-      updateClient(editingClient.id, formData);
+      updateClient(editingClient.id, clientData);
       toast.success("Client updated successfully");
     } else {
-      addClient(formData);
+      addClient(clientData);
       toast.success("Client added successfully");
     }
 
@@ -56,10 +80,18 @@ export default function ClientsPage() {
       pocEmail: "",
       pocContact: "",
       companyLogo: "",
+      industry: "",
+      companySize: "small" as const,
+      status: "active" as const,
+      source: "",
+      notes: "",
+      tags: [] as string[],
+      annualRevenue: "",
+      employeeCount: "",
     });
   };
 
-  const handleEdit = (client: any) => {
+  const handleEdit = (client: Client) => {
     setEditingClient(client);
     setFormData({
       name: client.name,
@@ -76,6 +108,14 @@ export default function ClientsPage() {
       pocEmail: client.pocEmail,
       pocContact: client.pocContact,
       companyLogo: client.companyLogo,
+      industry: client.industry,
+      companySize: client.companySize,
+      status: client.status,
+      source: client.source,
+      notes: client.notes,
+      tags: client.tags,
+      annualRevenue: client.annualRevenue?.toString() || "",
+      employeeCount: client.employeeCount?.toString() || "",
     });
     setIsModalOpen(true);
   };
@@ -112,10 +152,10 @@ export default function ClientsPage() {
               <tr>
                 <th>Name</th>
                 <th>Company</th>
+                <th>Industry</th>
+                <th>Status</th>
                 <th>Email</th>
                 <th>Phone</th>
-                <th>GST ID</th>
-                <th>POC</th>
                 <th>Created</th>
                 <th>Actions</th>
               </tr>
@@ -143,19 +183,27 @@ export default function ClientsPage() {
                       </div>
                     </div>
                   </td>
+                  <td>{client.industry}</td>
+                  <td>
+                    <span
+                      className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
+                        client.status === "active"
+                          ? "bg-green-100 text-green-800"
+                          : client.status === "inactive"
+                          ? "bg-gray-100 text-gray-800"
+                          : client.status === "prospect"
+                          ? "bg-blue-100 text-blue-800"
+                          : "bg-yellow-100 text-yellow-800"
+                      }`}
+                    >
+                      {client.status
+                        ? client.status.charAt(0).toUpperCase() +
+                          client.status.slice(1)
+                        : "Unknown"}
+                    </span>
+                  </td>
                   <td>{client.email}</td>
                   <td>{client.phone}</td>
-                  <td>{client.gstId}</td>
-                  <td>
-                    <div>
-                      <div className="font-medium text-gray-900">
-                        {client.pocName}
-                      </div>
-                      <div className="text-sm text-gray-500">
-                        {client.pocEmail}
-                      </div>
-                    </div>
-                  </td>
                   <td>{format(new Date(client.createdAt), "MMM dd, yyyy")}</td>
                   <td>
                     <div className="flex space-x-2">
@@ -384,6 +432,131 @@ export default function ClientsPage() {
                       className="input"
                     />
                   </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Industry
+                    </label>
+                    <input
+                      type="text"
+                      value={formData.industry}
+                      onChange={(e) =>
+                        setFormData({ ...formData, industry: e.target.value })
+                      }
+                      className="input"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Company Size
+                    </label>
+                    <select
+                      value={formData.companySize}
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          companySize: e.target.value as
+                            | "startup"
+                            | "small"
+                            | "medium"
+                            | "large"
+                            | "enterprise",
+                        })
+                      }
+                      className="input"
+                    >
+                      <option value="startup">Startup</option>
+                      <option value="small">Small</option>
+                      <option value="medium">Medium</option>
+                      <option value="large">Large</option>
+                      <option value="enterprise">Enterprise</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Status
+                    </label>
+                    <select
+                      value={formData.status}
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          status: e.target.value as
+                            | "active"
+                            | "inactive"
+                            | "prospect"
+                            | "lead",
+                        })
+                      }
+                      className="input"
+                    >
+                      <option value="active">Active</option>
+                      <option value="inactive">Inactive</option>
+                      <option value="prospect">Prospect</option>
+                      <option value="lead">Lead</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Source
+                    </label>
+                    <input
+                      type="text"
+                      value={formData.source}
+                      onChange={(e) =>
+                        setFormData({ ...formData, source: e.target.value })
+                      }
+                      className="input"
+                      placeholder="How did you acquire this client?"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Annual Revenue (₹)
+                    </label>
+                    <input
+                      type="number"
+                      value={formData.annualRevenue}
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          annualRevenue: e.target.value,
+                        })
+                      }
+                      className="input"
+                      placeholder="Annual revenue in INR"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Employee Count
+                    </label>
+                    <input
+                      type="number"
+                      value={formData.employeeCount}
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          employeeCount: e.target.value,
+                        })
+                      }
+                      className="input"
+                      placeholder="Number of employees"
+                    />
+                  </div>
+                  <div className="md:col-span-2">
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Notes
+                    </label>
+                    <textarea
+                      value={formData.notes}
+                      onChange={(e) =>
+                        setFormData({ ...formData, notes: e.target.value })
+                      }
+                      className="input"
+                      rows={3}
+                      placeholder="Additional notes about the client"
+                    />
+                  </div>
                 </div>
                 <div className="flex justify-end space-x-3 pt-6 border-t border-gray-200">
                   <button
@@ -406,6 +579,14 @@ export default function ClientsPage() {
                         pocEmail: "",
                         pocContact: "",
                         companyLogo: "",
+                        industry: "",
+                        companySize: "small" as const,
+                        status: "active" as const,
+                        source: "",
+                        notes: "",
+                        tags: [] as string[],
+                        annualRevenue: "",
+                        employeeCount: "",
                       });
                     }}
                     className="btn-secondary"

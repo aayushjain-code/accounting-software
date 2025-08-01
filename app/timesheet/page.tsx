@@ -22,7 +22,7 @@ import {
   isWeekend,
 } from "date-fns";
 import toast from "react-hot-toast";
-import { Timesheet, TimesheetEntry, Staff, Project } from "@/types";
+import { Timesheet, TimesheetEntry, Project } from "@/types";
 import { useSearch } from "@/hooks/useSearch";
 import { formatCurrency, getStatusColor } from "@/utils/helpers";
 import { ConfirmationDialog } from "@/components/ConfirmationDialog";
@@ -63,7 +63,6 @@ StatusBadge.displayName = "StatusBadge";
 const TimesheetRow = React.memo(
   ({
     timesheet,
-    staff,
     project,
     onEdit,
     onDelete,
@@ -72,7 +71,6 @@ const TimesheetRow = React.memo(
     onGenerateInvoice,
   }: {
     timesheet: Timesheet;
-    staff: Staff | undefined;
     project: Project | undefined;
     onEdit: (timesheet: Timesheet) => void;
     onDelete: (id: string) => void;
@@ -89,10 +87,10 @@ const TimesheetRow = React.memo(
         <td>
           <div>
             <div className="font-medium text-gray-900">
-              {staff?.name || "Unknown Staff"}
+              {project?.name || "Unknown Project"}
             </div>
             <div className="text-sm text-gray-500">
-              {project?.name || "Unknown Project"}
+              {timesheet.workingDays} working days
             </div>
           </div>
         </td>
@@ -184,12 +182,13 @@ const TimesheetModal = React.memo(
     editingTimesheet: Timesheet | null;
     onSubmit: (data: any) => void;
   }) => {
-    const { staff, projects } = useAccountingStore();
+    const { projects } = useAccountingStore();
     const [formData, setFormData] = useState({
-      staffId: "",
       projectId: "",
       month: "",
       year: new Date().getFullYear(),
+      totalWorkingDays: "",
+      daysWorked: "",
     });
 
     const [errors, setErrors] = useState<Record<string, string>>({});
@@ -199,17 +198,19 @@ const TimesheetModal = React.memo(
       if (isOpen) {
         if (editingTimesheet) {
           setFormData({
-            staffId: editingTimesheet.staffId,
             projectId: editingTimesheet.projectId,
             month: editingTimesheet.month,
             year: editingTimesheet.year,
+            totalWorkingDays: editingTimesheet.workingDays.toString(),
+            daysWorked: editingTimesheet.workingDays.toString(),
           });
         } else {
           setFormData({
-            staffId: "",
             projectId: "",
             month: format(new Date(), "yyyy-MM"),
             year: new Date().getFullYear(),
+            totalWorkingDays: "",
+            daysWorked: "",
           });
         }
         setErrors({});
@@ -219,9 +220,17 @@ const TimesheetModal = React.memo(
     const validateForm = useCallback(() => {
       const newErrors: Record<string, string> = {};
 
-      if (!formData.staffId) newErrors.staffId = "Staff member is required";
       if (!formData.projectId) newErrors.projectId = "Project is required";
       if (!formData.month) newErrors.month = "Month is required";
+      if (
+        !formData.totalWorkingDays ||
+        parseInt(formData.totalWorkingDays) <= 0
+      )
+        newErrors.totalWorkingDays = "Valid total working days is required";
+      if (!formData.daysWorked || parseInt(formData.daysWorked) <= 0)
+        newErrors.daysWorked = "Valid days worked is required";
+      if (parseInt(formData.daysWorked) > parseInt(formData.totalWorkingDays))
+        newErrors.daysWorked = "Days worked cannot exceed total working days";
 
       setErrors(newErrors);
       return Object.keys(newErrors).length === 0;
@@ -248,33 +257,6 @@ const TimesheetModal = React.memo(
             </h3>
             <form onSubmit={handleSubmit} className="space-y-6">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Staff Member *
-                  </label>
-                  <select
-                    required
-                    value={formData.staffId}
-                    onChange={(e) =>
-                      setFormData({ ...formData, staffId: e.target.value })
-                    }
-                    className={`input ${
-                      errors.staffId ? "border-danger-500" : ""
-                    }`}
-                  >
-                    <option value="">Select staff member</option>
-                    {staff.map((member) => (
-                      <option key={member.id} value={member.id}>
-                        {member.name} - {member.role}
-                      </option>
-                    ))}
-                  </select>
-                  {errors.staffId && (
-                    <p className="text-danger-500 text-sm mt-1">
-                      {errors.staffId}
-                    </p>
-                  )}
-                </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
                     Project *
@@ -341,6 +323,58 @@ const TimesheetModal = React.memo(
                     max="2030"
                   />
                 </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Total Working Days *
+                  </label>
+                  <input
+                    type="number"
+                    required
+                    min="1"
+                    max="31"
+                    value={formData.totalWorkingDays}
+                    onChange={(e) =>
+                      setFormData({
+                        ...formData,
+                        totalWorkingDays: e.target.value,
+                      })
+                    }
+                    className={`input ${
+                      errors.totalWorkingDays ? "border-danger-500" : ""
+                    }`}
+                  />
+                  {errors.totalWorkingDays && (
+                    <p className="text-danger-500 text-sm mt-1">
+                      {errors.totalWorkingDays}
+                    </p>
+                  )}
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Days Worked *
+                  </label>
+                  <input
+                    type="number"
+                    required
+                    min="1"
+                    max="31"
+                    value={formData.daysWorked}
+                    onChange={(e) =>
+                      setFormData({
+                        ...formData,
+                        daysWorked: e.target.value,
+                      })
+                    }
+                    className={`input ${
+                      errors.daysWorked ? "border-danger-500" : ""
+                    }`}
+                  />
+                  {errors.daysWorked && (
+                    <p className="text-danger-500 text-sm mt-1">
+                      {errors.daysWorked}
+                    </p>
+                  )}
+                </div>
               </div>
               <div className="flex justify-end space-x-3 pt-6 border-t border-gray-200">
                 <button
@@ -367,7 +401,6 @@ TimesheetModal.displayName = "TimesheetModal";
 export default function TimesheetPage() {
   const {
     timesheets,
-    staff,
     projects,
     addTimesheet,
     updateTimesheet,
@@ -412,16 +445,22 @@ export default function TimesheetPage() {
 
   const handleSubmit = useCallback(
     (formData: any) => {
+      const timesheetData = {
+        ...formData,
+        staffId: "", // Remove staff member as requested
+        workingDays: parseInt(formData.totalWorkingDays),
+        totalHours: parseInt(formData.daysWorked) * 8, // Assuming 8 hours per day
+        leaveDays:
+          parseInt(formData.totalWorkingDays) - parseInt(formData.daysWorked),
+      };
+
       if (editingTimesheet) {
-        updateTimesheet(editingTimesheet.id, formData);
+        updateTimesheet(editingTimesheet.id, timesheetData);
         toast.success("Timesheet updated successfully");
       } else {
         addTimesheet({
-          ...formData,
+          ...timesheetData,
           status: "draft",
-          totalHours: 0,
-          workingDays: 0,
-          leaveDays: 0,
         });
         toast.success("Timesheet created successfully");
       }
@@ -493,7 +532,7 @@ export default function TimesheetPage() {
         <div>
           <h1 className="text-2xl font-bold text-gray-900">Timesheets</h1>
           <p className="text-gray-600">
-            Manage staff timesheets and generate invoices
+            Manage project timesheets and generate invoices
           </p>
         </div>
         <button
@@ -562,7 +601,7 @@ export default function TimesheetPage() {
           <table className="table">
             <thead>
               <tr>
-                <th>Staff & Project</th>
+                <th>Project</th>
                 <th>Month</th>
                 <th>Hours & Days</th>
                 <th>Status</th>
@@ -572,9 +611,6 @@ export default function TimesheetPage() {
             </thead>
             <tbody className="divide-y divide-gray-200">
               {filteredTimesheets.map((timesheet) => {
-                const staffMember = staff.find(
-                  (s) => s.id === timesheet.staffId
-                );
                 const project = projects.find(
                   (p) => p.id === timesheet.projectId
                 );
@@ -583,7 +619,6 @@ export default function TimesheetPage() {
                   <TimesheetRow
                     key={timesheet.id}
                     timesheet={timesheet}
-                    staff={staffMember}
                     project={project}
                     onEdit={handleEdit}
                     onDelete={handleDelete}

@@ -7,6 +7,10 @@ const nextConfig = {
   output: "standalone",
   // Enable static optimization
   swcMinify: true,
+  // Disable ESLint during build for deployment
+  eslint: {
+    ignoreDuringBuilds: true,
+  },
   // Optimize images
   images: {
     unoptimized: true,

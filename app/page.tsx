@@ -3,11 +3,9 @@
 import React, { useMemo } from "react";
 import { useAccountingStore } from "@/store";
 import {
-  CurrencyDollarIcon,
   UsersIcon,
   FolderIcon,
   ClockIcon,
-  ExclamationTriangleIcon,
   CheckCircleIcon,
   ChartBarIcon,
   ReceiptRefundIcon,
@@ -26,7 +24,7 @@ const StatCard = React.memo(
     value,
     color,
   }: {
-    icon: any;
+    icon: React.ComponentType<{ className?: string }>;
     title: string;
     value: string;
     color: string;
@@ -54,7 +52,13 @@ const InvoiceItem = React.memo(
     formatCurrency,
     getStatusColor,
   }: {
-    invoice: any;
+    invoice: {
+      id: string;
+      invoiceNumber: string;
+      issueDate: Date;
+      total: number;
+      status: string;
+    };
     formatCurrency: (amount: number) => string;
     getStatusColor: (status: string) => string;
   }) => (
@@ -91,7 +95,7 @@ const ProjectItem = React.memo(
     project,
     formatCurrency,
   }: {
-    project: any;
+    project: import("@/types").Project;
     formatCurrency: (amount: number) => string;
   }) => (
     <div key={project.id} className="flex items-center justify-between">
@@ -243,15 +247,6 @@ export default function Dashboard() {
               </div>
               <span className="text-sm font-medium text-gray-900">
                 {stats.activeProjects}
-              </span>
-            </div>
-            <div className="flex items-center justify-between">
-              <div className="flex items-center">
-                <ClockIcon className="h-5 w-5 text-warning-600 mr-2" />
-                <span className="text-sm text-gray-600">Active Staff</span>
-              </div>
-              <span className="text-sm font-medium text-gray-900">
-                {stats.activeStaff}
               </span>
             </div>
           </div>

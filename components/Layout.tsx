@@ -8,7 +8,6 @@ import {
   FolderIcon,
   DocumentTextIcon,
   ReceiptRefundIcon,
-  CalendarIcon,
   ChartBarIcon,
   ClockIcon,
   XMarkIcon,
@@ -21,14 +20,13 @@ import { ErrorBoundary } from "./ErrorBoundary";
 
 const navigation = [
   { name: "Dashboard", href: "/", icon: HomeIcon },
+  { name: "Profile", href: "/profile", icon: BuildingOfficeIcon },
   { name: "Clients", href: "/clients", icon: BuildingOfficeIcon },
-  { name: "Staff", href: "/staff", icon: UserGroupIcon },
   { name: "Projects", href: "/projects", icon: FolderIcon },
   { name: "Timesheets", href: "/timesheet", icon: ClockIcon },
   { name: "Invoices", href: "/invoices", icon: DocumentTextIcon },
   { name: "Expenses", href: "/expenses", icon: ReceiptRefundIcon },
   { name: "Reports", href: "/reports", icon: ChartBarIcon },
-  { name: "Calendar", href: "/calendar", icon: CalendarIcon },
 ];
 
 export default function Layout({ children }: { children: React.ReactNode }) {

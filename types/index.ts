@@ -14,25 +14,22 @@ export interface Client {
   pocEmail: string;
   pocContact: string;
   companyLogo: string;
-  createdAt: Date;
-  updatedAt: Date;
-}
-
-export interface Staff {
-  id: string;
-  name: string;
-  email: string;
-  phone: string;
-  role: string;
-  hourlyRate: number;
-  isActive: boolean;
-  startDate: Date;
+  // Additional fields for comprehensive client database
+  industry: string;
+  companySize: "startup" | "small" | "medium" | "large" | "enterprise";
+  status: "active" | "inactive" | "prospect" | "lead";
+  source: string; // How the client was acquired
+  notes: string;
+  tags: string[];
+  annualRevenue?: number;
+  employeeCount?: number;
   createdAt: Date;
   updatedAt: Date;
 }
 
 export interface Project {
   id: string;
+  projectCode: string; // BST-01, BST-02, etc.
   name: string;
   clientId: string;
   description: string;
@@ -61,7 +58,6 @@ export interface TimesheetEntry {
 
 export interface Timesheet {
   id: string;
-  staffId: string;
   projectId: string;
   month: string; // Format: "YYYY-MM"
   year: number;
@@ -144,6 +140,50 @@ export interface FinancialReport {
   updatedAt: Date;
 }
 
+export interface CompanyProfile {
+  id: string;
+  name: string;
+  legalName: string;
+  email: string;
+  phone: string;
+  website: string;
+  address: string;
+  city: string;
+  state: string;
+  pincode: string;
+  country: string;
+  gstNumber: string;
+  panNumber: string;
+  cinNumber: string;
+  logo: string;
+  description: string;
+  foundedYear: number;
+  industry: string;
+  companySize: "startup" | "small" | "medium" | "large" | "enterprise";
+  annualRevenue?: number;
+  employeeCount?: number;
+  bankDetails: {
+    accountNumber: string;
+    ifscCode: string;
+    bankName: string;
+    branch: string;
+  };
+  contactPerson: {
+    name: string;
+    email: string;
+    phone: string;
+    designation: string;
+  };
+  socialMedia: {
+    linkedin?: string;
+    twitter?: string;
+    facebook?: string;
+    instagram?: string;
+  };
+  createdAt: Date;
+  updatedAt: Date;
+}
+
 export interface DashboardStats {
   totalRevenue: number;
   totalExpenses: number;
@@ -151,7 +191,6 @@ export interface DashboardStats {
   outstandingAmount: number;
   activeProjects: number;
   activeClients: number;
-  activeStaff: number;
   pendingTimesheets: number;
   approvedTimesheets: number;
 }

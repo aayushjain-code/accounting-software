@@ -186,7 +186,7 @@ const TimesheetModal = React.memo(
     const [formData, setFormData] = useState({
       projectId: "",
       month: "",
-      year: new Date().getFullYear(),
+      year: 2024, // Default year to avoid hydration mismatch
       totalWorkingDays: "",
       daysWorked: "",
     });
@@ -205,10 +205,12 @@ const TimesheetModal = React.memo(
             daysWorked: editingTimesheet.workingDays.toString(),
           });
         } else {
+          // Use client-side date to avoid hydration mismatch
+          const now = new Date();
           setFormData({
             projectId: "",
-            month: format(new Date(), "yyyy-MM"),
-            year: new Date().getFullYear(),
+            month: format(now, "yyyy-MM"),
+            year: now.getFullYear(),
             totalWorkingDays: "",
             daysWorked: "",
           });
@@ -399,6 +401,12 @@ const TimesheetModal = React.memo(
 TimesheetModal.displayName = "TimesheetModal";
 
 export default function TimesheetPage() {
+  const [isClient, setIsClient] = useState(false);
+
+  React.useEffect(() => {
+    setIsClient(true);
+  }, []);
+
   const {
     timesheets,
     projects,
@@ -524,6 +532,10 @@ export default function TimesheetPage() {
     },
     [generateInvoiceFromTimesheet]
   );
+
+  if (!isClient) {
+    return <div className="space-y-6">Loading...</div>;
+  }
 
   return (
     <div className="space-y-6">

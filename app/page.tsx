@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useMemo } from "react";
+import React, { useState, useMemo } from "react";
 import { useAccountingStore } from "@/store";
 import {
   UsersIcon,
@@ -118,6 +118,12 @@ const ProjectItem = React.memo(
 ProjectItem.displayName = "ProjectItem";
 
 export default function Dashboard() {
+  const [isClient, setIsClient] = useState(false);
+
+  React.useEffect(() => {
+    setIsClient(true);
+  }, []);
+
   const stats = useAccountingStore((state) => state.getDashboardStats());
   const invoices = useAccountingStore((state) => state.invoices);
   const projects = useAccountingStore((state) => state.projects);
@@ -159,6 +165,10 @@ export default function Dashboard() {
       }
     };
   }, []);
+
+  if (!isClient) {
+    return <div className="space-y-6">Loading...</div>;
+  }
 
   return (
     <div className="space-y-6">

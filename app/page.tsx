@@ -36,8 +36,8 @@ const StatCard = React.memo(
           <Icon className={`h-8 w-8 ${color}`} />
         </div>
         <div className="ml-4">
-          <p className="text-sm font-medium text-gray-600">{title}</p>
-          <p className="text-2xl font-semibold text-gray-900">{value}</p>
+          <p className="text-sm font-medium text-gray-600 dark:text-gray-400">{title}</p>
+          <p className="text-2xl font-semibold text-gray-900 dark:text-white">{value}</p>
         </div>
       </div>
     </div>
@@ -65,15 +65,15 @@ const InvoiceItem = React.memo(
   }) => (
     <div key={invoice.id} className="flex items-center justify-between">
       <div>
-        <p className="text-sm font-medium text-gray-900">
+        <p className="text-sm font-medium text-gray-900 dark:text-white">
           {invoice.invoiceNumber}
         </p>
-        <p className="text-xs text-gray-500">
+        <p className="text-xs text-gray-500 dark:text-gray-400">
           {format(new Date(invoice.issueDate), "MMM dd, yyyy")}
         </p>
       </div>
       <div className="text-right">
-        <p className="text-sm font-medium text-gray-900">
+        <p className="text-sm font-medium text-gray-900 dark:text-white">
           {formatCurrency(invoice.total)}
         </p>
         <span
@@ -156,13 +156,13 @@ export default function Dashboard() {
     return (status: string) => {
       switch (status) {
         case "paid":
-          return "bg-green-100 text-green-800";
+          return "bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200";
         case "sent":
-          return "bg-blue-100 text-blue-800";
+          return "bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200";
         case "draft":
-          return "bg-gray-100 text-gray-800";
+          return "bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200";
         default:
-          return "bg-gray-100 text-gray-800";
+          return "bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200";
       }
     };
   }, []);
@@ -175,8 +175,8 @@ export default function Dashboard() {
     <div className="space-y-6">
       {/* Header */}
       <div>
-        <h1 className="text-2xl font-bold text-gray-900">Dashboard</h1>
-        <p className="text-gray-600">Overview of Brandsmashers Tech accounting system</p>
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Dashboard</h1>
+        <p className="text-gray-600 dark:text-gray-400">Overview of Brandsmashers Tech accounting system</p>
       </div>
 
       {/* Stats Cards */}

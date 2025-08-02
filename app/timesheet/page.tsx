@@ -848,10 +848,10 @@ export default function TimesheetPage() {
       <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-8">
         <div className="flex flex-col md:flex-row md:items-center justify-between space-y-4 md:space-y-0">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">
+            <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
               Work Timesheets
             </h1>
-            <p className="text-gray-600 mt-2">
+            <p className="text-gray-600 dark:text-gray-400 mt-2">
               Manage project work calculations and generate invoices
             </p>
           </div>
@@ -913,16 +913,16 @@ export default function TimesheetPage() {
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
         <Tooltip content="Timesheets in draft status - ready for submission">
           <div>
-            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-gray-600">Draft</p>
-                  <p className="text-2xl font-bold text-gray-600 mt-1">
+                  <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Draft</p>
+                  <p className="text-2xl font-bold text-gray-600 dark:text-gray-300 mt-1">
                     {stats.draftTimesheets}
                   </p>
                 </div>
-                <div className="p-3 bg-gray-100 rounded-lg">
-                  <DocumentTextIcon className="h-6 w-6 text-gray-600" />
+                <div className="p-3 bg-gray-100 dark:bg-gray-700 rounded-lg">
+                  <DocumentTextIcon className="h-6 w-6 text-gray-600 dark:text-gray-400" />
                 </div>
               </div>
             </div>
@@ -930,16 +930,16 @@ export default function TimesheetPage() {
         </Tooltip>
         <Tooltip content="Timesheets submitted for approval - awaiting review">
           <div>
-            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-gray-600">Submitted</p>
-                  <p className="text-2xl font-bold text-warning-600 mt-1">
+                  <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Submitted</p>
+                  <p className="text-2xl font-bold text-warning-600 dark:text-warning-400 mt-1">
                     {stats.submittedTimesheets}
                   </p>
                 </div>
-                <div className="p-3 bg-warning-100 rounded-lg">
-                  <ClockIcon className="h-6 w-6 text-warning-600" />
+                <div className="p-3 bg-warning-100 dark:bg-warning-900 rounded-lg">
+                  <ClockIcon className="h-6 w-6 text-warning-600 dark:text-warning-400" />
                 </div>
               </div>
             </div>
@@ -947,16 +947,16 @@ export default function TimesheetPage() {
         </Tooltip>
         <Tooltip content="Timesheets approved and ready for invoicing">
           <div>
-            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-gray-600">Approved</p>
-                  <p className="text-2xl font-bold text-success-600 mt-1">
+                  <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Approved</p>
+                  <p className="text-2xl font-bold text-success-600 dark:text-success-400 mt-1">
                     {stats.approvedTimesheets}
                   </p>
                 </div>
-                <div className="p-3 bg-success-100 rounded-lg">
-                  <CheckIcon className="h-6 w-6 text-success-600" />
+                <div className="p-3 bg-success-100 dark:bg-success-900 rounded-lg">
+                  <CheckIcon className="h-6 w-6 text-success-600 dark:text-success-400" />
                 </div>
               </div>
             </div>
@@ -964,16 +964,16 @@ export default function TimesheetPage() {
         </Tooltip>
         <Tooltip content="Timesheets that have been invoiced and billed">
           <div>
-            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-gray-600">Invoiced</p>
-                  <p className="text-2xl font-bold text-purple-600 mt-1">
+                  <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Invoiced</p>
+                  <p className="text-2xl font-bold text-purple-600 dark:text-purple-400 mt-1">
                     {stats.invoicedTimesheets}
                   </p>
                 </div>
-                <div className="p-3 bg-purple-100 rounded-lg">
-                  <CurrencyRupeeIcon className="h-6 w-6 text-purple-600" />
+                <div className="p-3 bg-purple-100 dark:bg-purple-900 rounded-lg">
+                  <CurrencyRupeeIcon className="h-6 w-6 text-purple-600 dark:text-purple-400" />
                 </div>
               </div>
             </div>
@@ -982,17 +982,17 @@ export default function TimesheetPage() {
       </div>
 
       {/* Enhanced Search and Filters */}
-      <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6">
+      <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
         <div className="mb-6">
           <div className="flex items-center space-x-3">
             <div className="relative flex-1">
-              <MagnifyingGlassIcon className="absolute left-4 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+              <MagnifyingGlassIcon className="absolute left-4 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400 dark:text-gray-500" />
               <input
                 type="text"
                 placeholder="Search timesheets by project, month, or status..."
                 value={searchTerm}
                 onChange={(e) => handleSearchChange(e.target.value)}
-                className="w-full pl-12 pr-4 py-4 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200"
+                className="w-full pl-12 pr-4 py-4 border border-gray-300 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400"
               />
               {isSearching && (
                 <div className="absolute right-4 top-1/2 transform -translate-y-1/2">
@@ -1001,7 +1001,7 @@ export default function TimesheetPage() {
               )}
             </div>
             <Tooltip content="Search across project names, months, and status. Try 'draft', 'approved', or project names.">
-              <div className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors">
+              <div className="p-2 text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors">
                 <QuestionMarkCircleIcon className="h-5 w-5" />
               </div>
             </Tooltip>
@@ -1009,9 +1009,9 @@ export default function TimesheetPage() {
         </div>
 
         {/* Enhanced Timesheets Table */}
-        <div className="overflow-hidden rounded-xl border border-gray-200">
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50">
+        <div className="overflow-hidden rounded-xl border border-gray-200 dark:border-gray-700">
+          <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+            <thead className="bg-gray-50 dark:bg-gray-800">
               <tr>
                 <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
                   Project
@@ -1036,7 +1036,7 @@ export default function TimesheetPage() {
                 </th>
               </tr>
             </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
+            <tbody className="bg-white dark:bg-gray-900 divide-y divide-gray-200 dark:divide-gray-700">
               {filteredTimesheets.map((timesheet) => {
                 const project = projects.find(
                   (p) => p.id === timesheet.projectId

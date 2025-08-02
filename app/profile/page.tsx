@@ -135,17 +135,23 @@ export default function ProfilePage() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex justify-between items-center">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Company Profile</h1>
-          <p className="text-gray-600 dark:text-gray-400">Manage your company information</p>
+      <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700 p-8">
+        <div className="flex flex-col md:flex-row md:items-center justify-between space-y-4 md:space-y-0">
+          <div>
+            <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
+              Company Profile
+            </h1>
+            <p className="text-gray-600 dark:text-gray-400 mt-2">
+              Manage your company information and settings
+            </p>
+          </div>
+          <button
+            onClick={() => setIsEditing(!isEditing)}
+            className="bg-primary-600 text-white px-6 py-3 rounded-xl font-semibold hover:bg-primary-700 transition-colors duration-200 shadow-lg hover:shadow-xl"
+          >
+            {isEditing ? "Cancel" : "Edit Profile"}
+          </button>
         </div>
-        <button
-          onClick={() => setIsEditing(!isEditing)}
-          className="btn-primary"
-        >
-          {isEditing ? "Cancel" : "Edit Profile"}
-        </button>
       </div>
 
       <form onSubmit={handleSubmit}>

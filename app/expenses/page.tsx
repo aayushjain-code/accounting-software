@@ -180,22 +180,24 @@ export default function ExpensesPage() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex justify-between items-center">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
-            Expenses
-          </h1>
-          <p className="text-gray-600 dark:text-gray-400">
-            Track your business expenses
-          </p>
+      <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700 p-8">
+        <div className="flex flex-col md:flex-row md:items-center justify-between space-y-4 md:space-y-0">
+          <div>
+            <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
+              Expenses
+            </h1>
+            <p className="text-gray-600 dark:text-gray-400 mt-2">
+              Track your business expenses and costs
+            </p>
+          </div>
+          <button
+            onClick={() => setIsModalOpen(true)}
+            className="bg-primary-600 text-white px-6 py-3 rounded-xl font-semibold hover:bg-primary-700 transition-colors duration-200 flex items-center shadow-lg hover:shadow-xl"
+          >
+            <PlusIcon className="h-5 w-5 mr-2" />
+            Add Expense
+          </button>
         </div>
-        <button
-          onClick={() => setIsModalOpen(true)}
-          className="btn-primary flex items-center"
-        >
-          <PlusIcon className="h-5 w-5 mr-2" />
-          Add Expense
-        </button>
       </div>
 
       {/* Summary Stats */}

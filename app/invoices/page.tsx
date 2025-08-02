@@ -36,9 +36,15 @@ export default function InvoicesPage() {
   const [editingInvoice, setEditingInvoice] = useState<any>(null);
   const [formData, setFormData] = useState({
     timesheetId: "",
+    projectId: "",
+    clientId: "",
     issueDate: "",
     dueDate: "",
     status: "draft" as "draft" | "sent" | "paid",
+    subtotal: "",
+    taxRate: "18",
+    taxAmount: "",
+    total: "",
     notes: "",
   });
 
@@ -54,14 +60,38 @@ export default function InvoicesPage() {
     [formData.timesheetId, timesheets]
   );
   const selectedProject = useMemo(
-    () => projects.find((p) => p.id === selectedTimesheet?.projectId),
-    [selectedTimesheet, projects]
+    () =>
+      projects.find(
+        (p) => p.id === (formData.projectId || selectedTimesheet?.projectId)
+      ),
+    [formData.projectId, selectedTimesheet, projects]
   );
   const selectedClient = useMemo(
-    () => clients.find((c) => c.id === selectedProject?.clientId),
-    [selectedProject, clients]
+    () =>
+      clients.find(
+        (c) => c.id === (formData.clientId || selectedProject?.clientId)
+      ),
+    [formData.clientId, selectedProject, clients]
   );
-  const calculatedAmount = selectedTimesheet?.totalAmount || 0;
+
+  // Auto-populate fields when timesheet is selected
+  React.useEffect(() => {
+    if (selectedTimesheet && selectedProject && selectedClient) {
+      const subtotal = selectedTimesheet.totalAmount || 0;
+      const taxRate = parseFloat(formData.taxRate);
+      const taxAmount = subtotal * (taxRate / 100);
+      const total = subtotal + taxAmount;
+
+      setFormData((prev) => ({
+        ...prev,
+        projectId: selectedProject.id,
+        clientId: selectedClient.id,
+        subtotal: subtotal.toString(),
+        taxAmount: taxAmount.toString(),
+        total: total.toString(),
+      }));
+    }
+  }, [selectedTimesheet, selectedProject, selectedClient, formData.taxRate]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -73,16 +103,16 @@ export default function InvoicesPage() {
 
     const invoiceData = {
       timesheetId: formData.timesheetId,
-      clientId: selectedClient.id,
-      projectId: selectedProject.id,
+      clientId: formData.clientId,
+      projectId: formData.projectId,
       invoiceNumber: generateInvoiceNumber(),
       issueDate: new Date(formData.issueDate),
       dueDate: new Date(formData.dueDate),
       status: formData.status,
-      subtotal: calculatedAmount,
-      taxRate: 18, // Default GST rate
-      taxAmount: calculatedAmount * 0.18,
-      total: calculatedAmount * 1.18,
+      subtotal: parseFloat(formData.subtotal),
+      taxRate: parseFloat(formData.taxRate),
+      taxAmount: parseFloat(formData.taxAmount),
+      total: parseFloat(formData.total),
       notes: formData.notes,
     };
 
@@ -98,9 +128,15 @@ export default function InvoicesPage() {
     setEditingInvoice(null);
     setFormData({
       timesheetId: "",
+      projectId: "",
+      clientId: "",
       issueDate: "",
       dueDate: "",
       status: "draft" as const,
+      subtotal: "",
+      taxRate: "18",
+      taxAmount: "",
+      total: "",
       notes: "",
     });
     setUploadedFiles([]);
@@ -110,9 +146,15 @@ export default function InvoicesPage() {
     setEditingInvoice(invoice);
     setFormData({
       timesheetId: invoice.timesheetId,
+      projectId: invoice.projectId,
+      clientId: invoice.clientId,
       issueDate: format(new Date(invoice.issueDate), "yyyy-MM-dd"),
       dueDate: format(new Date(invoice.dueDate), "yyyy-MM-dd"),
       status: invoice.status,
+      subtotal: invoice.subtotal.toString(),
+      taxRate: invoice.taxRate.toString(),
+      taxAmount: invoice.taxAmount.toString(),
+      total: invoice.total.toString(),
       notes: invoice.notes || "",
     });
     setIsModalOpen(true);
@@ -188,22 +230,24 @@ export default function InvoicesPage() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex justify-between items-center">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
-            Invoices
-          </h1>
-          <p className="text-gray-600 dark:text-gray-400">
-            Manage your client invoices
-          </p>
+      <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700 p-8">
+        <div className="flex flex-col md:flex-row md:items-center justify-between space-y-4 md:space-y-0">
+          <div>
+            <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
+              Invoices
+            </h1>
+            <p className="text-gray-600 dark:text-gray-400 mt-2">
+              Manage your client invoices and payments
+            </p>
+          </div>
+          <button
+            onClick={() => setIsModalOpen(true)}
+            className="bg-primary-600 text-white px-6 py-3 rounded-xl font-semibold hover:bg-primary-700 transition-colors duration-200 flex items-center shadow-lg hover:shadow-xl"
+          >
+            <PlusIcon className="h-5 w-5 mr-2" />
+            Add Invoice
+          </button>
         </div>
-        <button
-          onClick={() => setIsModalOpen(true)}
-          className="btn-primary flex items-center"
-        >
-          <PlusIcon className="h-5 w-5 mr-2" />
-          Add Invoice
-        </button>
       </div>
 
       {/* Summary Stats */}
@@ -334,9 +378,15 @@ export default function InvoicesPage() {
           setEditingInvoice(null);
           setFormData({
             timesheetId: "",
+            projectId: "",
+            clientId: "",
             issueDate: "",
             dueDate: "",
             status: "draft",
+            subtotal: "",
+            taxRate: "18",
+            taxAmount: "",
+            total: "",
             notes: "",
           });
           setUploadedFiles([]);
@@ -351,9 +401,15 @@ export default function InvoicesPage() {
                 setEditingInvoice(null);
                 setFormData({
                   timesheetId: "",
+                  projectId: "",
+                  clientId: "",
                   issueDate: "",
                   dueDate: "",
                   status: "draft",
+                  subtotal: "",
+                  taxRate: "18",
+                  taxAmount: "",
+                  total: "",
                   notes: "",
                 });
                 setUploadedFiles([]);
@@ -392,43 +448,122 @@ export default function InvoicesPage() {
               ))}
             </select>
           </div>
-          {/* Project (read-only) */}
+          {/* Project (editable) */}
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
               Project
             </label>
-            <input
-              type="text"
-              value={selectedProject ? `${selectedProject.projectCode} - ${selectedProject.name}` : ""}
-              className="input bg-gray-100 dark:bg-gray-800 cursor-not-allowed"
-              readOnly
-              tabIndex={-1}
-            />
+            <select
+              value={formData.projectId}
+              onChange={(e) =>
+                setFormData((f) => ({ ...f, projectId: e.target.value }))
+              }
+              className="input"
+              required
+            >
+              <option value="">Select Project</option>
+              {projects.map((project) => (
+                <option key={project.id} value={project.id}>
+                  {project.projectCode} - {project.name}
+                </option>
+              ))}
+            </select>
           </div>
-          {/* Client (read-only) */}
+          {/* Client (editable) */}
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
               Client
             </label>
+            <select
+              value={formData.clientId}
+              onChange={(e) =>
+                setFormData((f) => ({ ...f, clientId: e.target.value }))
+              }
+              className="input"
+              required
+            >
+              <option value="">Select Client</option>
+              {clients.map((client) => (
+                <option key={client.id} value={client.id}>
+                  {client.name} ({client.company})
+                </option>
+              ))}
+            </select>
+          </div>
+          {/* Subtotal (editable) */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              Subtotal (₹)
+            </label>
             <input
-              type="text"
-              value={selectedClient ? `${selectedClient.name} (${selectedClient.company})` : ""}
+              type="number"
+              value={formData.subtotal}
+              onChange={(e) => {
+                const subtotal = parseFloat(e.target.value) || 0;
+                const taxRate = parseFloat(formData.taxRate);
+                const taxAmount = subtotal * (taxRate / 100);
+                const total = subtotal + taxAmount;
+                setFormData((f) => ({
+                  ...f,
+                  subtotal: e.target.value,
+                  taxAmount: taxAmount.toString(),
+                  total: total.toString(),
+                }));
+              }}
+              className="input"
+              required
+              min="0"
+              step="0.01"
+            />
+          </div>
+          {/* Tax Rate (editable) */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              Tax Rate (%)
+            </label>
+            <input
+              type="number"
+              value={formData.taxRate}
+              onChange={(e) => {
+                const taxRate = parseFloat(e.target.value) || 0;
+                const subtotal = parseFloat(formData.subtotal) || 0;
+                const taxAmount = subtotal * (taxRate / 100);
+                const total = subtotal + taxAmount;
+                setFormData((f) => ({
+                  ...f,
+                  taxRate: e.target.value,
+                  taxAmount: taxAmount.toString(),
+                  total: total.toString(),
+                }));
+              }}
+              className="input"
+              required
+              min="0"
+              max="100"
+              step="0.01"
+            />
+          </div>
+          {/* Tax Amount (calculated) */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              Tax Amount (₹)
+            </label>
+            <input
+              type="number"
+              value={formData.taxAmount}
               className="input bg-gray-100 dark:bg-gray-800 cursor-not-allowed"
               readOnly
               tabIndex={-1}
             />
           </div>
-          {/* Amount (read-only) */}
+          {/* Total (calculated) */}
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-              Amount
+              Total (₹)
             </label>
             <input
-              type="text"
-              value={calculatedAmount.toLocaleString("en-IN", {
-                style: "currency",
-                currency: "INR",
-              })}
+              type="number"
+              value={formData.total}
               className="input bg-gray-100 dark:bg-gray-800 cursor-not-allowed"
               readOnly
               tabIndex={-1}

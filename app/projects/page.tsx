@@ -28,7 +28,12 @@ export default function ProjectsPage() {
     clientId: "",
     description: "",
     startDate: "",
-    status: "active" as "active" | "inactive" | "completed" | "on-hold" | "archived",
+    status: "active" as
+      | "active"
+      | "inactive"
+      | "completed"
+      | "on-hold"
+      | "archived",
     budget: "",
     billingTerms: "",
     billingRate: "",
@@ -62,14 +67,20 @@ export default function ProjectsPage() {
       budget: parseFloat(formData.budget),
       billingTerms: parseInt(formData.billingTerms),
       billingRate: parseFloat(formData.billingRate),
-      estimatedHours: formData.estimatedHours ? parseFloat(formData.estimatedHours) : undefined,
+      estimatedHours: formData.estimatedHours
+        ? parseFloat(formData.estimatedHours)
+        : undefined,
       gstRate: parseFloat(formData.gstRate),
       gstInclusive: formData.gstInclusive,
-      totalCost: parseFloat(formData.budget) * (1 + parseFloat(formData.gstRate) / 100),
+      totalCost:
+        parseFloat(formData.budget) * (1 + parseFloat(formData.gstRate) / 100),
       costBreakdown: {
         subtotal: parseFloat(formData.budget),
-        gstAmount: parseFloat(formData.budget) * (parseFloat(formData.gstRate) / 100),
-        total: parseFloat(formData.budget) * (1 + parseFloat(formData.gstRate) / 100),
+        gstAmount:
+          parseFloat(formData.budget) * (parseFloat(formData.gstRate) / 100),
+        total:
+          parseFloat(formData.budget) *
+          (1 + parseFloat(formData.gstRate) / 100),
       },
     };
 
@@ -158,22 +169,24 @@ export default function ProjectsPage() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex justify-between items-center">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
-            Projects
-          </h1>
-          <p className="text-gray-600 dark:text-gray-400">
-            Manage your client projects
-          </p>
+      <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700 p-8">
+        <div className="flex flex-col md:flex-row md:items-center justify-between space-y-4 md:space-y-0">
+          <div>
+            <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
+              Projects
+            </h1>
+            <p className="text-gray-600 dark:text-gray-400 mt-2">
+              Manage your client projects and track progress
+            </p>
+          </div>
+          <button
+            onClick={() => setIsModalOpen(true)}
+            className="bg-primary-600 text-white px-6 py-3 rounded-xl font-semibold hover:bg-primary-700 transition-colors duration-200 flex items-center shadow-lg hover:shadow-xl"
+          >
+            <PlusIcon className="h-5 w-5 mr-2" />
+            Add Project
+          </button>
         </div>
-        <button
-          onClick={() => setIsModalOpen(true)}
-          className="btn-primary flex items-center"
-        >
-          <PlusIcon className="h-5 w-5 mr-2" />
-          Add Project
-        </button>
       </div>
       {/* Tabs */}
       <div className="flex space-x-2 border-b border-gray-200 dark:border-gray-700 mb-2">
@@ -246,7 +259,9 @@ export default function ProjectsPage() {
                           {project.billingRate
                             ? `₹${project.billingRate}/hr × `
                             : ""}
-                          {project.estimatedHours ? `${project.estimatedHours} hrs` : "Not specified"}
+                          {project.estimatedHours
+                            ? `${project.estimatedHours} hrs`
+                            : "Not specified"}
                         </div>
                       </div>
                     </td>

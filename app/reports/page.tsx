@@ -32,11 +32,17 @@ export default function ReportsPage() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div>
-        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Financial Reports</h1>
-        <p className="text-gray-600 dark:text-gray-400">
-          Comprehensive financial analysis and insights
-        </p>
+      <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700 p-8">
+        <div className="flex flex-col md:flex-row md:items-center justify-between space-y-4 md:space-y-0">
+          <div>
+            <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
+              Financial Reports
+            </h1>
+            <p className="text-gray-600 dark:text-gray-400 mt-2">
+              Comprehensive financial analysis and insights
+            </p>
+          </div>
+        </div>
       </div>
 
       {/* Summary Cards */}
@@ -58,7 +64,9 @@ export default function ReportsPage() {
           </p>
         </div>
         <div className="card">
-          <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">Net Profit</h3>
+          <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
+            Net Profit
+          </h3>
           <p className="text-3xl font-bold text-primary-600 dark:text-primary-400">
             {formatCurrency(stats.netProfit)}
           </p>
@@ -82,19 +90,25 @@ export default function ReportsPage() {
           </h3>
           <div className="space-y-4">
             <div className="flex justify-between items-center">
-              <span className="text-sm text-gray-600 dark:text-gray-400">Paid Invoices</span>
+              <span className="text-sm text-gray-600 dark:text-gray-400">
+                Paid Invoices
+              </span>
               <span className="text-sm font-medium text-gray-900 dark:text-white">
                 {invoices.filter((i) => i.status === "paid").length}
               </span>
             </div>
             <div className="flex justify-between items-center">
-              <span className="text-sm text-gray-600 dark:text-gray-400">Pending Invoices</span>
+              <span className="text-sm text-gray-600 dark:text-gray-400">
+                Pending Invoices
+              </span>
               <span className="text-sm font-medium text-gray-900 dark:text-white">
                 {invoices.filter((i) => i.status === "sent").length}
               </span>
             </div>
             <div className="flex justify-between items-center">
-              <span className="text-sm text-gray-600 dark:text-gray-400">Draft Invoices</span>
+              <span className="text-sm text-gray-600 dark:text-gray-400">
+                Draft Invoices
+              </span>
               <span className="text-sm font-medium text-gray-900 dark:text-white">
                 {invoices.filter((i) => i.status === "draft").length}
               </span>
@@ -109,13 +123,17 @@ export default function ReportsPage() {
           </h3>
           <div className="space-y-4">
             <div className="flex justify-between items-center">
-              <span className="text-sm text-gray-600 dark:text-gray-400">Total Expenses</span>
+              <span className="text-sm text-gray-600 dark:text-gray-400">
+                Total Expenses
+              </span>
               <span className="text-sm font-medium text-gray-900 dark:text-white">
                 {formatCurrency(expenses.reduce((sum, e) => sum + e.amount, 0))}
               </span>
             </div>
             <div className="flex justify-between items-center">
-              <span className="text-sm text-gray-600 dark:text-gray-400">This Month</span>
+              <span className="text-sm text-gray-600 dark:text-gray-400">
+                This Month
+              </span>
               <span className="text-sm font-medium text-gray-900 dark:text-white">
                 {formatCurrency(
                   expenses
@@ -132,7 +150,9 @@ export default function ReportsPage() {
               </span>
             </div>
             <div className="flex justify-between items-center">
-              <span className="text-sm text-gray-600 dark:text-gray-400">Average per Month</span>
+              <span className="text-sm text-gray-600 dark:text-gray-400">
+                Average per Month
+              </span>
               <span className="text-sm font-medium text-gray-900 dark:text-white">
                 {formatCurrency(
                   expenses.length > 0

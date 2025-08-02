@@ -180,27 +180,18 @@ const TimesheetRow = React.memo(
         className="hover:bg-gray-50 transition-colors duration-200 border-b border-gray-100"
       >
         <td className="px-6 py-4">
-          <div className="flex items-center space-x-3">
-            <div className="flex-shrink-0">
-              <div className="w-10 h-10 bg-gradient-to-br from-primary-500 to-primary-600 rounded-lg flex items-center justify-center">
-                <FolderIcon className="h-5 w-5 text-white" />
-              </div>
-            </div>
-            <div>
-              <div className="font-semibold text-gray-900">
-                {project?.name || "Unknown Project"}
-              </div>
-              <div className="text-sm text-gray-500">
-                {format(new Date(timesheet.month + "-01"), "MMMM yyyy")}
-              </div>
-            </div>
-          </div>
+          <span className="font-mono font-semibold text-primary-700 bg-primary-50 dark:bg-primary-900 px-4 py-2 rounded-md border border-primary-200 dark:border-primary-800">
+            {project?.projectCode || "N/A"}
+          </span>
         </td>
         <td className="px-6 py-4">
-          <div className="flex items-center">
-            <span className="bg-primary-100 text-primary-800 px-3 py-1 rounded-full text-xs font-semibold">
-              {project?.projectCode || "N/A"}
-            </span>
+          <div>
+            <div className="font-medium text-gray-900 dark:text-white">
+              {project?.name || "Unknown Project"}
+            </div>
+            <div className="text-sm text-gray-500 dark:text-gray-400">
+              {format(new Date(timesheet.month + "-01"), "MMMM yyyy")}
+            </div>
           </div>
         </td>
         <td className="px-6 py-4">
@@ -211,16 +202,6 @@ const TimesheetRow = React.memo(
                 {timesheet.daysWorked} days
               </span>
             </div>
-            <div className="text-sm text-gray-500 flex items-center space-x-2">
-              <ClockIcon className="h-3 w-3" />
-              <span>{timesheet.totalHours || 0} hours</span>
-              {timesheet.billingRate && (
-                <>
-                  <span>•</span>
-                  <span>₹{timesheet.billingRate}/hr</span>
-                </>
-              )}
-            </div>
           </div>
         </td>
         <td className="px-6 py-4">
@@ -230,22 +211,10 @@ const TimesheetRow = React.memo(
                 ? formatCurrency(timesheet.totalAmount)
                 : "Not calculated"}
             </div>
-            <div className="text-xs text-gray-500 mt-1">
-              {timesheet.daysWorked} days
-              {timesheet.hoursPerDay && ` × ${timesheet.hoursPerDay}h`}
-              {timesheet.billingRate && ` × ₹${timesheet.billingRate}`}
-            </div>
           </div>
         </td>
         <td className="px-6 py-4">
           <StatusBadge status={timesheet.status} />
-        </td>
-        <td className="px-6 py-4">
-          {timesheet.submittedAt && (
-            <div className="text-sm text-gray-600">
-              {formatDate(timesheet.submittedAt)}
-            </div>
-          )}
         </td>
         <td className="px-6 py-4">
           <div className="flex items-center space-x-1">
@@ -422,6 +391,22 @@ const TimesheetModal = React.memo(
       }
     }, [formData.projectId, projects]);
 
+    // Calculate real-time amount for timesheet
+    const calculatedAmount = React.useMemo(() => {
+      if (selectedProject && formData.daysWorked && formData.totalWorkingDays) {
+        const daysWorked = parseInt(formData.daysWorked);
+        const totalWorkingDays = parseInt(formData.totalWorkingDays);
+
+        // Calculate monthly rate: (Project Budget without GST) ÷ (Total Working Days)
+        const projectBudgetWithoutGST = selectedProject.budget; // Budget is already without GST
+        const monthlyRate = projectBudgetWithoutGST / totalWorkingDays;
+
+        // Calculate amount: Monthly Rate × Days Worked
+        return monthlyRate * daysWorked;
+      }
+      return 0;
+    }, [selectedProject, formData.daysWorked, formData.totalWorkingDays]);
+
     const validateForm = useCallback(() => {
       const newErrors: Record<string, string> = {};
 
@@ -446,20 +431,20 @@ const TimesheetModal = React.memo(
         if (validateForm()) {
           const totalWorkingDays = parseInt(formData.totalWorkingDays || "0");
           const daysWorked = parseInt(formData.daysWorked);
-          const hoursPerDay = formData.hoursPerDay
-            ? parseInt(formData.hoursPerDay)
-            : undefined;
-          const billingRate = selectedProject?.billingRate || undefined;
-          const totalHours = hoursPerDay ? daysWorked * hoursPerDay : undefined;
-          const totalAmount =
-            totalHours && billingRate ? totalHours * billingRate : undefined;
+
+          // Calculate monthly rate: (Project Budget without GST) ÷ (Total Working Days)
+          const projectBudgetWithoutGST = selectedProject?.budget || 0;
+          const monthlyRate = projectBudgetWithoutGST / totalWorkingDays;
+
+          // Calculate amount: Monthly Rate × Days Worked
+          const totalAmount = monthlyRate * daysWorked;
 
           onSubmit({
             ...formData,
             totalWorkingDays,
             daysLeave: totalWorkingDays - daysWorked,
-            billingRate,
-            totalHours,
+            billingRate: monthlyRate, // Store the calculated monthly rate
+            totalHours: daysWorked, // Store days worked as total hours for compatibility
             totalAmount,
             status: formData.status,
           });
@@ -533,7 +518,7 @@ const TimesheetModal = React.memo(
               <option value="">Select project</option>
               {projects.map((project) => (
                 <option key={project.id} value={project.id}>
-                  {project.name} - ₹{project.billingTerms}/hr
+                  {project.name} - ₹{project.budget.toLocaleString()}
                 </option>
               ))}
             </select>
@@ -715,10 +700,25 @@ const TimesheetModal = React.memo(
               </div>
               <div className="bg-white p-3 rounded-lg">
                 <p className="text-xs text-gray-500 font-medium">
-                  Billing Rate
+                  Project Budget
                 </p>
                 <p className="text-sm font-semibold text-gray-900 mt-1">
-                  ₹{selectedProject.billingTerms}/hr
+                  ₹{selectedProject.budget.toLocaleString()}
+                </p>
+              </div>
+              <div className="bg-white p-3 rounded-lg">
+                <p className="text-xs text-gray-500 font-medium">
+                  Monthly Rate
+                </p>
+                <p className="text-sm font-semibold text-gray-900 mt-1">
+                  ₹
+                  {formData.totalWorkingDays
+                    ? (
+                        selectedProject.budget /
+                        parseInt(formData.totalWorkingDays)
+                      ).toLocaleString()
+                    : 0}
+                  /day
                 </p>
               </div>
               <div className="bg-white p-3 rounded-lg">
@@ -731,13 +731,10 @@ const TimesheetModal = React.memo(
               </div>
               <div className="bg-white p-3 rounded-lg">
                 <p className="text-xs text-gray-500 font-medium">
-                  Estimated Amount
+                  Calculated Amount
                 </p>
                 <p className="text-sm font-semibold text-primary-600 mt-1">
-                  ₹
-                  {parseInt(formData.daysWorked || "0") *
-                    parseInt(formData.hoursPerDay) *
-                    selectedProject.billingTerms}
+                  ₹{calculatedAmount.toLocaleString()}
                 </p>
               </div>
             </div>
@@ -972,10 +969,10 @@ export default function TimesheetPage() {
             <thead className="bg-gray-50 dark:bg-gray-800">
               <tr>
                 <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
-                  Project
+                  Project Code
                 </th>
                 <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
-                  Project Code
+                  Project
                 </th>
                 <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
                   Work Details
@@ -985,9 +982,6 @@ export default function TimesheetPage() {
                 </th>
                 <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
                   Status
-                </th>
-                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
-                  Submitted
                 </th>
                 <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
                   Actions

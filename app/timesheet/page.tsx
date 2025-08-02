@@ -159,19 +159,11 @@ const TimesheetRow = React.memo(
     project,
     onEdit,
     onDelete,
-    onApprove,
-    onReject,
-    onGenerateInvoice,
-    onMarkInvoiced,
   }: {
     timesheet: Timesheet;
     project: Project | undefined;
     onEdit: (timesheet: Timesheet) => void;
     onDelete: (id: string) => void;
-    onApprove: (id: string) => void;
-    onReject: (id: string) => void;
-    onGenerateInvoice: (id: string) => void;
-    onMarkInvoiced: (id: string) => void;
   }) => {
     const formatDate = useCallback((date: Date) => {
       return format(new Date(date), "MMM dd, yyyy");
@@ -255,71 +247,6 @@ const TimesheetRow = React.memo(
                 <PencilIcon className="h-4 w-4" />
               </button>
             </ActionTooltip>
-            {timesheet.status === "draft" && (
-              <ActionTooltip
-                content="Submit for approval"
-                action="Move to review queue"
-              >
-                <button
-                  onClick={() => onApprove(timesheet.id)}
-                  className="p-2 text-gray-400 hover:text-success-600 hover:bg-success-50 rounded-lg transition-all duration-200"
-                >
-                  <CheckIcon className="h-4 w-4" />
-                </button>
-              </ActionTooltip>
-            )}
-            {timesheet.status === "submitted" && (
-              <>
-                <ActionTooltip
-                  content="Approve timesheet"
-                  action="Approve for invoicing"
-                >
-                  <button
-                    onClick={() => onApprove(timesheet.id)}
-                    className="p-2 text-gray-400 hover:text-success-600 hover:bg-success-50 rounded-lg transition-all duration-200"
-                  >
-                    <CheckIcon className="h-4 w-4" />
-                  </button>
-                </ActionTooltip>
-                <ActionTooltip
-                  content="Reject timesheet"
-                  action="Return to draft status"
-                >
-                  <button
-                    onClick={() => onReject(timesheet.id)}
-                    className="p-2 text-gray-400 hover:text-danger-600 hover:bg-danger-50 rounded-lg transition-all duration-200"
-                  >
-                    <XMarkIcon className="h-4 w-4" />
-                  </button>
-                </ActionTooltip>
-              </>
-            )}
-            {timesheet.status === "approved" && (
-              <>
-                <ActionTooltip
-                  content="Generate invoice"
-                  action="Create invoice automatically"
-                >
-                  <button
-                    onClick={() => onGenerateInvoice(timesheet.id)}
-                    className="p-2 text-gray-400 hover:text-warning-600 hover:bg-warning-50 rounded-lg transition-all duration-200"
-                  >
-                    <DocumentTextIcon className="h-4 w-4" />
-                  </button>
-                </ActionTooltip>
-                <ActionTooltip
-                  content="Mark as invoiced"
-                  action="Mark as billed"
-                >
-                  <button
-                    onClick={() => onMarkInvoiced(timesheet.id)}
-                    className="p-2 text-gray-400 hover:text-purple-600 hover:bg-purple-50 rounded-lg transition-all duration-200"
-                  >
-                    <CurrencyRupeeIcon className="h-4 w-4" />
-                  </button>
-                </ActionTooltip>
-              </>
-            )}
             <ActionTooltip
               content="Delete timesheet"
               action="Permanently remove"
@@ -355,17 +282,11 @@ const TimesheetModal = React.memo(
     onClose,
     editingTimesheet,
     onSubmit,
-    onApprove,
-    onReject,
-    onMarkInvoiced,
   }: {
     isOpen: boolean;
     onClose: () => void;
     editingTimesheet: Timesheet | null;
     onSubmit: (data: any) => void;
-    onApprove: (id: string) => void;
-    onReject: (id: string) => void;
-    onMarkInvoiced: (id: string) => void;
   }) => {
     const getStatusConfig = (status: string) => {
       switch (status) {
@@ -712,72 +633,7 @@ const TimesheetModal = React.memo(
                     </IconTooltip>
                   </label>
                   <div className="space-y-3">
-                    <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                      <span className="text-sm font-medium text-gray-700">
-                        Current: {editingTimesheet?.status || "draft"}
-                      </span>
-                      <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusConfig(editingTimesheet?.status || "draft").color}`}>
-                        {editingTimesheet?.status || "draft"}
-                      </span>
-                    </div>
-                    
-                    {editingTimesheet && (
-                      <div className="flex flex-wrap gap-2">
-                        {editingTimesheet.status === "draft" && (
-                          <button
-                            type="button"
-                            onClick={() => onApprove(editingTimesheet.id)}
-                            className="px-3 py-2 bg-success-600 text-white text-sm rounded-lg hover:bg-success-700 transition-colors duration-200 flex items-center"
-                          >
-                            <CheckIcon className="h-4 w-4 mr-1" />
-                            Submit for Approval
-                          </button>
-                        )}
-                        
-                        {editingTimesheet.status === "submitted" && (
-                          <>
-                            <button
-                              type="button"
-                              onClick={() => onApprove(editingTimesheet.id)}
-                              className="px-3 py-2 bg-success-600 text-white text-sm rounded-lg hover:bg-success-700 transition-colors duration-200 flex items-center"
-                            >
-                              <CheckIcon className="h-4 w-4 mr-1" />
-                              Approve
-                            </button>
-                            <button
-                              type="button"
-                              onClick={() => onReject(editingTimesheet.id)}
-                              className="px-3 py-2 bg-danger-600 text-white text-sm rounded-lg hover:bg-danger-700 transition-colors duration-200 flex items-center"
-                            >
-                              <XMarkIcon className="h-4 w-4 mr-1" />
-                              Reject
-                            </button>
-                          </>
-                        )}
-                        
-                        {editingTimesheet.status === "approved" && (
-                          <button
-                            type="button"
-                            onClick={() => onMarkInvoiced(editingTimesheet.id)}
-                            className="px-3 py-2 bg-purple-600 text-white text-sm rounded-lg hover:bg-purple-700 transition-colors duration-200 flex items-center"
-                          >
-                            <CurrencyRupeeIcon className="h-4 w-4 mr-1" />
-                            Mark as Invoiced
-                          </button>
-                        )}
-                        
-                        {editingTimesheet.status === "rejected" && (
-                          <button
-                            type="button"
-                            onClick={() => onApprove(editingTimesheet.id)}
-                            className="px-3 py-2 bg-success-600 text-white text-sm rounded-lg hover:bg-success-700 transition-colors duration-200 flex items-center"
-                          >
-                            <CheckIcon className="h-4 w-4 mr-1" />
-                            Resubmit
-                          </button>
-                        )}
-                      </div>
-                    )}
+
                   </div>
                 </div>
               </div>
@@ -955,60 +811,7 @@ export default function TimesheetPage() {
     }
   }, [timesheetToDelete, deleteTimesheet]);
 
-  const handleApprove = useCallback(
-    (id: string) => {
-      const timesheet = timesheets.find((t) => t.id === id);
-      if (timesheet?.status === "draft") {
-        updateTimesheet(id, {
-          status: "submitted",
-          submittedAt: new Date(),
-        });
-        toast.success("Timesheet submitted for approval");
-      } else {
-        updateTimesheet(id, {
-          status: "approved",
-          approvedAt: new Date(),
-          approvedBy: "admin",
-        });
-        toast.success("Timesheet approved successfully");
-      }
-    },
-    [updateTimesheet, timesheets]
-  );
 
-  const handleReject = useCallback(
-    (id: string) => {
-      updateTimesheet(id, {
-        status: "rejected",
-        rejectionReason: "Rejected by admin",
-      });
-      toast.success("Timesheet rejected successfully");
-    },
-    [updateTimesheet]
-  );
-
-  const handleGenerateInvoice = useCallback(
-    (id: string) => {
-      try {
-        const invoice = generateInvoiceFromTimesheet(id);
-        toast.success("Invoice generated successfully");
-      } catch (error) {
-        toast.error("Failed to generate invoice");
-      }
-    },
-    [generateInvoiceFromTimesheet]
-  );
-
-  const handleMarkInvoiced = useCallback(
-    (id: string) => {
-      updateTimesheet(id, {
-        status: "invoiced",
-        invoicedAt: new Date(),
-      });
-      toast.success("Timesheet marked as invoiced");
-    },
-    [updateTimesheet]
-  );
 
   if (!isClient) {
     return (
@@ -1222,10 +1025,6 @@ export default function TimesheetPage() {
                     project={project}
                     onEdit={handleEdit}
                     onDelete={handleDelete}
-                    onApprove={handleApprove}
-                    onReject={handleReject}
-                    onGenerateInvoice={handleGenerateInvoice}
-                    onMarkInvoiced={handleMarkInvoiced}
                   />
                 );
               })}
@@ -1263,9 +1062,6 @@ export default function TimesheetPage() {
         }}
         editingTimesheet={editingTimesheet}
         onSubmit={handleSubmit}
-        onApprove={handleApprove}
-        onReject={handleReject}
-        onMarkInvoiced={handleMarkInvoiced}
       />
 
       {/* Confirmation Dialog */}

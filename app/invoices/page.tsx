@@ -18,6 +18,7 @@ export default function InvoicesPage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingInvoice, setEditingInvoice] = useState<any>(null);
   const [formData, setFormData] = useState({
+    timesheetId: "",
     clientId: "",
     projectId: "",
     invoiceNumber: "",
@@ -38,6 +39,7 @@ export default function InvoicesPage() {
 
     const invoiceData = {
       ...formData,
+      timesheetId: formData.timesheetId,
       issueDate: new Date(formData.issueDate),
       dueDate: new Date(formData.dueDate),
       subtotal,
@@ -58,6 +60,7 @@ export default function InvoicesPage() {
     setIsModalOpen(false);
     setEditingInvoice(null);
     setFormData({
+      timesheetId: "",
       clientId: "",
       projectId: "",
       invoiceNumber: "",
@@ -72,6 +75,7 @@ export default function InvoicesPage() {
   const handleEdit = (invoice: any) => {
     setEditingInvoice(invoice);
     setFormData({
+      timesheetId: invoice.timesheetId,
       clientId: invoice.clientId,
       projectId: invoice.projectId,
       invoiceNumber: invoice.invoiceNumber,
@@ -411,6 +415,7 @@ export default function InvoicesPage() {
                       setIsModalOpen(false);
                       setEditingInvoice(null);
                       setFormData({
+                        timesheetId: "",
                         clientId: "",
                         projectId: "",
                         invoiceNumber: "",

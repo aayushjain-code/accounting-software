@@ -91,6 +91,14 @@ interface AccountingStore {
   generateInvoiceFromTimesheet: (timesheetId: string) => Invoice;
   getDailyLogsByDate: (date: Date) => DailyLog[];
   getDailyLogsByCategory: (category: DailyLog["category"]) => DailyLog[];
+  
+  // Helper functions to demonstrate data relationships
+  getProjectsByClient: (clientId: string) => Project[];
+  getTimesheetsByProject: (projectId: string) => Timesheet[];
+  getInvoicesByTimesheet: (timesheetId: string) => Invoice[];
+  getClientByProject: (projectId: string) => Client | undefined;
+  getProjectByTimesheet: (timesheetId: string) => Project | undefined;
+  getTimesheetByInvoice: (invoiceId: string) => Timesheet | undefined;
 }
 
 const generateId = () => Math.random().toString(36).substr(2, 9);
@@ -233,14 +241,14 @@ export const useAccountingStore = create<AccountingStore>()(
           id: "project1",
           projectCode: "BST-01",
           name: "E-commerce Platform Development",
-          clientId: "client1",
+          clientId: "client1", // Derived from client1
           description:
             "Full-stack e-commerce platform with payment integration",
           startDate: new Date("2024-01-15"),
           status: "active",
           budget: 2500000,
           billingTerms: 30,
-          billingRate: 1200,
+          billingRate: 1200, // Standard rate for TechCorp Solutions
           estimatedHours: 400,
           gstRate: 18,
           gstInclusive: false,
@@ -257,13 +265,13 @@ export const useAccountingStore = create<AccountingStore>()(
           id: "project2",
           projectCode: "BST-02",
           name: "Mobile App Development",
-          clientId: "client2",
+          clientId: "client2", // Derived from client2
           description: "Cross-platform mobile application for iOS and Android",
           startDate: new Date("2024-02-01"),
           status: "active",
           budget: 1800000,
           billingTerms: 45,
-          billingRate: 1000,
+          billingRate: 1000, // Standard rate for Digital Innovations
           estimatedHours: 300,
           gstRate: 18,
           gstInclusive: false,
@@ -280,13 +288,13 @@ export const useAccountingStore = create<AccountingStore>()(
           id: "project3",
           projectCode: "BST-03",
           name: "Cloud Migration Project",
-          clientId: "client3",
+          clientId: "client3", // Derived from client3
           description: "Legacy system migration to cloud infrastructure",
           startDate: new Date("2024-03-01"),
           status: "active",
           budget: 3200000,
           billingTerms: 60,
-          billingRate: 1500,
+          billingRate: 1500, // Premium rate for Global Systems (enterprise client)
           estimatedHours: 500,
           gstRate: 18,
           gstInclusive: false,
@@ -303,51 +311,37 @@ export const useAccountingStore = create<AccountingStore>()(
       invoices: [
         {
           id: "invoice1",
-          clientId: "client1",
-          projectId: "project1",
+          timesheetId: "timesheet1", // Derived from timesheet1
+          clientId: "client1", // Derived from timesheet1 -> project1 -> client1
+          projectId: "project1", // Derived from timesheet1 -> project1
           invoiceNumber: "INV-2024-001",
           issueDate: new Date("2024-01-31"),
           dueDate: new Date("2024-02-15"),
           status: "paid",
-          subtotal: 450000,
+          subtotal: 160000, // Derived from timesheet1.totalAmount
           taxRate: 18,
-          taxAmount: 81000,
-          total: 531000,
+          taxAmount: 28800,
+          total: 188800,
           notes: "January 2024 development services",
           createdAt: new Date("2024-01-31"),
           updatedAt: new Date("2024-01-31"),
         },
         {
           id: "invoice2",
-          clientId: "client2",
-          projectId: "project2",
+          timesheetId: "timesheet2", // Derived from timesheet2
+          clientId: "client2", // Derived from timesheet2 -> project2 -> client2
+          projectId: "project2", // Derived from timesheet2 -> project2
           invoiceNumber: "INV-2024-002",
           issueDate: new Date("2024-02-29"),
           dueDate: new Date("2024-03-15"),
           status: "sent",
-          subtotal: 380000,
+          subtotal: 172800, // Derived from timesheet2.totalAmount
           taxRate: 18,
-          taxAmount: 68400,
-          total: 448400,
+          taxAmount: 31104,
+          total: 203904,
           notes: "February 2024 development services",
           createdAt: new Date("2024-02-29"),
           updatedAt: new Date("2024-02-29"),
-        },
-        {
-          id: "invoice3",
-          clientId: "client3",
-          projectId: "project3",
-          invoiceNumber: "INV-2024-003",
-          issueDate: new Date("2024-03-31"),
-          dueDate: new Date("2024-04-15"),
-          status: "draft",
-          subtotal: 520000,
-          taxRate: 18,
-          taxAmount: 93600,
-          total: 613600,
-          notes: "March 2024 development services",
-          createdAt: new Date("2024-03-31"),
-          updatedAt: new Date("2024-03-31"),
         },
       ],
       invoiceItems: [],
@@ -417,53 +411,59 @@ export const useAccountingStore = create<AccountingStore>()(
       timesheets: [
         {
           id: "timesheet1",
-          projectId: "project1",
+          projectId: "project1", // Derived from project1
           month: "2024-01",
           year: 2024,
-          status: "approved",
+          status: "invoiced", // Updated to invoiced since invoice exists
           totalWorkingDays: 22,
           daysWorked: 20,
           daysLeave: 2,
           hoursPerDay: 8,
-          billingRate: 1000,
+          billingRate: 1000, // Derived from project1.billingRate
           totalHours: 160,
           totalAmount: 160000,
           submittedAt: new Date("2024-01-31"),
           approvedAt: new Date("2024-02-01"),
           approvedBy: "admin",
+          invoiceId: "invoice1", // Links to generated invoice
+          invoicedAt: new Date("2024-02-01"),
           createdAt: new Date("2024-01-01"),
           updatedAt: new Date("2024-02-01"),
         },
         {
           id: "timesheet2",
-          projectId: "project2",
+          projectId: "project2", // Derived from project2
           month: "2024-02",
           year: 2024,
-          status: "submitted",
+          status: "invoiced", // Updated to invoiced since invoice exists
           totalWorkingDays: 20,
           daysWorked: 18,
           daysLeave: 2,
           hoursPerDay: 8,
-          billingRate: 1200,
+          billingRate: 1200, // Derived from project2.billingRate
           totalHours: 144,
           totalAmount: 172800,
           submittedAt: new Date("2024-02-29"),
+          approvedAt: new Date("2024-03-01"),
+          approvedBy: "admin",
+          invoiceId: "invoice2", // Links to generated invoice
+          invoicedAt: new Date("2024-03-01"),
           createdAt: new Date("2024-02-01"),
-          updatedAt: new Date("2024-02-29"),
+          updatedAt: new Date("2024-03-01"),
         },
         {
           id: "timesheet3",
-          projectId: "project3",
+          projectId: "project3", // Derived from project3
           month: "2024-03",
           year: 2024,
-          status: "draft",
+          status: "draft", // Still draft - no invoice generated yet
           totalWorkingDays: 21,
           daysWorked: 15,
           daysLeave: 6,
           hoursPerDay: 8,
-          billingRate: 800,
+          billingRate: 1500, // Derived from project3.billingRate
           totalHours: 120,
-          totalAmount: 96000,
+          totalAmount: 180000, // Updated based on project3.billingRate
           createdAt: new Date("2024-03-01"),
           updatedAt: new Date("2024-03-15"),
         },
@@ -970,6 +970,37 @@ export const useAccountingStore = create<AccountingStore>()(
 
       getDailyLogsByCategory: (category) => {
         return get().dailyLogs.filter((log) => log.category === category);
+      },
+
+      // Helper functions to demonstrate data relationships
+      getProjectsByClient: (clientId) => {
+        return get().projects.filter((p) => p.clientId === clientId);
+      },
+
+      getTimesheetsByProject: (projectId) => {
+        return get().timesheets.filter((t) => t.projectId === projectId);
+      },
+
+      getInvoicesByTimesheet: (timesheetId) => {
+        return get().invoices.filter((i) => i.timesheetId === timesheetId);
+      },
+
+      getClientByProject: (projectId) => {
+        const project = get().projects.find((p) => p.id === projectId);
+        if (!project) return undefined;
+        return get().clients.find((c) => c.id === project.clientId);
+      },
+
+      getProjectByTimesheet: (timesheetId) => {
+        const timesheet = get().timesheets.find((t) => t.id === timesheetId);
+        if (!timesheet) return undefined;
+        return get().projects.find((p) => p.id === timesheet.projectId);
+      },
+
+      getTimesheetByInvoice: (invoiceId) => {
+        const invoice = get().invoices.find((i) => i.id === invoiceId);
+        if (!invoice) return undefined;
+        return get().timesheets.find((t) => t.id === invoice.timesheetId);
       },
     }),
     {

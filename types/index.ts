@@ -103,14 +103,14 @@ export interface Timesheet {
 
 export interface Invoice {
   id: string;
-  clientId: string;
-  projectId: string;
-  timesheetId?: string;
+  timesheetId: string; // Required - Invoice derives from Timesheet
+  clientId: string; // Derived from Timesheet -> Project -> Client
+  projectId: string; // Derived from Timesheet -> Project
   invoiceNumber: string;
   issueDate: Date;
   dueDate: Date;
   status: "draft" | "sent" | "paid";
-  subtotal: number;
+  subtotal: number; // Derived from Timesheet.totalAmount
   taxRate: number;
   taxAmount: number;
   total: number;

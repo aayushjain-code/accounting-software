@@ -15,7 +15,10 @@ import {
   ViewColumnsIcon,
   UserIcon,
   ArrowRightOnRectangleIcon,
+  SunIcon,
+  MoonIcon,
 } from "@heroicons/react/24/outline";
+import { useTheme } from "@/hooks/useTheme";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import clsx from "clsx";
@@ -37,6 +40,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
   const [sidebarOpen, setSidebarOpen] = React.useState(false);
   const [profileMenuOpen, setProfileMenuOpen] = React.useState(false);
   const pathname = usePathname();
+  const { theme, toggleTheme } = useTheme();
 
   const handleLogout = () => {
     // In a real app, you would handle logout logic here
@@ -45,23 +49,23 @@ export default function Layout({ children }: { children: React.ReactNode }) {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       {/* Top Navbar */}
-      <div className="bg-white border-b border-gray-200">
+      <div className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
         <div className="flex h-16 items-center justify-between px-4 sm:px-6 lg:px-8">
           {/* Left side - Mobile menu button and logo */}
           <div className="flex items-center">
             <button
               onClick={() => setSidebarOpen(true)}
-              className="lg:hidden text-gray-500 hover:text-gray-700 p-2 rounded-md"
+              className="lg:hidden text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 p-2 rounded-md"
             >
               <Bars3Icon className="h-6 w-6" />
             </button>
             <div className="ml-4 lg:ml-0">
-              <h1 className="text-xl font-bold text-gray-900">
+              <h1 className="text-xl font-bold text-gray-900 dark:text-white">
                 Brandsmashers Tech
               </h1>
-              <p className="text-xs text-gray-500">Accounting Management</p>
+              <p className="text-xs text-gray-500 dark:text-gray-400">Accounting Management</p>
             </div>
           </div>
 
@@ -69,23 +73,23 @@ export default function Layout({ children }: { children: React.ReactNode }) {
           <div className="relative">
             <button
               onClick={() => setProfileMenuOpen(!profileMenuOpen)}
-              className="flex items-center space-x-3 p-2 rounded-lg hover:bg-gray-100 transition-colors"
+              className="flex items-center space-x-3 p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
             >
-              <div className="w-8 h-8 bg-primary-100 rounded-full flex items-center justify-center">
-                <UserIcon className="h-5 w-5 text-primary-600" />
+              <div className="w-8 h-8 bg-primary-100 dark:bg-primary-900 rounded-full flex items-center justify-center">
+                <UserIcon className="h-5 w-5 text-primary-600 dark:text-primary-400" />
               </div>
               <div className="hidden sm:block text-left">
-                <p className="text-sm font-medium text-gray-900">Admin User</p>
-                <p className="text-xs text-gray-500">admin@brandsmashers.com</p>
+                <p className="text-sm font-medium text-gray-900 dark:text-white">Admin User</p>
+                <p className="text-xs text-gray-500 dark:text-gray-400">admin@brandsmashers.com</p>
               </div>
             </button>
 
             {/* Profile dropdown */}
             {profileMenuOpen && (
-              <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 py-2 z-50">
+              <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 py-2 z-50">
                 <Link
                   href="/profile"
-                  className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                  className="flex items-center px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700"
                   onClick={() => setProfileMenuOpen(false)}
                 >
                   <UserIcon className="h-4 w-4 mr-3" />
@@ -93,10 +97,24 @@ export default function Layout({ children }: { children: React.ReactNode }) {
                 </Link>
                 <button
                   onClick={() => {
+                    toggleTheme();
+                    setProfileMenuOpen(false);
+                  }}
+                  className="flex items-center w-full px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700"
+                >
+                  {theme === 'light' ? (
+                    <MoonIcon className="h-4 w-4 mr-3" />
+                  ) : (
+                    <SunIcon className="h-4 w-4 mr-3" />
+                  )}
+                  {theme === 'light' ? 'Dark Mode' : 'Light Mode'}
+                </button>
+                <button
+                  onClick={() => {
                     handleLogout();
                     setProfileMenuOpen(false);
                   }}
-                  className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                  className="flex items-center w-full px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700"
                 >
                   <ArrowRightOnRectangleIcon className="h-4 w-4 mr-3" />
                   Logout
@@ -118,17 +136,17 @@ export default function Layout({ children }: { children: React.ReactNode }) {
           className="fixed inset-0 bg-gray-600 bg-opacity-75"
           onClick={() => setSidebarOpen(false)}
         />
-        <div className="fixed inset-y-0 left-0 flex w-64 flex-col bg-white">
+        <div className="fixed inset-y-0 left-0 flex w-64 flex-col bg-white dark:bg-gray-800">
           <div className="flex h-16 items-center justify-between px-4">
             <div>
-              <h1 className="text-xl font-semibold text-gray-900">
+              <h1 className="text-xl font-semibold text-gray-900 dark:text-white">
                 Brandsmashers Tech
               </h1>
-              <p className="text-xs text-gray-500">Accounting Management</p>
+              <p className="text-xs text-gray-500 dark:text-gray-400">Accounting Management</p>
             </div>
             <button
               onClick={() => setSidebarOpen(false)}
-              className="text-gray-400 hover:text-gray-600"
+              className="text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300"
             >
               <XMarkIcon className="h-6 w-6" />
             </button>
@@ -143,8 +161,8 @@ export default function Layout({ children }: { children: React.ReactNode }) {
                   className={clsx(
                     "group flex items-center px-2 py-2 text-sm font-medium rounded-md",
                     isActive
-                      ? "bg-primary-100 text-primary-900"
-                      : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
+                      ? "bg-primary-100 dark:bg-primary-900 text-primary-900 dark:text-primary-100"
+                      : "text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 hover:text-gray-900 dark:hover:text-white"
                   )}
                   onClick={() => setSidebarOpen(false)}
                 >
@@ -152,8 +170,8 @@ export default function Layout({ children }: { children: React.ReactNode }) {
                     className={clsx(
                       "mr-3 h-5 w-5 flex-shrink-0",
                       isActive
-                        ? "text-primary-500"
-                        : "text-gray-400 group-hover:text-gray-500"
+                        ? "text-primary-500 dark:text-primary-400"
+                        : "text-gray-400 dark:text-gray-500 group-hover:text-gray-500 dark:group-hover:text-gray-400"
                     )}
                   />
                   {item.name}
@@ -166,13 +184,13 @@ export default function Layout({ children }: { children: React.ReactNode }) {
 
       {/* Desktop sidebar */}
       <div className="hidden lg:fixed lg:inset-y-0 lg:flex lg:w-64 lg:flex-col">
-        <div className="flex flex-col flex-grow bg-white border-r border-gray-200">
+        <div className="flex flex-col flex-grow bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700">
           <div className="flex h-16 items-center px-4">
             <div>
-              <h1 className="text-xl font-semibold text-gray-900">
+              <h1 className="text-xl font-semibold text-gray-900 dark:text-white">
                 Brandsmashers Tech
               </h1>
-              <p className="text-xs text-gray-500">Accounting Management</p>
+              <p className="text-xs text-gray-500 dark:text-gray-400">Accounting Management</p>
             </div>
           </div>
           <nav className="flex-1 space-y-1 px-2 py-4">
@@ -185,16 +203,16 @@ export default function Layout({ children }: { children: React.ReactNode }) {
                   className={clsx(
                     "group flex items-center px-2 py-2 text-sm font-medium rounded-md",
                     isActive
-                      ? "bg-primary-100 text-primary-900"
-                      : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
+                      ? "bg-primary-100 dark:bg-primary-900 text-primary-900 dark:text-primary-100"
+                      : "text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 hover:text-gray-900 dark:hover:text-white"
                   )}
                 >
                   <item.icon
                     className={clsx(
                       "mr-3 h-5 w-5 flex-shrink-0",
                       isActive
-                        ? "text-primary-500"
-                        : "text-gray-400 group-hover:text-gray-500"
+                        ? "text-primary-500 dark:text-primary-400"
+                        : "text-gray-400 dark:text-gray-500 group-hover:text-gray-500 dark:group-hover:text-gray-400"
                     )}
                   />
                   {item.name}

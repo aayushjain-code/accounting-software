@@ -337,6 +337,7 @@ const TimesheetModal = React.memo(
       daysWorked: "",
       hoursPerDay: "8",
       totalWorkingDays: "",
+      status: "draft",
     });
 
     const [errors, setErrors] = useState<Record<string, string>>({});
@@ -355,6 +356,7 @@ const TimesheetModal = React.memo(
             daysWorked: (editingTimesheet.daysWorked || 0).toString(),
             hoursPerDay: (editingTimesheet.hoursPerDay || 8).toString(),
             totalWorkingDays: (editingTimesheet.totalWorkingDays || 0).toString(),
+            status: editingTimesheet.status,
           });
           const project = projects.find(
             (p) => p.id === editingTimesheet.projectId
@@ -369,6 +371,7 @@ const TimesheetModal = React.memo(
             daysWorked: "",
             hoursPerDay: "8",
             totalWorkingDays: "",
+            status: "draft",
           });
           setSelectedProject(null);
         }
@@ -434,6 +437,7 @@ const TimesheetModal = React.memo(
             billingRate,
             totalHours,
             totalAmount,
+            status: formData.status,
           });
         }
       },
@@ -633,8 +637,24 @@ const TimesheetModal = React.memo(
                       <span></span>
                     </IconTooltip>
                   </label>
-                  <div className="space-y-3">
-
+                  <select
+                    value={formData.status}
+                    onChange={(e) =>
+                      setFormData({
+                        ...formData,
+                        status: e.target.value as "draft" | "submitted" | "approved" | "rejected" | "invoiced",
+                      })
+                    }
+                    className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200"
+                  >
+                    <option value="draft">Draft</option>
+                    <option value="submitted">Submitted</option>
+                    <option value="approved">Approved</option>
+                    <option value="rejected">Rejected</option>
+                    <option value="invoiced">Invoiced</option>
+                  </select>
+                  <div className="mt-2">
+                    <StatusBadge status={formData.status} />
                   </div>
                 </div>
               </div>
@@ -777,7 +797,7 @@ export default function TimesheetPage() {
     (formData: any) => {
       const timesheetData = {
         ...formData,
-        status: "draft",
+        status: formData.status || "draft",
       };
 
       if (editingTimesheet) {

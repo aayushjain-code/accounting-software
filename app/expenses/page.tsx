@@ -265,7 +265,16 @@ export default function ExpensesPage() {
                     : null;
                   return (
                     <tr key={expense.id}>
-                      <td>{format(new Date(expense.date), "MMM dd, yyyy")}</td>
+                      <td>
+                        <div className="space-y-1">
+                          <div>
+                            {format(new Date(expense.date), "MMM dd, yyyy")}
+                          </div>
+                          <div className="text-xs text-gray-500 dark:text-gray-400">
+                            {expense.expenseCode}
+                          </div>
+                        </div>
+                      </td>
                       <td>
                         <span
                           className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${getCategoryColor(

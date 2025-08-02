@@ -1,5 +1,11 @@
+"use client";
+
 import React, { useState, useCallback } from "react";
-import { DocumentIcon, XMarkIcon, CloudArrowUpIcon } from "@heroicons/react/24/outline";
+import {
+  DocumentIcon,
+  XMarkIcon,
+  CloudArrowUpIcon,
+} from "@heroicons/react/24/outline";
 
 interface FileUploadProps {
   files: File[];
@@ -15,7 +21,16 @@ const FileUpload: React.FC<FileUploadProps> = ({
   files,
   onFilesChange,
   maxFiles = 5,
-  acceptedTypes = [".pdf", ".doc", ".docx", ".xls", ".xlsx", ".jpg", ".jpeg", ".png"],
+  acceptedTypes = [
+    ".pdf",
+    ".doc",
+    ".docx",
+    ".xls",
+    ".xlsx",
+    ".jpg",
+    ".jpeg",
+    ".png",
+  ],
   maxSize = 10, // 10MB default
   title = "Upload Files",
   description = "Drag and drop files here, or click to select files",
@@ -32,7 +47,9 @@ const FileUpload: React.FC<FileUploadProps> = ({
     // Check file type
     const fileExtension = "." + file.name.split(".").pop()?.toLowerCase();
     if (!acceptedTypes.includes(fileExtension)) {
-      return `File type not supported. Accepted types: ${acceptedTypes.join(", ")}`;
+      return `File type not supported. Accepted types: ${acceptedTypes.join(
+        ", "
+      )}`;
     }
 
     return null;
@@ -150,14 +167,17 @@ const FileUpload: React.FC<FileUploadProps> = ({
           </label>
         </p>
         <p className="text-xs text-gray-500 dark:text-gray-500">
-          Maximum {maxFiles} files, {maxSize}MB each. Supported: {acceptedTypes.join(", ")}
+          Maximum {maxFiles} files, {maxSize}MB each. Supported:{" "}
+          {acceptedTypes.join(", ")}
         </p>
       </div>
 
       {/* Error Message */}
       {error && (
         <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-3">
-          <p className="text-sm text-red-600 dark:text-red-400 whitespace-pre-line">{error}</p>
+          <p className="text-sm text-red-600 dark:text-red-400 whitespace-pre-line">
+            {error}
+          </p>
         </div>
       )}
 
@@ -199,4 +219,4 @@ const FileUpload: React.FC<FileUploadProps> = ({
   );
 };
 
-export default FileUpload; 
+export default FileUpload;

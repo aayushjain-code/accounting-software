@@ -180,9 +180,14 @@ const TimesheetRow = React.memo(
         className="hover:bg-gray-50 transition-colors duration-200 border-b border-gray-100"
       >
         <td className="px-6 py-4">
-          <span className="font-mono font-semibold text-primary-700 bg-primary-50 dark:bg-primary-900 px-4 py-2 rounded-md border border-primary-200 dark:border-primary-800">
-            {project?.projectCode || "N/A"}
-          </span>
+          <div className="space-y-1">
+            <span className="font-mono font-semibold text-primary-700 bg-primary-50 dark:bg-primary-900 px-4 py-2 rounded-md border border-primary-200 dark:border-primary-800">
+              {project?.projectCode || "N/A"}
+            </span>
+            <div className="text-xs text-gray-500 dark:text-gray-400">
+              {timesheet.timesheetCode}
+            </div>
+          </div>
         </td>
         <td className="px-6 py-4">
           <div>

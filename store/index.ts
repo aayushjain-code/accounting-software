@@ -15,6 +15,7 @@ import {
   InvoiceFile,
   ExpenseFile,
 } from "@/types";
+import { CodeGenerator } from "@/utils/codeGenerator";
 
 interface AccountingStore {
   // Data
@@ -31,18 +32,23 @@ interface AccountingStore {
 
   // Actions
   updateCompanyProfile: (profile: Partial<CompanyProfile>) => void;
-  addClient: (client: Omit<Client, "id" | "createdAt" | "updatedAt">) => void;
+  addClient: (
+    client: Omit<Client, "id" | "clientCode" | "createdAt" | "updatedAt">
+  ) => void;
   updateClient: (id: string, client: Partial<Client>) => void;
   deleteClient: (id: string) => void;
 
   addProject: (
-    project: Omit<Project, "id" | "createdAt" | "updatedAt">
+    project: Omit<Project, "id" | "projectCode" | "createdAt" | "updatedAt">
   ) => void;
   updateProject: (id: string, project: Partial<Project>) => void;
   deleteProject: (id: string) => void;
 
   addTimesheet: (
-    timesheet: Omit<Timesheet, "id" | "createdAt" | "updatedAt">
+    timesheet: Omit<
+      Timesheet,
+      "id" | "timesheetCode" | "createdAt" | "updatedAt"
+    >
   ) => void;
   updateTimesheet: (id: string, timesheet: Partial<Timesheet>) => void;
   deleteTimesheet: (id: string) => void;
@@ -54,7 +60,7 @@ interface AccountingStore {
   deleteTimesheetEntry: (id: string) => void;
 
   addInvoice: (
-    invoice: Omit<Invoice, "id" | "createdAt" | "updatedAt">
+    invoice: Omit<Invoice, "id" | "invoiceNumber" | "createdAt" | "updatedAt">
   ) => void;
   updateInvoice: (id: string, invoice: Partial<Invoice>) => void;
   deleteInvoice: (id: string) => void;
@@ -67,7 +73,7 @@ interface AccountingStore {
   deleteInvoiceFile: (id: string) => void;
 
   addExpense: (
-    expense: Omit<Expense, "id" | "createdAt" | "updatedAt">
+    expense: Omit<Expense, "id" | "expenseCode" | "createdAt" | "updatedAt">
   ) => void;
   updateExpense: (id: string, expense: Partial<Expense>) => void;
   deleteExpense: (id: string) => void;
@@ -159,6 +165,7 @@ export const useAccountingStore = create<AccountingStore>()(
       clients: [
         {
           id: "client1",
+          clientCode: "CLT-2024-0001",
           name: "TechCorp Solutions",
           email: "accounts@techcorp.com",
           phone: "+91-98765-43210",
@@ -187,6 +194,7 @@ export const useAccountingStore = create<AccountingStore>()(
         },
         {
           id: "client2",
+          clientCode: "CLT-2024-0002",
           name: "Digital Innovations",
           email: "finance@digitalinnovations.com",
           phone: "+91-87654-32109",
@@ -215,6 +223,7 @@ export const useAccountingStore = create<AccountingStore>()(
         },
         {
           id: "client3",
+          clientCode: "CLT-2024-0003",
           name: "Global Systems",
           email: "accounts@globalsystems.com",
           phone: "+91-76543-21098",
@@ -246,7 +255,7 @@ export const useAccountingStore = create<AccountingStore>()(
       projects: [
         {
           id: "project1",
-          projectCode: "BST-01",
+          projectCode: "PRJ-2024-0001",
           name: "E-commerce Platform Development",
           clientId: "client1", // Derived from client1
           description:
@@ -270,7 +279,7 @@ export const useAccountingStore = create<AccountingStore>()(
         },
         {
           id: "project2",
-          projectCode: "BST-02",
+          projectCode: "PRJ-2024-0002",
           name: "Mobile App Development",
           clientId: "client2", // Derived from client2
           description: "Cross-platform mobile application for iOS and Android",
@@ -293,7 +302,7 @@ export const useAccountingStore = create<AccountingStore>()(
         },
         {
           id: "project3",
-          projectCode: "BST-03",
+          projectCode: "PRJ-2024-0003",
           name: "Cloud Migration Project",
           clientId: "client3", // Derived from client3
           description: "Legacy system migration to cloud infrastructure",
@@ -355,6 +364,7 @@ export const useAccountingStore = create<AccountingStore>()(
       expenses: [
         {
           id: "expense1",
+          expenseCode: "EXP-2024-01-0001",
           category: "Office Rent",
           description: "Monthly office rent - Bangalore",
           amount: 50000,
@@ -368,6 +378,7 @@ export const useAccountingStore = create<AccountingStore>()(
         },
         {
           id: "expense2",
+          expenseCode: "EXP-2024-01-0002",
           category: "Software Licenses",
           description: "Annual software licenses - Development tools",
           amount: 25000,
@@ -381,6 +392,7 @@ export const useAccountingStore = create<AccountingStore>()(
         },
         {
           id: "expense3",
+          expenseCode: "EXP-2024-01-0003",
           category: "Travel",
           description: "Client meeting travel expenses",
           amount: 15000,
@@ -392,6 +404,7 @@ export const useAccountingStore = create<AccountingStore>()(
         },
         {
           id: "expense4",
+          expenseCode: "EXP-2024-02-0001",
           category: "Marketing",
           description: "Digital marketing campaign",
           amount: 75000,
@@ -405,6 +418,7 @@ export const useAccountingStore = create<AccountingStore>()(
         },
         {
           id: "expense5",
+          expenseCode: "EXP-2024-02-0002",
           category: "Travel",
           description: "Client meeting travel expenses",
           amount: 12000,
@@ -416,6 +430,7 @@ export const useAccountingStore = create<AccountingStore>()(
         },
         {
           id: "expense6",
+          expenseCode: "EXP-2024-03-0001",
           category: "Equipment",
           description: "New development laptops",
           amount: 180000,
@@ -431,6 +446,7 @@ export const useAccountingStore = create<AccountingStore>()(
       timesheets: [
         {
           id: "timesheet1",
+          timesheetCode: "TMS-2024-01-0001",
           projectId: "project1", // Derived from project1
           month: "2024-01",
           year: 2024,
@@ -452,6 +468,7 @@ export const useAccountingStore = create<AccountingStore>()(
         },
         {
           id: "timesheet2",
+          timesheetCode: "TMS-2024-02-0001",
           projectId: "project2", // Derived from project2
           month: "2024-02",
           year: 2024,
@@ -473,6 +490,7 @@ export const useAccountingStore = create<AccountingStore>()(
         },
         {
           id: "timesheet3",
+          timesheetCode: "TMS-2024-03-0001",
           projectId: "project3", // Derived from project3
           month: "2024-03",
           year: 2024,
@@ -629,6 +647,7 @@ export const useAccountingStore = create<AccountingStore>()(
         const newClient: Client = {
           ...client,
           id: generateId(),
+          clientCode: CodeGenerator.generateClientCode(get().clients),
           createdAt: new Date(),
           updatedAt: new Date(),
         };
@@ -663,6 +682,7 @@ export const useAccountingStore = create<AccountingStore>()(
         const newProject: Project = {
           ...project,
           id: generateId(),
+          projectCode: CodeGenerator.generateProjectCode(get().projects),
           createdAt: new Date(),
           updatedAt: new Date(),
         };
@@ -687,6 +707,10 @@ export const useAccountingStore = create<AccountingStore>()(
         const newTimesheet: Timesheet = {
           ...timesheet,
           id: generateId(),
+          timesheetCode: CodeGenerator.generateTimesheetCode(
+            timesheet.month,
+            get().timesheets
+          ),
           createdAt: new Date(),
           updatedAt: new Date(),
         };
@@ -737,6 +761,7 @@ export const useAccountingStore = create<AccountingStore>()(
         const newInvoice: Invoice = {
           ...invoice,
           id: generateId(),
+          invoiceNumber: CodeGenerator.generateInvoiceCode(get().invoices),
           createdAt: new Date(),
           updatedAt: new Date(),
         };
@@ -802,6 +827,7 @@ export const useAccountingStore = create<AccountingStore>()(
         const newExpense: Expense = {
           ...expense,
           id: generateId(),
+          expenseCode: CodeGenerator.generateExpenseCode(get().expenses),
           createdAt: new Date(),
           updatedAt: new Date(),
         };

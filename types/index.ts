@@ -1,5 +1,6 @@
 export interface Client {
   id: string;
+  clientCode: string; // CLT-YYYY-XXXX format
   name: string;
   email: string;
   phone: string;
@@ -96,6 +97,7 @@ export interface InvoiceFile {
 
 export interface Timesheet {
   id: string;
+  timesheetCode: string; // TMS-YYYY-MM-XXXX format
   projectId: string;
   month: string; // Format: "YYYY-MM"
   year: number;
@@ -176,6 +178,7 @@ export interface ExpenseFile {
 
 export interface Expense {
   id: string;
+  expenseCode: string; // EXP-YYYY-MM-XXXX format
   category: string;
   description: string;
   amount: number;

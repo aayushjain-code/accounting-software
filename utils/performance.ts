@@ -136,3 +136,314 @@ export const bundle = {
     }
   },
 };
+
+// Advanced caching utilities
+export const cache = {
+  // Simple in-memory cache
+  memory: new Map<string, { data: any; timestamp: number; ttl: number }>(),
+
+  // Set cache item
+  set: (key: string, data: any, ttl: number = 5 * 60 * 1000) => {
+    cache.memory.set(key, {
+      data,
+      timestamp: Date.now(),
+      ttl,
+    });
+  },
+
+  // Get cache item
+  get: (key: string) => {
+    const item = cache.memory.get(key);
+    if (!item) return null;
+
+    const isExpired = Date.now() - item.timestamp > item.ttl;
+    if (isExpired) {
+      cache.memory.delete(key);
+      return null;
+    }
+
+    return item.data;
+  },
+
+  // Clear expired cache items
+  clearExpired: () => {
+    const now = Date.now();
+    Array.from(cache.memory.entries()).forEach(([key, item]) => {
+      if (now - item.timestamp > item.ttl) {
+        cache.memory.delete(key);
+      }
+    });
+  },
+
+  // Clear all cache
+  clear: () => {
+    cache.memory.clear();
+  },
+
+  // Get cache stats
+  getStats: () => {
+    return {
+      size: cache.memory.size,
+      keys: Array.from(cache.memory.keys()),
+    };
+  },
+};
+
+// Lazy loading utilities
+export const lazyLoading = {
+  // Intersection Observer for lazy loading
+  createObserver: (
+    callback: (entries: IntersectionObserverEntry[]) => void,
+    options: IntersectionObserverInit = {}
+  ) => {
+    if (typeof window === "undefined") return null;
+    return new IntersectionObserver(callback, {
+      root: null,
+      rootMargin: "50px",
+      threshold: 0.1,
+      ...options,
+    });
+  },
+
+  // Lazy load images
+  lazyLoadImage: (imgElement: HTMLImageElement, src: string) => {
+    const observer = lazyLoading.createObserver((entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          const img = entry.target as HTMLImageElement;
+          img.src = src;
+          img.classList.remove("lazy");
+          observer?.unobserve(img);
+        }
+      });
+    });
+
+    if (observer) {
+      observer.observe(imgElement);
+    }
+  },
+
+  // Lazy load components
+  lazyLoadComponent: <T extends React.ComponentType<any>>(
+    importFn: () => Promise<{ default: T }>,
+    fallback?: React.ComponentType
+  ) => {
+    return React.lazy(importFn);
+  },
+};
+
+// Advanced pagination utilities
+export const pagination = {
+  // Virtual scrolling pagination
+  virtualScroll: <T>(
+    items: T[],
+    pageSize: number,
+    currentPage: number,
+    containerHeight: number,
+    itemHeight: number
+  ) => {
+    const startIndex = (currentPage - 1) * pageSize;
+    const endIndex = Math.min(startIndex + pageSize, items.length);
+
+    // Calculate visible items based on scroll position
+    const visibleItems = items.slice(startIndex, endIndex);
+    const totalHeight = items.length * itemHeight;
+    const scrollTop = (currentPage - 1) * pageSize * itemHeight;
+
+    return {
+      items: visibleItems,
+      totalHeight,
+      scrollTop,
+      startIndex,
+      endIndex,
+      hasMore: endIndex < items.length,
+    };
+  },
+
+  // Infinite scroll pagination
+  infiniteScroll: <T>(
+    items: T[],
+    pageSize: number,
+    currentPage: number,
+    threshold: number = 0.8
+  ) => {
+    const startIndex = 0;
+    const endIndex = currentPage * pageSize;
+    const visibleItems = items.slice(startIndex, endIndex);
+
+    return {
+      items: visibleItems,
+      hasMore: endIndex < items.length,
+      loadMore: endIndex < items.length,
+      threshold: endIndex / items.length >= threshold,
+    };
+  },
+
+  // Cursor-based pagination
+  cursorPagination: <T>(
+    items: T[],
+    cursor: string | null,
+    pageSize: number,
+    getCursor: (item: T) => string
+  ) => {
+    let startIndex = 0;
+
+    if (cursor) {
+      const cursorIndex = items.findIndex((item) => getCursor(item) === cursor);
+      startIndex = cursorIndex + 1;
+    }
+
+    const endIndex = startIndex + pageSize;
+    const paginatedItems = items.slice(startIndex, endIndex);
+    const nextCursor =
+      paginatedItems.length > 0
+        ? getCursor(paginatedItems[paginatedItems.length - 1])
+        : null;
+
+    return {
+      items: paginatedItems,
+      nextCursor,
+      hasMore: endIndex < items.length,
+    };
+  },
+};
+
+// Data virtualization utilities
+export const virtualization = {
+  // Calculate visible range
+  getVisibleRange: (
+    scrollTop: number,
+    containerHeight: number,
+    itemHeight: number,
+    totalItems: number
+  ) => {
+    const startIndex = Math.floor(scrollTop / itemHeight);
+    const endIndex = Math.min(
+      startIndex + Math.ceil(containerHeight / itemHeight) + 1,
+      totalItems
+    );
+
+    return {
+      startIndex: Math.max(0, startIndex),
+      endIndex,
+      visibleCount: endIndex - startIndex,
+    };
+  },
+
+  // Calculate scroll position
+  getScrollPosition: (
+    index: number,
+    itemHeight: number,
+    containerHeight: number
+  ) => {
+    return index * itemHeight;
+  },
+
+  // Optimize rendering for large lists
+  optimizeList: <T>(
+    items: T[],
+    renderItem: (item: T, index: number) => React.ReactNode,
+    itemHeight: number = 50,
+    containerHeight: number = 400
+  ) => {
+    const [scrollTop, setScrollTop] = React.useState(0);
+    const { startIndex, endIndex } = virtualization.getVisibleRange(
+      scrollTop,
+      containerHeight,
+      itemHeight,
+      items.length
+    );
+
+    const visibleItems = items.slice(startIndex, endIndex);
+    const totalHeight = items.length * itemHeight;
+
+    return {
+      visibleItems,
+      totalHeight,
+      startIndex,
+      endIndex,
+      setScrollTop,
+      renderItem: (item: T, index: number) =>
+        renderItem(item, startIndex + index),
+    };
+  },
+};
+
+// Performance monitoring dashboard
+export const performanceMonitor = {
+  // Track performance metrics
+  metrics: {
+    renderTimes: [] as number[],
+    memoryUsage: [] as number[],
+    cacheHits: 0,
+    cacheMisses: 0,
+  },
+
+  // Record render time
+  recordRenderTime: (componentName: string, renderTime: number) => {
+    performanceMonitor.metrics.renderTimes.push(renderTime);
+    console.log(`${componentName} render time: ${renderTime}ms`);
+  },
+
+  // Record memory usage
+  recordMemoryUsage: () => {
+    if (typeof window !== "undefined" && (window as any).performance?.memory) {
+      const memory = (window as any).performance.memory;
+      const usage = memory.usedJSHeapSize / memory.jsHeapSizeLimit;
+      performanceMonitor.metrics.memoryUsage.push(usage);
+    }
+  },
+
+  // Record cache hit/miss
+  recordCacheHit: (hit: boolean) => {
+    if (hit) {
+      performanceMonitor.metrics.cacheHits++;
+    } else {
+      performanceMonitor.metrics.cacheMisses++;
+    }
+  },
+
+  // Get performance report
+  getReport: () => {
+    const avgRenderTime =
+      performanceMonitor.metrics.renderTimes.length > 0
+        ? performanceMonitor.metrics.renderTimes.reduce((a, b) => a + b, 0) /
+          performanceMonitor.metrics.renderTimes.length
+        : 0;
+
+    const avgMemoryUsage =
+      performanceMonitor.metrics.memoryUsage.length > 0
+        ? performanceMonitor.metrics.memoryUsage.reduce((a, b) => a + b, 0) /
+          performanceMonitor.metrics.memoryUsage.length
+        : 0;
+
+    const cacheHitRate =
+      performanceMonitor.metrics.cacheHits +
+        performanceMonitor.metrics.cacheMisses >
+      0
+        ? (performanceMonitor.metrics.cacheHits /
+            (performanceMonitor.metrics.cacheHits +
+              performanceMonitor.metrics.cacheMisses)) *
+          100
+        : 0;
+
+    return {
+      avgRenderTime: `${avgRenderTime.toFixed(2)}ms`,
+      avgMemoryUsage: `${(avgMemoryUsage * 100).toFixed(2)}%`,
+      cacheHitRate: `${cacheHitRate.toFixed(2)}%`,
+      totalRenders: performanceMonitor.metrics.renderTimes.length,
+      cacheHits: performanceMonitor.metrics.cacheHits,
+      cacheMisses: performanceMonitor.metrics.cacheMisses,
+    };
+  },
+
+  // Reset metrics
+  reset: () => {
+    performanceMonitor.metrics = {
+      renderTimes: [],
+      memoryUsage: [],
+      cacheHits: 0,
+      cacheMisses: 0,
+    };
+  },
+};

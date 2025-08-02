@@ -317,8 +317,10 @@ export default function InvoicesPage() {
                   return (
                     <tr key={invoice.id}>
                       <td>
-                        <div className="font-medium text-gray-900">
-                          {invoice.invoiceNumber}
+                        <div className="space-y-1">
+                          <span className="font-mono font-semibold text-primary-700 bg-primary-50 dark:bg-primary-900 px-3 py-1 rounded-md border border-primary-200 dark:border-primary-800 text-sm">
+                            {invoice.invoiceNumber}
+                          </span>
                         </div>
                       </td>
                       <td>{client?.name || "Unknown Client"}</td>

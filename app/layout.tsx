@@ -4,6 +4,7 @@ import "./globals.css";
 import { Toaster } from "react-hot-toast";
 import Layout from "@/components/Layout";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
+import { PerformanceMonitor } from "@/components/PerformanceMonitor";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -23,6 +24,9 @@ export default function RootLayout({
         <ErrorBoundary>
           <Layout>{children}</Layout>
           <Toaster position="top-right" />
+          <PerformanceMonitor
+            showDetails={process.env.NODE_ENV === "development"}
+          />
         </ErrorBoundary>
       </body>
     </html>

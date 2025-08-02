@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo, useCallback, useEffect } from "react";
 import { useAccountingStore } from "@/store";
 import { Client } from "@/types";
 import {
@@ -27,6 +27,11 @@ import { InformationCircleIcon } from "@heroicons/react/24/outline";
 import { ConfirmationDialog } from "@/components/ConfirmationDialog";
 import React from "react";
 import Modal from "@/components/Modal";
+import { useSearch } from "@/hooks/useSearch";
+import { usePagination } from "@/hooks/usePagination";
+import { useCache } from "@/hooks/useCache";
+import { Pagination, LoadingSkeleton } from "@/components/Pagination";
+import { performanceMonitor } from "@/utils/performance";
 
 // Enhanced Client Card Component
 const ClientCard = React.memo(
@@ -92,6 +97,11 @@ const ClientCard = React.memo(
               <BuildingOfficeIcon className="h-6 w-6 text-white" />
             </div>
             <div>
+              <div className="flex items-center space-x-2 mb-1">
+                <span className="font-mono font-semibold text-primary-700 bg-primary-50 dark:bg-primary-900 px-2 py-1 rounded-md border border-primary-200 dark:border-primary-800 text-xs">
+                  {client.clientCode}
+                </span>
+              </div>
               <h3 className="text-lg font-semibold text-gray-900 dark:text-white group-hover:text-primary-600 dark:group-hover:text-primary-400 transition-colors">
                 {client.name}
               </h3>
@@ -269,10 +279,54 @@ export default function ClientsPage() {
     useAccountingStore();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingClient, setEditingClient] = useState<Client | null>(null);
-  const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [clientToDelete, setClientToDelete] = useState<string | null>(null);
+
+  // Performance monitoring
+  const renderStart = performance.now();
+  performanceMonitor.recordMemoryUsage();
+
+  // Enhanced search with caching
+  const {
+    searchTerm,
+    filteredItems: filteredClients,
+    handleSearchChange,
+    isSearching,
+  } = useSearch(clients, ["name", "company", "email", "industry"]);
+
+  // Pagination for large datasets
+  const {
+    currentItems: paginatedClients,
+    paginationState,
+    goToPage,
+    goToNextPage,
+    goToPrevPage,
+    changePageSize,
+  } = usePagination(filteredClients, {
+    initialPageSize: 12,
+    enableVirtualScroll: false,
+  });
+
+  // Cache client statistics
+  const clientStats = useCache(
+    "client-stats",
+    async () => {
+      return {
+        total: clients.length,
+        active: clients.filter((c) => c.status === "active").length,
+        prospect: clients.filter((c) => c.status === "prospect").length,
+        lead: clients.filter((c) => c.status === "lead").length,
+      };
+    },
+    { ttl: 2 * 60 * 1000 }
+  ); // 2 minutes cache
+
+  // Memoized filtered clients by status
+  const clientsByStatus = useMemo(() => {
+    if (statusFilter === "all") return paginatedClients;
+    return paginatedClients.filter((client) => client.status === statusFilter);
+  }, [paginatedClients, statusFilter]);
 
   const [formData, setFormData] = useState({
     name: "",
@@ -304,19 +358,11 @@ export default function ClientsPage() {
     employeeCount: "",
   });
 
-  // Filter clients based on search and status
-  const filteredClients = clients.filter((client) => {
-    const matchesSearch =
-      client.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      client.company.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      client.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      client.industry.toLowerCase().includes(searchTerm.toLowerCase());
-
-    const matchesStatus =
-      statusFilter === "all" || client.status === statusFilter;
-
-    return matchesSearch && matchesStatus;
-  });
+  // Performance monitoring - record render time
+  useEffect(() => {
+    const renderTime = performance.now() - renderStart;
+    performanceMonitor.recordRenderTime("ClientsPage", renderTime);
+  }, [renderStart]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -437,7 +483,7 @@ export default function ClientsPage() {
         </div>
       </div>
 
-      {/* Stats Cards */}
+      {/* Stats Cards with Caching */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
         <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
           <div className="flex items-center justify-between">
@@ -446,7 +492,11 @@ export default function ClientsPage() {
                 Total Clients
               </p>
               <p className="text-2xl font-bold text-primary-600 dark:text-primary-400 mt-1">
-                {clients.length}
+                {clientStats.loading ? (
+                  <div className="animate-pulse bg-gray-200 dark:bg-gray-700 h-8 w-16 rounded"></div>
+                ) : (
+                  clientStats.data?.total || clients.length
+                )}
               </p>
             </div>
             <div className="p-3 bg-primary-100 dark:bg-primary-900 rounded-lg">
@@ -461,7 +511,12 @@ export default function ClientsPage() {
                 Active Clients
               </p>
               <p className="text-2xl font-bold text-green-600 dark:text-green-400 mt-1">
-                {clients.filter((c) => c.status === "active").length}
+                {clientStats.loading ? (
+                  <div className="animate-pulse bg-gray-200 dark:bg-gray-700 h-8 w-16 rounded"></div>
+                ) : (
+                  clientStats.data?.active ||
+                  clients.filter((c) => c.status === "active").length
+                )}
               </p>
             </div>
             <div className="p-3 bg-green-100 dark:bg-green-900 rounded-lg">
@@ -476,7 +531,12 @@ export default function ClientsPage() {
                 Prospects
               </p>
               <p className="text-2xl font-bold text-blue-600 dark:text-blue-400 mt-1">
-                {clients.filter((c) => c.status === "prospect").length}
+                {clientStats.loading ? (
+                  <div className="animate-pulse bg-gray-200 dark:bg-gray-700 h-8 w-16 rounded"></div>
+                ) : (
+                  clientStats.data?.prospect ||
+                  clients.filter((c) => c.status === "prospect").length
+                )}
               </p>
             </div>
             <div className="p-3 bg-blue-100 dark:bg-blue-900 rounded-lg">
@@ -491,7 +551,12 @@ export default function ClientsPage() {
                 Leads
               </p>
               <p className="text-2xl font-bold text-yellow-600 dark:text-yellow-400 mt-1">
-                {clients.filter((c) => c.status === "lead").length}
+                {clientStats.loading ? (
+                  <div className="animate-pulse bg-gray-200 dark:bg-gray-700 h-8 w-16 rounded"></div>
+                ) : (
+                  clientStats.data?.lead ||
+                  clients.filter((c) => c.status === "lead").length
+                )}
               </p>
             </div>
             <div className="p-3 bg-yellow-100 dark:bg-yellow-900 rounded-lg">
@@ -510,9 +575,14 @@ export default function ClientsPage() {
               type="text"
               placeholder="Search clients by name, company, email, or industry..."
               value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
+              onChange={(e) => handleSearchChange(e.target.value)}
               className="w-full pl-12 pr-4 py-3 border border-gray-300 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400"
             />
+            {isSearching && (
+              <div className="absolute right-4 top-1/2 transform -translate-y-1/2">
+                <div className="animate-spin rounded-full h-5 w-5 border-2 border-gray-300 border-t-primary-600"></div>
+              </div>
+            )}
           </div>
           <div className="flex items-center space-x-3">
             <select
@@ -535,20 +605,35 @@ export default function ClientsPage() {
         </div>
       </div>
 
-      {/* Clients Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {filteredClients.map((client) => (
-          <ClientCard
-            key={client.id}
-            client={client}
-            onEdit={handleEdit}
-            onDelete={handleDelete}
-          />
-        ))}
+      {/* Clients Grid with Pagination */}
+      <div className="space-y-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {clientsByStatus.map((client) => (
+            <ClientCard
+              key={client.id}
+              client={client}
+              onEdit={handleEdit}
+              onDelete={handleDelete}
+            />
+          ))}
+        </div>
+
+        {/* Pagination */}
+        {paginationState.totalPages > 1 && (
+          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+            <Pagination
+              paginationState={paginationState}
+              onPageChange={goToPage}
+              onPageSizeChange={changePageSize}
+              showPageSizeSelector={true}
+              pageSizeOptions={[6, 12, 24, 48]}
+            />
+          </div>
+        )}
       </div>
 
       {/* Empty State */}
-      {filteredClients.length === 0 && (
+      {clientsByStatus.length === 0 && (
         <div className="text-center py-12">
           <div className="mx-auto h-16 w-16 text-gray-400 mb-4">
             <BuildingOfficeIcon className="h-16 w-16" />

@@ -3,15 +3,274 @@
 import { useState } from "react";
 import { useAccountingStore } from "@/store";
 import { Client } from "@/types";
-import { PlusIcon, PencilIcon, TrashIcon } from "@heroicons/react/24/outline";
+import {
+  PlusIcon,
+  PencilIcon,
+  TrashIcon,
+  BuildingOfficeIcon,
+  EnvelopeIcon,
+  PhoneIcon,
+  GlobeAltIcon,
+  UserIcon,
+  MapPinIcon,
+  TagIcon,
+  CurrencyRupeeIcon,
+  UserGroupIcon,
+  MagnifyingGlassIcon,
+  FunnelIcon,
+  EyeIcon,
+} from "@heroicons/react/24/outline";
 import { format } from "date-fns";
 import toast from "react-hot-toast";
+import { Tooltip, ActionTooltip, IconTooltip } from "@/components/Tooltip";
+import { InformationCircleIcon } from "@heroicons/react/24/outline";
+import { ConfirmationDialog } from "@/components/ConfirmationDialog";
+import React from "react";
+
+// Enhanced Client Card Component
+const ClientCard = React.memo(
+  ({
+    client,
+    onEdit,
+    onDelete,
+  }: {
+    client: Client;
+    onEdit: (client: Client) => void;
+    onDelete: (id: string) => void;
+  }) => {
+    const getStatusColor = (status: string | undefined) => {
+      const safeStatus = status || "active";
+      switch (safeStatus) {
+        case "active":
+          return "bg-green-100 text-green-800 border-green-200";
+        case "inactive":
+          return "bg-gray-100 text-gray-800 border-gray-200";
+        case "prospect":
+          return "bg-blue-100 text-blue-800 border-blue-200";
+        case "lead":
+          return "bg-yellow-100 text-yellow-800 border-yellow-200";
+        default:
+          return "bg-gray-100 text-gray-800 border-gray-200";
+      }
+    };
+
+    const getCompanySizeColor = (size: string | undefined) => {
+      const safeSize = size || "small";
+      switch (safeSize) {
+        case "startup":
+          return "bg-purple-100 text-purple-800";
+        case "small":
+          return "bg-blue-100 text-blue-800";
+        case "medium":
+          return "bg-green-100 text-green-800";
+        case "large":
+          return "bg-orange-100 text-orange-800";
+        case "enterprise":
+          return "bg-red-100 text-red-800";
+        default:
+          return "bg-gray-100 text-gray-800";
+      }
+    };
+
+    const formatStatus = (status: string | undefined) => {
+      const safeStatus = status || "active";
+      return safeStatus.charAt(0).toUpperCase() + safeStatus.slice(1);
+    };
+
+    const formatCompanySize = (size: string | undefined) => {
+      const safeSize = size || "small";
+      return safeSize.charAt(0).toUpperCase() + safeSize.slice(1);
+    };
+
+    return (
+      <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition-all duration-200 group">
+        {/* Header */}
+        <div className="flex items-start justify-between mb-4">
+          <div className="flex items-center space-x-3">
+            <div className="w-12 h-12 bg-gradient-to-br from-primary-500 to-primary-600 rounded-xl flex items-center justify-center">
+              <BuildingOfficeIcon className="h-6 w-6 text-white" />
+            </div>
+            <div>
+              <h3 className="text-lg font-semibold text-gray-900 group-hover:text-primary-600 transition-colors">
+                {client.name}
+              </h3>
+              <p className="text-sm text-gray-600">{client.company}</p>
+            </div>
+          </div>
+          <div className="flex items-center space-x-2">
+            <ActionTooltip
+              content="View details"
+              action="Click to see full profile"
+            >
+              <button className="p-2 text-gray-400 hover:text-primary-600 hover:bg-primary-50 rounded-lg transition-all duration-200">
+                <EyeIcon className="h-4 w-4" />
+              </button>
+            </ActionTooltip>
+            <ActionTooltip
+              content="Edit client"
+              action="Click to modify details"
+            >
+              <button
+                onClick={() => onEdit(client)}
+                className="p-2 text-gray-400 hover:text-primary-600 hover:bg-primary-50 rounded-lg transition-all duration-200"
+              >
+                <PencilIcon className="h-4 w-4" />
+              </button>
+            </ActionTooltip>
+            <ActionTooltip content="Delete client" action="Permanently remove">
+              <button
+                onClick={() => onDelete(client.id)}
+                className="p-2 text-gray-400 hover:text-danger-600 hover:bg-danger-50 rounded-lg transition-all duration-200"
+              >
+                <TrashIcon className="h-4 w-4" />
+              </button>
+            </ActionTooltip>
+          </div>
+        </div>
+
+        {/* Status and Company Size */}
+        <div className="flex items-center space-x-3 mb-4">
+          <span
+            className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border ${getStatusColor(
+              client.status
+            )}`}
+          >
+            {formatStatus(client.status)}
+          </span>
+          <span
+            className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getCompanySizeColor(
+              client.companySize
+            )}`}
+          >
+            {formatCompanySize(client.companySize)}
+          </span>
+          {client.industry && (
+            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
+              {client.industry}
+            </span>
+          )}
+        </div>
+
+        {/* Contact Information */}
+        <div className="space-y-2 mb-4">
+          <div className="flex items-center space-x-2 text-sm text-gray-600">
+            <EnvelopeIcon className="h-4 w-4 text-gray-400" />
+            <span>{client.email}</span>
+          </div>
+          {client.phone && (
+            <div className="flex items-center space-x-2 text-sm text-gray-600">
+              <PhoneIcon className="h-4 w-4 text-gray-400" />
+              <span>{client.phone}</span>
+            </div>
+          )}
+          {client.companyWebsite && (
+            <div className="flex items-center space-x-2 text-sm text-gray-600">
+              <GlobeAltIcon className="h-4 w-4 text-gray-400" />
+              <span className="text-primary-600 hover:text-primary-800 transition-colors">
+                {client.companyWebsite}
+              </span>
+            </div>
+          )}
+          {client.companyAddress && (
+            <div className="flex items-center space-x-2 text-sm text-gray-600">
+              <MapPinIcon className="h-4 w-4 text-gray-400" />
+              <span className="truncate">{client.companyAddress}</span>
+            </div>
+          )}
+        </div>
+
+        {/* POC Information */}
+        {client.pocName && (
+          <div className="bg-gray-50 rounded-lg p-3 mb-4">
+            <div className="flex items-center space-x-2 mb-2">
+              <UserIcon className="h-4 w-4 text-gray-500" />
+              <span className="text-sm font-medium text-gray-700">
+                Point of Contact
+              </span>
+            </div>
+            <div className="space-y-1">
+              <div className="text-sm text-gray-600">{client.pocName}</div>
+              {client.pocEmail && (
+                <div className="text-sm text-gray-600">{client.pocEmail}</div>
+              )}
+              {client.pocContact && (
+                <div className="text-sm text-gray-600">{client.pocContact}</div>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* Financial Information */}
+        <div className="grid grid-cols-2 gap-3 mb-4">
+          {client.annualRevenue && (
+            <div className="bg-gradient-to-r from-green-50 to-emerald-50 p-3 rounded-lg border border-green-100">
+              <div className="flex items-center space-x-2">
+                <CurrencyRupeeIcon className="h-4 w-4 text-green-600" />
+                <span className="text-xs font-medium text-green-700">
+                  Annual Revenue
+                </span>
+              </div>
+              <div className="text-sm font-semibold text-green-800 mt-1">
+                ₹{client.annualRevenue.toLocaleString()}
+              </div>
+            </div>
+          )}
+          {client.employeeCount && (
+            <div className="bg-gradient-to-r from-blue-50 to-indigo-50 p-3 rounded-lg border border-blue-100">
+              <div className="flex items-center space-x-2">
+                <UserGroupIcon className="h-4 w-4 text-blue-600" />
+                <span className="text-xs font-medium text-blue-700">
+                  Employees
+                </span>
+              </div>
+              <div className="text-sm font-semibold text-blue-800 mt-1">
+                {client.employeeCount}
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Tags */}
+        {client.tags && client.tags.length > 0 && (
+          <div className="flex flex-wrap gap-1 mb-4">
+            {client.tags.map((tag, index) => (
+              <span
+                key={index}
+                className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-primary-100 text-primary-800"
+              >
+                <TagIcon className="h-3 w-3 mr-1" />
+                {tag}
+              </span>
+            ))}
+          </div>
+        )}
+
+        {/* Footer */}
+        <div className="flex items-center justify-between pt-4 border-t border-gray-100">
+          <div className="text-xs text-gray-500">
+            Created {format(new Date(client.createdAt), "MMM dd, yyyy")}
+          </div>
+          {client.source && (
+            <div className="text-xs text-gray-500">Source: {client.source}</div>
+          )}
+        </div>
+      </div>
+    );
+  }
+);
+
+ClientCard.displayName = "ClientCard";
 
 export default function ClientsPage() {
   const { clients, addClient, updateClient, deleteClient } =
     useAccountingStore();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingClient, setEditingClient] = useState<Client | null>(null);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [statusFilter, setStatusFilter] = useState<string>("all");
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [clientToDelete, setClientToDelete] = useState<string | null>(null);
+
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -40,6 +299,20 @@ export default function ClientsPage() {
     tags: [] as string[],
     annualRevenue: "",
     employeeCount: "",
+  });
+
+  // Filter clients based on search and status
+  const filteredClients = clients.filter((client) => {
+    const matchesSearch =
+      client.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      client.company.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      client.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      client.industry.toLowerCase().includes(searchTerm.toLowerCase());
+
+    const matchesStatus =
+      statusFilter === "all" || client.status === statusFilter;
+
+    return matchesSearch && matchesStatus;
   });
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -121,133 +394,233 @@ export default function ClientsPage() {
   };
 
   const handleDelete = (id: string) => {
-    if (confirm("Are you sure you want to delete this client?")) {
-      deleteClient(id);
+    setClientToDelete(id);
+    setShowDeleteDialog(true);
+  };
+
+  const confirmDelete = () => {
+    if (clientToDelete) {
+      deleteClient(clientToDelete);
       toast.success("Client deleted successfully");
+      setClientToDelete(null);
     }
   };
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="flex justify-between items-center">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900">Clients</h1>
-          <p className="text-gray-600">Manage your client relationships</p>
+    <div className="space-y-8">
+      {/* Enhanced Header */}
+      <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-8">
+        <div className="flex flex-col md:flex-row md:items-center justify-between space-y-4 md:space-y-0">
+          <div>
+            <h1 className="text-3xl font-bold text-gray-900">Clients</h1>
+            <p className="text-gray-600 mt-2">
+              Manage your client relationships and business partnerships
+            </p>
+          </div>
+          <ActionTooltip
+            content="Add New Client"
+            action="Create a new client profile"
+          >
+            <button
+              onClick={() => setIsModalOpen(true)}
+              className="bg-primary-600 text-white px-6 py-3 rounded-xl font-semibold hover:bg-primary-700 transition-colors duration-200 flex items-center shadow-lg hover:shadow-xl"
+            >
+              <PlusIcon className="h-5 w-5 mr-2" />
+              Add Client
+            </button>
+          </ActionTooltip>
         </div>
-        <button
-          onClick={() => setIsModalOpen(true)}
-          className="btn-primary flex items-center"
-        >
-          <PlusIcon className="h-5 w-5 mr-2" />
-          Add Client
-        </button>
       </div>
 
-      {/* Clients Table */}
-      <div className="card">
-        <div className="overflow-x-auto">
-          <table className="table">
-            <thead>
-              <tr>
-                <th>Name</th>
-                <th>Company</th>
-                <th>Industry</th>
-                <th>Status</th>
-                <th>Email</th>
-                <th>Phone</th>
-                <th>Created</th>
-                <th>Actions</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-200">
-              {clients.map((client) => (
-                <tr key={client.id}>
-                  <td>
-                    <div>
-                      <div className="font-medium text-gray-900">
-                        {client.name}
-                      </div>
-                      <div className="text-sm text-gray-500">
-                        {client.companyOwner}
-                      </div>
-                    </div>
-                  </td>
-                  <td>
-                    <div>
-                      <div className="font-medium text-gray-900">
-                        {client.company}
-                      </div>
-                      <div className="text-sm text-gray-500">
-                        {client.companyAddress}
-                      </div>
-                    </div>
-                  </td>
-                  <td>{client.industry}</td>
-                  <td>
-                    <span
-                      className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
-                        client.status === "active"
-                          ? "bg-green-100 text-green-800"
-                          : client.status === "inactive"
-                          ? "bg-gray-100 text-gray-800"
-                          : client.status === "prospect"
-                          ? "bg-blue-100 text-blue-800"
-                          : "bg-yellow-100 text-yellow-800"
-                      }`}
-                    >
-                      {client.status
-                        ? client.status.charAt(0).toUpperCase() +
-                          client.status.slice(1)
-                        : "Unknown"}
-                    </span>
-                  </td>
-                  <td>{client.email}</td>
-                  <td>{client.phone}</td>
-                  <td>{format(new Date(client.createdAt), "MMM dd, yyyy")}</td>
-                  <td>
-                    <div className="flex space-x-2">
-                      <button
-                        onClick={() => handleEdit(client)}
-                        className="text-primary-600 hover:text-primary-900"
-                      >
-                        <PencilIcon className="h-4 w-4" />
-                      </button>
-                      <button
-                        onClick={() => handleDelete(client.id)}
-                        className="text-danger-600 hover:text-danger-900"
-                      >
-                        <TrashIcon className="h-4 w-4" />
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-          {clients.length === 0 && (
-            <div className="text-center py-8">
-              <p className="text-gray-500">
-                No clients found. Add your first client to get started.
+      {/* Stats Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm font-medium text-gray-600">Total Clients</p>
+              <p className="text-2xl font-bold text-primary-600 mt-1">
+                {clients.length}
               </p>
             </div>
-          )}
+            <div className="p-3 bg-primary-100 rounded-lg">
+              <BuildingOfficeIcon className="h-6 w-6 text-primary-600" />
+            </div>
+          </div>
+        </div>
+        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm font-medium text-gray-600">
+                Active Clients
+              </p>
+              <p className="text-2xl font-bold text-green-600 mt-1">
+                {clients.filter((c) => c.status === "active").length}
+              </p>
+            </div>
+            <div className="p-3 bg-green-100 rounded-lg">
+              <UserIcon className="h-6 w-6 text-green-600" />
+            </div>
+          </div>
+        </div>
+        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm font-medium text-gray-600">Prospects</p>
+              <p className="text-2xl font-bold text-blue-600 mt-1">
+                {clients.filter((c) => c.status === "prospect").length}
+              </p>
+            </div>
+            <div className="p-3 bg-blue-100 rounded-lg">
+              <EyeIcon className="h-6 w-6 text-blue-600" />
+            </div>
+          </div>
+        </div>
+        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm font-medium text-gray-600">Leads</p>
+              <p className="text-2xl font-bold text-yellow-600 mt-1">
+                {clients.filter((c) => c.status === "lead").length}
+              </p>
+            </div>
+            <div className="p-3 bg-yellow-100 rounded-lg">
+              <TagIcon className="h-6 w-6 text-yellow-600" />
+            </div>
+          </div>
         </div>
       </div>
+
+      {/* Search and Filters */}
+      <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6">
+        <div className="flex flex-col md:flex-row gap-4">
+          <div className="flex-1 relative">
+            <MagnifyingGlassIcon className="absolute left-4 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+            <input
+              type="text"
+              placeholder="Search clients by name, company, email, or industry..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-full pl-12 pr-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200"
+            />
+          </div>
+          <div className="flex items-center space-x-3">
+            <select
+              value={statusFilter}
+              onChange={(e) => setStatusFilter(e.target.value)}
+              className="px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200"
+            >
+              <option value="all">All Status</option>
+              <option value="active">Active</option>
+              <option value="inactive">Inactive</option>
+              <option value="prospect">Prospect</option>
+              <option value="lead">Lead</option>
+            </select>
+            <Tooltip content="Filter clients by status and search across all fields">
+              <div className="p-3 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors">
+                <FunnelIcon className="h-5 w-5" />
+              </div>
+            </Tooltip>
+          </div>
+        </div>
+      </div>
+
+      {/* Clients Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {filteredClients.map((client) => (
+          <ClientCard
+            key={client.id}
+            client={client}
+            onEdit={handleEdit}
+            onDelete={handleDelete}
+          />
+        ))}
+      </div>
+
+      {/* Empty State */}
+      {filteredClients.length === 0 && (
+        <div className="text-center py-12">
+          <div className="mx-auto h-16 w-16 text-gray-400 mb-4">
+            <BuildingOfficeIcon className="h-16 w-16" />
+          </div>
+          <p className="text-gray-500 text-lg font-medium mb-4">
+            {searchTerm || statusFilter !== "all"
+              ? "No clients found matching your criteria."
+              : "No clients found. Add your first client to get started."}
+          </p>
+          {!searchTerm && statusFilter === "all" && (
+            <button
+              onClick={() => setIsModalOpen(true)}
+              className="bg-primary-600 text-white px-6 py-3 rounded-xl font-semibold hover:bg-primary-700 transition-colors duration-200"
+            >
+              Add Your First Client
+            </button>
+          )}
+        </div>
+      )}
 
       {/* Modal */}
       {isModalOpen && (
-        <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50 flex items-center justify-center p-4">
-          <div className="relative bg-white rounded-lg shadow-xl w-full max-w-4xl mx-auto">
-            <div className="p-6">
-              <h3 className="text-lg font-medium text-gray-900 mb-6">
-                {editingClient ? "Edit Client" : "Add New Client"}
-              </h3>
-              <form onSubmit={handleSubmit} className="space-y-6">
+        <div className="fixed inset-0 bg-black bg-opacity-50 overflow-y-auto h-full w-full z-50 flex items-center justify-center p-4">
+          <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-4xl mx-auto">
+            <div className="p-8">
+              <div className="flex items-center justify-between mb-8">
+                <div>
+                  <h3 className="text-2xl font-bold text-gray-900">
+                    {editingClient ? "Edit Client" : "Add New Client"}
+                  </h3>
+                  <p className="text-gray-600 mt-1">
+                    {editingClient
+                      ? "Update client information"
+                      : "Create a new client profile"}
+                  </p>
+                </div>
+                <button
+                  onClick={() => {
+                    setIsModalOpen(false);
+                    setEditingClient(null);
+                    setFormData({
+                      name: "",
+                      email: "",
+                      phone: "",
+                      company: "",
+                      address: "",
+                      gstId: "",
+                      companyAddress: "",
+                      companyWebsite: "",
+                      companyLinkedin: "",
+                      companyOwner: "",
+                      pocName: "",
+                      pocEmail: "",
+                      pocContact: "",
+                      companyLogo: "",
+                      industry: "",
+                      companySize: "small" as const,
+                      status: "active" as const,
+                      source: "",
+                      notes: "",
+                      tags: [] as string[],
+                      annualRevenue: "",
+                      employeeCount: "",
+                    });
+                  }}
+                  className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
+                >
+                  <TrashIcon className="h-6 w-6" />
+                </button>
+              </div>
+
+              <form onSubmit={handleSubmit} className="space-y-8">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Name
+                    <label className="block text-sm font-semibold text-gray-700 mb-3">
+                      Client Name *
+                      <IconTooltip
+                        content="Enter the primary contact person's name"
+                        icon={InformationCircleIcon}
+                        position="right"
+                      >
+                        <span></span>
+                      </IconTooltip>
                     </label>
                     <input
                       type="text"
@@ -256,12 +629,19 @@ export default function ClientsPage() {
                       onChange={(e) =>
                         setFormData({ ...formData, name: e.target.value })
                       }
-                      className="input"
+                      className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200"
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Company
+                    <label className="block text-sm font-semibold text-gray-700 mb-3">
+                      Company *
+                      <IconTooltip
+                        content="Enter the company or organization name"
+                        icon={InformationCircleIcon}
+                        position="right"
+                      >
+                        <span></span>
+                      </IconTooltip>
                     </label>
                     <input
                       type="text"
@@ -270,12 +650,19 @@ export default function ClientsPage() {
                       onChange={(e) =>
                         setFormData({ ...formData, company: e.target.value })
                       }
-                      className="input"
+                      className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200"
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Email
+                    <label className="block text-sm font-semibold text-gray-700 mb-3">
+                      Email *
+                      <IconTooltip
+                        content="Primary email address for communication"
+                        icon={InformationCircleIcon}
+                        position="right"
+                      >
+                        <span></span>
+                      </IconTooltip>
                     </label>
                     <input
                       type="email"
@@ -284,12 +671,19 @@ export default function ClientsPage() {
                       onChange={(e) =>
                         setFormData({ ...formData, email: e.target.value })
                       }
-                      className="input"
+                      className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200"
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <label className="block text-sm font-semibold text-gray-700 mb-3">
                       Phone
+                      <IconTooltip
+                        content="Contact phone number"
+                        icon={InformationCircleIcon}
+                        position="right"
+                      >
+                        <span></span>
+                      </IconTooltip>
                     </label>
                     <input
                       type="tel"
@@ -297,144 +691,19 @@ export default function ClientsPage() {
                       onChange={(e) =>
                         setFormData({ ...formData, phone: e.target.value })
                       }
-                      className="input"
+                      className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200"
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      GST ID
-                    </label>
-                    <input
-                      type="text"
-                      value={formData.gstId}
-                      onChange={(e) =>
-                        setFormData({ ...formData, gstId: e.target.value })
-                      }
-                      className="input"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Company Address
-                    </label>
-                    <input
-                      type="text"
-                      value={formData.companyAddress}
-                      onChange={(e) =>
-                        setFormData({
-                          ...formData,
-                          companyAddress: e.target.value,
-                        })
-                      }
-                      className="input"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Company Website
-                    </label>
-                    <input
-                      type="url"
-                      value={formData.companyWebsite}
-                      onChange={(e) =>
-                        setFormData({
-                          ...formData,
-                          companyWebsite: e.target.value,
-                        })
-                      }
-                      className="input"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Company LinkedIn
-                    </label>
-                    <input
-                      type="url"
-                      value={formData.companyLinkedin}
-                      onChange={(e) =>
-                        setFormData({
-                          ...formData,
-                          companyLinkedin: e.target.value,
-                        })
-                      }
-                      className="input"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Company Owner
-                    </label>
-                    <input
-                      type="text"
-                      value={formData.companyOwner}
-                      onChange={(e) =>
-                        setFormData({
-                          ...formData,
-                          companyOwner: e.target.value,
-                        })
-                      }
-                      className="input"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      POC Name
-                    </label>
-                    <input
-                      type="text"
-                      value={formData.pocName}
-                      onChange={(e) =>
-                        setFormData({ ...formData, pocName: e.target.value })
-                      }
-                      className="input"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      POC Email
-                    </label>
-                    <input
-                      type="email"
-                      value={formData.pocEmail}
-                      onChange={(e) =>
-                        setFormData({ ...formData, pocEmail: e.target.value })
-                      }
-                      className="input"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      POC Contact
-                    </label>
-                    <input
-                      type="tel"
-                      value={formData.pocContact}
-                      onChange={(e) =>
-                        setFormData({ ...formData, pocContact: e.target.value })
-                      }
-                      className="input"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Company Logo
-                    </label>
-                    <input
-                      type="url"
-                      value={formData.companyLogo}
-                      onChange={(e) =>
-                        setFormData({
-                          ...formData,
-                          companyLogo: e.target.value,
-                        })
-                      }
-                      className="input"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <label className="block text-sm font-semibold text-gray-700 mb-3">
                       Industry
+                      <IconTooltip
+                        content="Client's business industry or sector"
+                        icon={InformationCircleIcon}
+                        position="right"
+                      >
+                        <span></span>
+                      </IconTooltip>
                     </label>
                     <input
                       type="text"
@@ -442,12 +711,19 @@ export default function ClientsPage() {
                       onChange={(e) =>
                         setFormData({ ...formData, industry: e.target.value })
                       }
-                      className="input"
+                      className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200"
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <label className="block text-sm font-semibold text-gray-700 mb-3">
                       Company Size
+                      <IconTooltip
+                        content="Size of the client's organization"
+                        icon={InformationCircleIcon}
+                        position="right"
+                      >
+                        <span></span>
+                      </IconTooltip>
                     </label>
                     <select
                       value={formData.companySize}
@@ -462,7 +738,7 @@ export default function ClientsPage() {
                             | "enterprise",
                         })
                       }
-                      className="input"
+                      className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200"
                     >
                       <option value="startup">Startup</option>
                       <option value="small">Small</option>
@@ -472,8 +748,15 @@ export default function ClientsPage() {
                     </select>
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <label className="block text-sm font-semibold text-gray-700 mb-3">
                       Status
+                      <IconTooltip
+                        content="Current relationship status with the client"
+                        icon={InformationCircleIcon}
+                        position="right"
+                      >
+                        <span></span>
+                      </IconTooltip>
                     </label>
                     <select
                       value={formData.status}
@@ -487,7 +770,7 @@ export default function ClientsPage() {
                             | "lead",
                         })
                       }
-                      className="input"
+                      className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200"
                     >
                       <option value="active">Active</option>
                       <option value="inactive">Inactive</option>
@@ -496,22 +779,15 @@ export default function ClientsPage() {
                     </select>
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Source
-                    </label>
-                    <input
-                      type="text"
-                      value={formData.source}
-                      onChange={(e) =>
-                        setFormData({ ...formData, source: e.target.value })
-                      }
-                      className="input"
-                      placeholder="How did you acquire this client?"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <label className="block text-sm font-semibold text-gray-700 mb-3">
                       Annual Revenue (₹)
+                      <IconTooltip
+                        content="Client's annual revenue in Indian Rupees"
+                        icon={InformationCircleIcon}
+                        position="right"
+                      >
+                        <span></span>
+                      </IconTooltip>
                     </label>
                     <input
                       type="number"
@@ -522,13 +798,20 @@ export default function ClientsPage() {
                           annualRevenue: e.target.value,
                         })
                       }
-                      className="input"
+                      className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200"
                       placeholder="Annual revenue in INR"
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <label className="block text-sm font-semibold text-gray-700 mb-3">
                       Employee Count
+                      <IconTooltip
+                        content="Number of employees in the organization"
+                        icon={InformationCircleIcon}
+                        position="right"
+                      >
+                        <span></span>
+                      </IconTooltip>
                     </label>
                     <input
                       type="number"
@@ -539,26 +822,127 @@ export default function ClientsPage() {
                           employeeCount: e.target.value,
                         })
                       }
-                      className="input"
+                      className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200"
                       placeholder="Number of employees"
                     />
                   </div>
-                  <div className="md:col-span-2">
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Notes
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-700 mb-3">
+                      Company Website
+                      <IconTooltip
+                        content="Client's official website URL"
+                        icon={InformationCircleIcon}
+                        position="right"
+                      >
+                        <span></span>
+                      </IconTooltip>
                     </label>
-                    <textarea
-                      value={formData.notes}
+                    <input
+                      type="url"
+                      value={formData.companyWebsite}
                       onChange={(e) =>
-                        setFormData({ ...formData, notes: e.target.value })
+                        setFormData({
+                          ...formData,
+                          companyWebsite: e.target.value,
+                        })
                       }
-                      className="input"
-                      rows={3}
-                      placeholder="Additional notes about the client"
+                      className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-700 mb-3">
+                      Company Address
+                      <IconTooltip
+                        content="Physical address of the company"
+                        icon={InformationCircleIcon}
+                        position="right"
+                      >
+                        <span></span>
+                      </IconTooltip>
+                    </label>
+                    <input
+                      type="text"
+                      value={formData.companyAddress}
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          companyAddress: e.target.value,
+                        })
+                      }
+                      className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200"
                     />
                   </div>
                 </div>
-                <div className="flex justify-end space-x-3 pt-6 border-t border-gray-200">
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-700 mb-3">
+                      POC Name
+                      <IconTooltip
+                        content="Point of contact person's name"
+                        icon={InformationCircleIcon}
+                        position="right"
+                      >
+                        <span></span>
+                      </IconTooltip>
+                    </label>
+                    <input
+                      type="text"
+                      value={formData.pocName}
+                      onChange={(e) =>
+                        setFormData({ ...formData, pocName: e.target.value })
+                      }
+                      className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-700 mb-3">
+                      POC Email
+                      <IconTooltip
+                        content="Point of contact's email address"
+                        icon={InformationCircleIcon}
+                        position="right"
+                      >
+                        <span></span>
+                      </IconTooltip>
+                    </label>
+                    <input
+                      type="email"
+                      value={formData.pocEmail}
+                      onChange={(e) =>
+                        setFormData({ ...formData, pocEmail: e.target.value })
+                      }
+                      className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200"
+                    />
+                  </div>
+                </div>
+
+                <div className="md:col-span-2">
+                  <label className="block text-sm font-semibold text-gray-700 mb-3">
+                    Notes
+                    <IconTooltip
+                      content="Additional notes about the client"
+                      icon={InformationCircleIcon}
+                      position="right"
+                    >
+                      <span></span>
+                    </IconTooltip>
+                  </label>
+                  <textarea
+                    value={formData.notes}
+                    onChange={(e) =>
+                      setFormData({ ...formData, notes: e.target.value })
+                    }
+                    className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200"
+                    rows={3}
+                    placeholder="Additional notes about the client"
+                  />
+                </div>
+
+                <div className="flex justify-end space-x-4 pt-6 border-t border-gray-200">
                   <button
                     type="button"
                     onClick={() => {
@@ -589,11 +973,15 @@ export default function ClientsPage() {
                         employeeCount: "",
                       });
                     }}
-                    className="btn-secondary"
+                    className="px-6 py-3 border border-gray-300 text-gray-700 rounded-xl font-medium hover:bg-gray-50 transition-colors duration-200"
                   >
                     Cancel
                   </button>
-                  <button type="submit" className="btn-primary">
+                  <button
+                    type="submit"
+                    className="px-6 py-3 bg-primary-600 text-white rounded-xl font-medium hover:bg-primary-700 transition-colors duration-200 flex items-center"
+                  >
+                    <PlusIcon className="h-4 w-4 mr-2" />
                     {editingClient ? "Update" : "Add"} Client
                   </button>
                 </div>
@@ -602,6 +990,18 @@ export default function ClientsPage() {
           </div>
         </div>
       )}
+
+      {/* Confirmation Dialog */}
+      <ConfirmationDialog
+        isOpen={showDeleteDialog}
+        onClose={() => setShowDeleteDialog(false)}
+        onConfirm={confirmDelete}
+        title="Delete Client"
+        message="Are you sure you want to delete this client? This action cannot be undone."
+        confirmText="Delete"
+        cancelText="Cancel"
+        variant="danger"
+      />
     </div>
   );
 }

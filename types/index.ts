@@ -61,14 +61,29 @@ export interface Timesheet {
   projectId: string;
   month: string; // Format: "YYYY-MM"
   year: number;
-  status: "draft" | "submitted" | "approved" | "rejected";
-  totalHours: number;
-  workingDays: number;
-  leaveDays: number;
+  status: "draft" | "submitted" | "approved" | "rejected" | "invoiced";
+
+  // Work calculations
+  totalWorkingDays: number; // Total days in the month (excluding weekends)
+  daysWorked: number; // Actual days worked
+  daysLeave: number; // Leave days taken
+  hoursPerDay: number; // Default 8 hours per day
+
+  // Costing calculations (derived from project)
+  billingRate: number; // Per hour rate from project
+  totalHours: number; // daysWorked * hoursPerDay
+  totalAmount: number; // totalHours * billingRate
+
+  // Approval workflow
   submittedAt?: Date;
   approvedAt?: Date;
   approvedBy?: string;
   rejectionReason?: string;
+
+  // Invoice tracking
+  invoiceId?: string; // Reference to generated invoice
+  invoicedAt?: Date;
+
   createdAt: Date;
   updatedAt: Date;
 }
@@ -193,4 +208,5 @@ export interface DashboardStats {
   activeClients: number;
   pendingTimesheets: number;
   approvedTimesheets: number;
+  invoicedTimesheets: number;
 }

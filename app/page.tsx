@@ -13,6 +13,7 @@ import {
   DocumentTextIcon,
   UserGroupIcon,
   CheckIcon,
+  CurrencyRupeeIcon,
 } from "@heroicons/react/24/outline";
 import { format } from "date-fns";
 
@@ -231,6 +232,12 @@ export default function Dashboard() {
           title="Approved Timesheets"
           value={stats.approvedTimesheets.toString()}
           color="text-green-600"
+        />
+        <StatCard
+          icon={CurrencyRupeeIcon}
+          title="Invoiced Timesheets"
+          value={stats.invoicedTimesheets.toString()}
+          color="text-purple-600"
         />
       </div>
 

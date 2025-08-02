@@ -379,14 +379,17 @@ export const useAccountingStore = create<AccountingStore>()(
       timesheets: [
         {
           id: "timesheet1",
-          staffId: "staff1",
           projectId: "project1",
           month: "2024-01",
           year: 2024,
           status: "approved",
+          totalWorkingDays: 22,
+          daysWorked: 20,
+          daysLeave: 2,
+          hoursPerDay: 8,
+          billingRate: 1000,
           totalHours: 160,
-          workingDays: 20,
-          leaveDays: 0,
+          totalAmount: 160000,
           submittedAt: new Date("2024-01-31"),
           approvedAt: new Date("2024-02-01"),
           approvedBy: "admin",
@@ -395,28 +398,34 @@ export const useAccountingStore = create<AccountingStore>()(
         },
         {
           id: "timesheet2",
-          staffId: "staff2",
           projectId: "project2",
           month: "2024-02",
           year: 2024,
           status: "submitted",
+          totalWorkingDays: 20,
+          daysWorked: 18,
+          daysLeave: 2,
+          hoursPerDay: 8,
+          billingRate: 1200,
           totalHours: 144,
-          workingDays: 18,
-          leaveDays: 2,
+          totalAmount: 172800,
           submittedAt: new Date("2024-02-29"),
           createdAt: new Date("2024-02-01"),
           updatedAt: new Date("2024-02-29"),
         },
         {
           id: "timesheet3",
-          staffId: "staff3",
           projectId: "project3",
           month: "2024-03",
           year: 2024,
           status: "draft",
+          totalWorkingDays: 21,
+          daysWorked: 15,
+          daysLeave: 6,
+          hoursPerDay: 8,
+          billingRate: 800,
           totalHours: 120,
-          workingDays: 15,
-          leaveDays: 5,
+          totalAmount: 96000,
           createdAt: new Date("2024-03-01"),
           updatedAt: new Date("2024-03-15"),
         },
@@ -725,6 +734,10 @@ export const useAccountingStore = create<AccountingStore>()(
           (t) => t.status === "approved"
         ).length;
 
+        const invoicedTimesheets = get().timesheets.filter(
+          (t) => t.status === "invoiced"
+        ).length;
+
         return {
           totalRevenue,
           totalExpenses,
@@ -734,6 +747,7 @@ export const useAccountingStore = create<AccountingStore>()(
           activeClients,
           pendingTimesheets,
           approvedTimesheets,
+          invoicedTimesheets,
         };
       },
 
@@ -785,11 +799,11 @@ export const useAccountingStore = create<AccountingStore>()(
           throw new Error("Project not found for timesheet.");
         }
 
-        // Use timesheet's total hours directly since we removed staff association
-        const totalHours = timesheet.totalHours;
-        // Use a standard hourly rate for billing (can be configured)
-        const standardHourlyRate = 1000; // ₹1000 per hour
-        const totalAmount = totalHours * standardHourlyRate;
+        // Use timesheet's calculated amount and billing rate
+        const subtotal = timesheet.totalAmount;
+        const taxRate = 18; // 18% GST
+        const taxAmount = subtotal * (taxRate / 100);
+        const total = subtotal + taxAmount;
 
         const newInvoice: Invoice = {
           id: generateId(),
@@ -802,15 +816,23 @@ export const useAccountingStore = create<AccountingStore>()(
           issueDate: new Date(),
           dueDate: new Date(new Date().setDate(new Date().getDate() + 30)), // 30 days from issue date
           status: "draft",
-          subtotal: totalAmount,
-          taxRate: 18,
-          taxAmount: totalAmount * 0.18,
-          total: totalAmount * 1.18,
-          notes: `Timesheet for ${project.name} (${timesheet.month}) - ${totalHours} hours`,
+          subtotal,
+          taxRate,
+          taxAmount,
+          total,
+          notes: `Work timesheet for ${project.name} (${timesheet.month}) - ${timesheet.daysWorked} days × ${timesheet.hoursPerDay}h × ₹${timesheet.billingRate}/hr`,
           createdAt: new Date(),
           updatedAt: new Date(),
         };
-        set((state) => ({ invoices: [...state.invoices, newInvoice] }));
+
+        set((state) => ({
+          invoices: [...state.invoices, newInvoice],
+          // Update timesheet to link to the invoice
+          timesheets: state.timesheets.map((t) =>
+            t.id === timesheetId ? { ...t, invoiceId: newInvoice.id } : t
+          ),
+        }));
+
         return newInvoice;
       },
     }),

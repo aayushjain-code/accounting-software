@@ -36,6 +36,7 @@ import {
   InformationCircleIcon,
   QuestionMarkCircleIcon,
 } from "@heroicons/react/24/outline";
+import Modal from "@/components/Modal";
 
 // Enhanced Status Badge Component
 const StatusBadge = React.memo(({ status }: { status: string }) => {
@@ -208,20 +209,27 @@ const TimesheetRow = React.memo(
             </div>
             <div className="text-sm text-gray-500 flex items-center space-x-2">
               <ClockIcon className="h-3 w-3" />
-              <span>{timesheet.totalHours} hours</span>
-              <span>•</span>
-              <span>₹{timesheet.billingRate}/hr</span>
+              <span>{timesheet.totalHours || 0} hours</span>
+              {timesheet.billingRate && (
+                <>
+                  <span>•</span>
+                  <span>₹{timesheet.billingRate}/hr</span>
+                </>
+              )}
             </div>
           </div>
         </td>
         <td className="px-6 py-4">
           <div className="text-right">
             <div className="font-bold text-lg text-gray-900">
-              {formatCurrency(timesheet.totalAmount)}
+              {timesheet.totalAmount
+                ? formatCurrency(timesheet.totalAmount)
+                : "Not calculated"}
             </div>
             <div className="text-xs text-gray-500 mt-1">
-              {timesheet.daysWorked} × {timesheet.hoursPerDay}h × ₹
-              {timesheet.billingRate}
+              {timesheet.daysWorked} days
+              {timesheet.hoursPerDay && ` × ${timesheet.hoursPerDay}h`}
+              {timesheet.billingRate && ` × ₹${timesheet.billingRate}`}
             </div>
           </div>
         </td>
@@ -283,11 +291,15 @@ const TimesheetModal = React.memo(
     onClose,
     editingTimesheet,
     onSubmit,
+    formId,
+    hideHeaderAndFooter,
   }: {
     isOpen: boolean;
     onClose: () => void;
     editingTimesheet: Timesheet | null;
     onSubmit: (data: any) => void;
+    formId: string;
+    hideHeaderAndFooter: boolean;
   }) => {
     const getStatusConfig = (status: string) => {
       switch (status) {
@@ -355,7 +367,9 @@ const TimesheetModal = React.memo(
             year: editingTimesheet.year,
             daysWorked: (editingTimesheet.daysWorked || 0).toString(),
             hoursPerDay: (editingTimesheet.hoursPerDay || 8).toString(),
-            totalWorkingDays: (editingTimesheet.totalWorkingDays || 0).toString(),
+            totalWorkingDays: (
+              editingTimesheet.totalWorkingDays || 0
+            ).toString(),
             status: editingTimesheet.status,
           });
           const project = projects.find(
@@ -425,10 +439,13 @@ const TimesheetModal = React.memo(
         if (validateForm()) {
           const totalWorkingDays = parseInt(formData.totalWorkingDays || "0");
           const daysWorked = parseInt(formData.daysWorked);
-          const hoursPerDay = parseInt(formData.hoursPerDay);
-          const billingRate = selectedProject?.billingTerms || 0;
-          const totalHours = daysWorked * hoursPerDay;
-          const totalAmount = totalHours * billingRate;
+          const hoursPerDay = formData.hoursPerDay
+            ? parseInt(formData.hoursPerDay)
+            : undefined;
+          const billingRate = selectedProject?.billingRate || undefined;
+          const totalHours = hoursPerDay ? daysWorked * hoursPerDay : undefined;
+          const totalAmount =
+            totalHours && billingRate ? totalHours * billingRate : undefined;
 
           onSubmit({
             ...formData,
@@ -447,285 +464,243 @@ const TimesheetModal = React.memo(
     if (!isOpen) return null;
 
     return (
-      <div className="fixed inset-0 bg-black bg-opacity-50 overflow-y-auto h-full w-full z-50 flex items-center justify-center p-4">
-        <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-4xl mx-auto">
-          <div className="p-8">
-            <div className="flex items-center justify-between mb-8">
-              <div>
-                <h3 className="text-2xl font-bold text-gray-900">
-                  {editingTimesheet ? "Edit Timesheet" : "Create New Timesheet"}
-                </h3>
-                <p className="text-gray-600 mt-1">
-                  {editingTimesheet
-                    ? "Update timesheet details"
-                    : "Add a new work timesheet"}
-                </p>
-              </div>
-              <button
-                onClick={onClose}
-                className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
+      <form id={formId} onSubmit={handleSubmit}>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div>
+            <label className="block text-sm font-semibold text-gray-700 mb-3">
+              Project *
+              <IconTooltip
+                content="Select the project this timesheet is for. The billing rate will be automatically set from the project."
+                icon={InformationCircleIcon}
+                position="right"
               >
-                <XMarkIcon className="h-6 w-6" />
-              </button>
-            </div>
-
-            <form onSubmit={handleSubmit} className="space-y-8">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-3">
-                    Project *
-                    <IconTooltip
-                      content="Select the project this timesheet is for. The billing rate will be automatically set from the project."
-                      icon={InformationCircleIcon}
-                      position="right"
-                    >
-                      <span></span>
-                    </IconTooltip>
-                  </label>
-                  <select
-                    required
-                    value={formData.projectId}
-                    onChange={(e) =>
-                      setFormData({ ...formData, projectId: e.target.value })
-                    }
-                    className={`w-full px-4 py-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200 ${
-                      errors.projectId ? "border-red-300" : "border-gray-300"
-                    }`}
-                  >
-                    <option value="">Select project</option>
-                    {projects.map((project) => (
-                      <option key={project.id} value={project.id}>
-                        {project.name} - ₹{project.billingTerms}/hr
-                      </option>
-                    ))}
-                  </select>
-                  {errors.projectId && (
-                    <p className="text-red-500 text-sm mt-2">
-                      {errors.projectId}
-                    </p>
-                  )}
-                </div>
-                <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-3">
-                    Month *
-                    <IconTooltip
-                      content="Select the month for this timesheet. Working days will be automatically calculated."
-                      icon={InformationCircleIcon}
-                      position="right"
-                    >
-                      <span></span>
-                    </IconTooltip>
-                  </label>
-                  <input
-                    type="month"
-                    required
-                    value={formData.month}
-                    onChange={(e) =>
-                      setFormData({ ...formData, month: e.target.value })
-                    }
-                    className={`w-full px-4 py-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200 ${
-                      errors.month ? "border-red-300" : "border-gray-300"
-                    }`}
-                  />
-                  {errors.month && (
-                    <p className="text-red-500 text-sm mt-2">{errors.month}</p>
-                  )}
-                </div>
-                <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-3">
-                    Days Worked *
-                    <IconTooltip
-                      content="Enter the number of days you actually worked this month. This cannot exceed the total working days."
-                      icon={InformationCircleIcon}
-                      position="right"
-                    >
-                      <span></span>
-                    </IconTooltip>
-                  </label>
-                  <input
-                    type="number"
-                    required
-                    min="1"
-                    max="31"
-                    value={formData.daysWorked}
-                    onChange={(e) =>
-                      setFormData({
-                        ...formData,
-                        daysWorked: e.target.value,
-                      })
-                    }
-                    className={`w-full px-4 py-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200 ${
-                      errors.daysWorked ? "border-red-300" : "border-gray-300"
-                    }`}
-                  />
-                  {errors.daysWorked && (
-                    <p className="text-red-500 text-sm mt-2">
-                      {errors.daysWorked}
-                    </p>
-                  )}
-                  {formData.totalWorkingDays && (
-                    <p className="text-xs text-gray-500 mt-2">
-                      Total working days: {formData.totalWorkingDays}
-                    </p>
-                  )}
-                </div>
-                <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-3">
-                    Hours Per Day
-                    <IconTooltip
-                      content="Default is 8 hours per day. This will be used to calculate total hours and billing amount."
-                      icon={InformationCircleIcon}
-                      position="right"
-                    >
-                      <span></span>
-                    </IconTooltip>
-                  </label>
-                  <input
-                    type="number"
-                    min="1"
-                    max="24"
-                    value={formData.hoursPerDay}
-                    onChange={(e) =>
-                      setFormData({
-                        ...formData,
-                        hoursPerDay: e.target.value,
-                      })
-                    }
-                    className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200"
-                  />
-                </div>
-              </div>
-
-              {/* Total Working Days and Status */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-3">
-                    Total Working Days in Month
-                    <IconTooltip
-                      content="Total number of working days in the selected month (excluding weekends). This is automatically calculated but can be manually adjusted."
-                      icon={InformationCircleIcon}
-                      position="right"
-                    >
-                      <span></span>
-                    </IconTooltip>
-                  </label>
-                  <input
-                    type="number"
-                    min="1"
-                    max="31"
-                    value={formData.totalWorkingDays}
-                    onChange={(e) =>
-                      setFormData({
-                        ...formData,
-                        totalWorkingDays: e.target.value,
-                      })
-                    }
-                    className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200"
-                  />
-                  <p className="text-xs text-gray-500 mt-2">
-                    Automatically calculated based on month selection
-                  </p>
-                </div>
-                <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-3">
-                    Status
-                    <IconTooltip
-                      content="Current status of the timesheet. You can change this to move it through the workflow."
-                      icon={InformationCircleIcon}
-                      position="right"
-                    >
-                      <span></span>
-                    </IconTooltip>
-                  </label>
-                  <select
-                    value={formData.status}
-                    onChange={(e) =>
-                      setFormData({
-                        ...formData,
-                        status: e.target.value as "draft" | "submitted" | "approved" | "rejected" | "invoiced",
-                      })
-                    }
-                    className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200"
-                  >
-                    <option value="draft">Draft</option>
-                    <option value="submitted">Submitted</option>
-                    <option value="approved">Approved</option>
-                    <option value="rejected">Rejected</option>
-                    <option value="invoiced">Invoiced</option>
-                  </select>
-                  <div className="mt-2">
-                    <StatusBadge status={formData.status} />
-                  </div>
-                </div>
-              </div>
-
-              {/* Project and Costing Information */}
-              {selectedProject && (
-                <div className="bg-gradient-to-r from-primary-50 to-blue-50 p-6 rounded-xl border border-primary-100">
-                  <h4 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
-                    <CalculatorIcon className="h-5 w-5 mr-2 text-primary-600" />
-                    Project Information
-                  </h4>
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                    <div className="bg-white p-3 rounded-lg">
-                      <p className="text-xs text-gray-500 font-medium">
-                        Project
-                      </p>
-                      <p className="text-sm font-semibold text-gray-900 mt-1">
-                        {selectedProject.name}
-                      </p>
-                    </div>
-                    <div className="bg-white p-3 rounded-lg">
-                      <p className="text-xs text-gray-500 font-medium">
-                        Billing Rate
-                      </p>
-                      <p className="text-sm font-semibold text-gray-900 mt-1">
-                        ₹{selectedProject.billingTerms}/hr
-                      </p>
-                    </div>
-                    <div className="bg-white p-3 rounded-lg">
-                      <p className="text-xs text-gray-500 font-medium">
-                        Working Days
-                      </p>
-                      <p className="text-sm font-semibold text-gray-900 mt-1">
-                        {formData.totalWorkingDays}
-                      </p>
-                    </div>
-                    <div className="bg-white p-3 rounded-lg">
-                      <p className="text-xs text-gray-500 font-medium">
-                        Estimated Amount
-                      </p>
-                      <p className="text-sm font-semibold text-primary-600 mt-1">
-                        ₹
-                        {parseInt(formData.daysWorked || "0") *
-                          parseInt(formData.hoursPerDay) *
-                          selectedProject.billingTerms}
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              <div className="flex justify-end space-x-4 pt-6 border-t border-gray-200">
-                <button
-                  type="button"
-                  onClick={onClose}
-                  className="px-6 py-3 border border-gray-300 text-gray-700 rounded-xl font-medium hover:bg-gray-50 transition-colors duration-200"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  className="px-6 py-3 bg-primary-600 text-white rounded-xl font-medium hover:bg-primary-700 transition-colors duration-200 flex items-center"
-                >
-                  <PlusIcon className="h-4 w-4 mr-2" />
-                  {editingTimesheet ? "Update" : "Create"} Timesheet
-                </button>
-              </div>
-            </form>
+                <span></span>
+              </IconTooltip>
+            </label>
+            <select
+              required
+              value={formData.projectId}
+              onChange={(e) =>
+                setFormData({ ...formData, projectId: e.target.value })
+              }
+              className={`w-full px-4 py-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200 ${
+                errors.projectId ? "border-red-300" : "border-gray-300"
+              }`}
+            >
+              <option value="">Select project</option>
+              {projects.map((project) => (
+                <option key={project.id} value={project.id}>
+                  {project.name} - ₹{project.billingTerms}/hr
+                </option>
+              ))}
+            </select>
+            {errors.projectId && (
+              <p className="text-red-500 text-sm mt-2">{errors.projectId}</p>
+            )}
+          </div>
+          <div>
+            <label className="block text-sm font-semibold text-gray-700 mb-3">
+              Month *
+              <IconTooltip
+                content="Select the month for this timesheet. Working days will be automatically calculated."
+                icon={InformationCircleIcon}
+                position="right"
+              >
+                <span></span>
+              </IconTooltip>
+            </label>
+            <input
+              type="month"
+              required
+              value={formData.month}
+              onChange={(e) =>
+                setFormData({ ...formData, month: e.target.value })
+              }
+              className={`w-full px-4 py-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200 ${
+                errors.month ? "border-red-300" : "border-gray-300"
+              }`}
+            />
+            {errors.month && (
+              <p className="text-red-500 text-sm mt-2">{errors.month}</p>
+            )}
+          </div>
+          <div>
+            <label className="block text-sm font-semibold text-gray-700 mb-3">
+              Days Worked *
+              <IconTooltip
+                content="Enter the number of days you actually worked this month. This cannot exceed the total working days."
+                icon={InformationCircleIcon}
+                position="right"
+              >
+                <span></span>
+              </IconTooltip>
+            </label>
+            <input
+              type="number"
+              required
+              min="1"
+              max="31"
+              value={formData.daysWorked}
+              onChange={(e) =>
+                setFormData({
+                  ...formData,
+                  daysWorked: e.target.value,
+                })
+              }
+              className={`w-full px-4 py-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200 ${
+                errors.daysWorked ? "border-red-300" : "border-gray-300"
+              }`}
+            />
+            {errors.daysWorked && (
+              <p className="text-red-500 text-sm mt-2">{errors.daysWorked}</p>
+            )}
+            {formData.totalWorkingDays && (
+              <p className="text-xs text-gray-500 mt-2">
+                Total working days: {formData.totalWorkingDays}
+              </p>
+            )}
+          </div>
+          <div>
+            <label className="block text-sm font-semibold text-gray-700 mb-3">
+              Hours Per Day (Optional)
+              <IconTooltip
+                content="Hours worked per day. If not specified, only days worked will be tracked without hourly calculations."
+                icon={InformationCircleIcon}
+                position="right"
+              >
+                <span></span>
+              </IconTooltip>
+            </label>
+            <input
+              type="number"
+              min="1"
+              max="24"
+              placeholder="8"
+              value={formData.hoursPerDay}
+              onChange={(e) =>
+                setFormData({
+                  ...formData,
+                  hoursPerDay: e.target.value,
+                })
+              }
+              className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200"
+            />
           </div>
         </div>
-      </div>
+
+        {/* Total Working Days and Status */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div>
+            <label className="block text-sm font-semibold text-gray-700 mb-3">
+              Total Working Days in Month
+              <IconTooltip
+                content="Total number of working days in the selected month (excluding weekends). This is automatically calculated but can be manually adjusted."
+                icon={InformationCircleIcon}
+                position="right"
+              >
+                <span></span>
+              </IconTooltip>
+            </label>
+            <input
+              type="number"
+              min="1"
+              max="31"
+              value={formData.totalWorkingDays}
+              onChange={(e) =>
+                setFormData({
+                  ...formData,
+                  totalWorkingDays: e.target.value,
+                })
+              }
+              className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200"
+            />
+            <p className="text-xs text-gray-500 mt-2">
+              Automatically calculated based on month selection
+            </p>
+          </div>
+          <div>
+            <label className="block text-sm font-semibold text-gray-700 mb-3">
+              Status
+              <IconTooltip
+                content="Current status of the timesheet. You can change this to move it through the workflow."
+                icon={InformationCircleIcon}
+                position="right"
+              >
+                <span></span>
+              </IconTooltip>
+            </label>
+            <select
+              value={formData.status}
+              onChange={(e) =>
+                setFormData({
+                  ...formData,
+                  status: e.target.value as
+                    | "draft"
+                    | "submitted"
+                    | "approved"
+                    | "rejected"
+                    | "invoiced",
+                })
+              }
+              className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200"
+            >
+              <option value="draft">Draft</option>
+              <option value="submitted">Submitted</option>
+              <option value="approved">Approved</option>
+              <option value="rejected">Rejected</option>
+              <option value="invoiced">Invoiced</option>
+            </select>
+            <div className="mt-2">
+              <StatusBadge status={formData.status} />
+            </div>
+          </div>
+        </div>
+
+        {/* Project and Costing Information */}
+        {selectedProject && (
+          <div className="bg-gradient-to-r from-primary-50 to-blue-50 p-6 rounded-xl border border-primary-100">
+            <h4 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+              <CalculatorIcon className="h-5 w-5 mr-2 text-primary-600" />
+              Project Information
+            </h4>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              <div className="bg-white p-3 rounded-lg">
+                <p className="text-xs text-gray-500 font-medium">Project</p>
+                <p className="text-sm font-semibold text-gray-900 mt-1">
+                  {selectedProject.name}
+                </p>
+              </div>
+              <div className="bg-white p-3 rounded-lg">
+                <p className="text-xs text-gray-500 font-medium">
+                  Billing Rate
+                </p>
+                <p className="text-sm font-semibold text-gray-900 mt-1">
+                  ₹{selectedProject.billingTerms}/hr
+                </p>
+              </div>
+              <div className="bg-white p-3 rounded-lg">
+                <p className="text-xs text-gray-500 font-medium">
+                  Working Days
+                </p>
+                <p className="text-sm font-semibold text-gray-900 mt-1">
+                  {formData.totalWorkingDays}
+                </p>
+              </div>
+              <div className="bg-white p-3 rounded-lg">
+                <p className="text-xs text-gray-500 font-medium">
+                  Estimated Amount
+                </p>
+                <p className="text-sm font-semibold text-primary-600 mt-1">
+                  ₹
+                  {parseInt(formData.daysWorked || "0") *
+                    parseInt(formData.hoursPerDay) *
+                    selectedProject.billingTerms}
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
+      </form>
     );
   }
 );
@@ -779,8 +754,14 @@ export default function TimesheetPage() {
     const invoicedTimesheets = timesheets.filter(
       (t) => t.status === "invoiced"
     ).length;
-    const totalAmount = timesheets.reduce((sum, t) => sum + (t.totalAmount || 0), 0);
-    const totalHours = timesheets.reduce((sum, t) => sum + (t.totalHours || 0), 0);
+    const totalAmount = timesheets.reduce(
+      (sum, t) => sum + (t.totalAmount || 0),
+      0
+    );
+    const totalHours = timesheets.reduce(
+      (sum, t) => sum + (t.totalHours || 0),
+      0
+    );
 
     return {
       totalTimesheets,
@@ -832,8 +813,6 @@ export default function TimesheetPage() {
     }
   }, [timesheetToDelete, deleteTimesheet]);
 
-
-
   if (!isClient) {
     return (
       <div className="flex items-center justify-center min-h-screen">
@@ -864,122 +843,7 @@ export default function TimesheetPage() {
           </button>
         </div>
       </div>
-
-      {/* Enhanced Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <Tooltip content="Total number of timesheets created across all projects">
-          <div>
-            <StatsCard
-              icon={CalculatorIcon}
-              title="Total Timesheets"
-              value={stats.totalTimesheets.toString()}
-              color="text-primary-600"
-            />
-          </div>
-        </Tooltip>
-        <Tooltip content="Total billing amount across all timesheets">
-          <div>
-            <StatsCard
-              icon={CurrencyRupeeIcon}
-              title="Total Amount"
-              value={formatCurrency(stats.totalAmount)}
-              color="text-success-600"
-            />
-          </div>
-        </Tooltip>
-        <Tooltip content="Total hours worked across all timesheets">
-          <div>
-            <StatsCard
-              icon={ClockIcon}
-              title="Total Hours"
-              value={stats.totalHours.toString()}
-              color="text-info-600"
-            />
-          </div>
-        </Tooltip>
-        <Tooltip content="Number of timesheets that have been invoiced">
-          <div>
-            <StatsCard
-              icon={DocumentTextIcon}
-              title="Invoiced"
-              value={stats.invoicedTimesheets.toString()}
-              color="text-purple-600"
-            />
-          </div>
-        </Tooltip>
-      </div>
-
-      {/* Status Summary Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-        <Tooltip content="Timesheets in draft status - ready for submission">
-          <div>
-            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Draft</p>
-                  <p className="text-2xl font-bold text-gray-600 dark:text-gray-300 mt-1">
-                    {stats.draftTimesheets}
-                  </p>
-                </div>
-                <div className="p-3 bg-gray-100 dark:bg-gray-700 rounded-lg">
-                  <DocumentTextIcon className="h-6 w-6 text-gray-600 dark:text-gray-400" />
-                </div>
-              </div>
-            </div>
-          </div>
-        </Tooltip>
-        <Tooltip content="Timesheets submitted for approval - awaiting review">
-          <div>
-            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Submitted</p>
-                  <p className="text-2xl font-bold text-warning-600 dark:text-warning-400 mt-1">
-                    {stats.submittedTimesheets}
-                  </p>
-                </div>
-                <div className="p-3 bg-warning-100 dark:bg-warning-900 rounded-lg">
-                  <ClockIcon className="h-6 w-6 text-warning-600 dark:text-warning-400" />
-                </div>
-              </div>
-            </div>
-          </div>
-        </Tooltip>
-        <Tooltip content="Timesheets approved and ready for invoicing">
-          <div>
-            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Approved</p>
-                  <p className="text-2xl font-bold text-success-600 dark:text-success-400 mt-1">
-                    {stats.approvedTimesheets}
-                  </p>
-                </div>
-                <div className="p-3 bg-success-100 dark:bg-success-900 rounded-lg">
-                  <CheckIcon className="h-6 w-6 text-success-600 dark:text-success-400" />
-                </div>
-              </div>
-            </div>
-          </div>
-        </Tooltip>
-        <Tooltip content="Timesheets that have been invoiced and billed">
-          <div>
-            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Invoiced</p>
-                  <p className="text-2xl font-bold text-purple-600 dark:text-purple-400 mt-1">
-                    {stats.invoicedTimesheets}
-                  </p>
-                </div>
-                <div className="p-3 bg-purple-100 dark:bg-purple-900 rounded-lg">
-                  <CurrencyRupeeIcon className="h-6 w-6 text-purple-600 dark:text-purple-400" />
-                </div>
-              </div>
-            </div>
-          </div>
-        </Tooltip>
-      </div>
+      {/* (Removed: Stats Cards and Status Summary Cards) */}
 
       {/* Enhanced Search and Filters */}
       <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
@@ -1078,15 +942,43 @@ export default function TimesheetPage() {
       </div>
 
       {/* Modal */}
-      <TimesheetModal
+      <Modal
         isOpen={isModalOpen}
         onClose={() => {
           setIsModalOpen(false);
           setEditingTimesheet(null);
         }}
-        editingTimesheet={editingTimesheet}
-        onSubmit={handleSubmit}
-      />
+        title={editingTimesheet ? "Edit Timesheet" : "Create New Timesheet"}
+        footer={
+          <>
+            <button
+              type="button"
+              onClick={() => {
+                setIsModalOpen(false);
+                setEditingTimesheet(null);
+              }}
+              className="btn-secondary mr-2"
+            >
+              Cancel
+            </button>
+            <button type="submit" form="timesheet-form" className="btn-primary">
+              {editingTimesheet ? "Update" : "Create"} Timesheet
+            </button>
+          </>
+        }
+      >
+        <TimesheetModal
+          isOpen={isModalOpen}
+          onClose={() => {
+            setIsModalOpen(false);
+            setEditingTimesheet(null);
+          }}
+          editingTimesheet={editingTimesheet}
+          onSubmit={handleSubmit}
+          formId="timesheet-form"
+          hideHeaderAndFooter={true}
+        />
+      </Modal>
 
       {/* Confirmation Dialog */}
       <ConfirmationDialog

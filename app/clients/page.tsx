@@ -26,6 +26,7 @@ import { Tooltip, ActionTooltip, IconTooltip } from "@/components/Tooltip";
 import { InformationCircleIcon } from "@heroicons/react/24/outline";
 import { ConfirmationDialog } from "@/components/ConfirmationDialog";
 import React from "react";
+import Modal from "@/components/Modal";
 
 // Enhanced Client Card Component
 const ClientCard = React.memo(
@@ -94,7 +95,9 @@ const ClientCard = React.memo(
               <h3 className="text-lg font-semibold text-gray-900 dark:text-white group-hover:text-primary-600 dark:group-hover:text-primary-400 transition-colors">
                 {client.name}
               </h3>
-              <p className="text-sm text-gray-600 dark:text-gray-400">{client.company}</p>
+              <p className="text-sm text-gray-600 dark:text-gray-400">
+                {client.company}
+              </p>
             </div>
           </div>
           <div className="flex items-center space-x-2">
@@ -412,7 +415,9 @@ export default function ClientsPage() {
       <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700 p-8">
         <div className="flex flex-col md:flex-row md:items-center justify-between space-y-4 md:space-y-0">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Clients</h1>
+            <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
+              Clients
+            </h1>
             <p className="text-gray-600 dark:text-gray-400 mt-2">
               Manage your client relationships and business partnerships
             </p>
@@ -437,7 +442,9 @@ export default function ClientsPage() {
         <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Total Clients</p>
+              <p className="text-sm font-medium text-gray-600 dark:text-gray-400">
+                Total Clients
+              </p>
               <p className="text-2xl font-bold text-primary-600 dark:text-primary-400 mt-1">
                 {clients.length}
               </p>
@@ -465,7 +472,9 @@ export default function ClientsPage() {
         <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Prospects</p>
+              <p className="text-sm font-medium text-gray-600 dark:text-gray-400">
+                Prospects
+              </p>
               <p className="text-2xl font-bold text-blue-600 dark:text-blue-400 mt-1">
                 {clients.filter((c) => c.status === "prospect").length}
               </p>
@@ -478,7 +487,9 @@ export default function ClientsPage() {
         <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Leads</p>
+              <p className="text-sm font-medium text-gray-600 dark:text-gray-400">
+                Leads
+              </p>
               <p className="text-2xl font-bold text-yellow-600 dark:text-yellow-400 mt-1">
                 {clients.filter((c) => c.status === "lead").length}
               </p>
@@ -559,437 +570,413 @@ export default function ClientsPage() {
       )}
 
       {/* Modal */}
-      {isModalOpen && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 overflow-y-auto h-full w-full z-50 flex items-center justify-center p-4">
-          <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-4xl mx-auto">
-            <div className="p-8">
-              <div className="flex items-center justify-between mb-8">
-                <div>
-                  <h3 className="text-2xl font-bold text-gray-900">
-                    {editingClient ? "Edit Client" : "Add New Client"}
-                  </h3>
-                  <p className="text-gray-600 mt-1">
-                    {editingClient
-                      ? "Update client information"
-                      : "Create a new client profile"}
-                  </p>
-                </div>
-                <button
-                  onClick={() => {
-                    setIsModalOpen(false);
-                    setEditingClient(null);
-                    setFormData({
-                      name: "",
-                      email: "",
-                      phone: "",
-                      company: "",
-                      address: "",
-                      gstId: "",
-                      companyAddress: "",
-                      companyWebsite: "",
-                      companyLinkedin: "",
-                      companyOwner: "",
-                      pocName: "",
-                      pocEmail: "",
-                      pocContact: "",
-                      companyLogo: "",
-                      industry: "",
-                      companySize: "small" as const,
-                      status: "active" as const,
-                      source: "",
-                      notes: "",
-                      tags: [] as string[],
-                      annualRevenue: "",
-                      employeeCount: "",
-                    });
-                  }}
-                  className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
+      <Modal
+        isOpen={isModalOpen}
+        onClose={() => {
+          setIsModalOpen(false);
+          setEditingClient(null);
+          setFormData({
+            name: "",
+            email: "",
+            phone: "",
+            company: "",
+            address: "",
+            gstId: "",
+            companyAddress: "",
+            companyWebsite: "",
+            companyLinkedin: "",
+            companyOwner: "",
+            pocName: "",
+            pocEmail: "",
+            pocContact: "",
+            companyLogo: "",
+            industry: "",
+            companySize: "small" as const,
+            status: "active" as const,
+            source: "",
+            notes: "",
+            tags: [] as string[],
+            annualRevenue: "",
+            employeeCount: "",
+          });
+        }}
+        title={editingClient ? "Edit Client" : "Add New Client"}
+        footer={
+          <>
+            <button
+              type="button"
+              onClick={() => {
+                setIsModalOpen(false);
+                setEditingClient(null);
+                setFormData({
+                  name: "",
+                  email: "",
+                  phone: "",
+                  company: "",
+                  address: "",
+                  gstId: "",
+                  companyAddress: "",
+                  companyWebsite: "",
+                  companyLinkedin: "",
+                  companyOwner: "",
+                  pocName: "",
+                  pocEmail: "",
+                  pocContact: "",
+                  companyLogo: "",
+                  industry: "",
+                  companySize: "small" as const,
+                  status: "active" as const,
+                  source: "",
+                  notes: "",
+                  tags: [] as string[],
+                  annualRevenue: "",
+                  employeeCount: "",
+                });
+              }}
+              className="btn-secondary mr-2"
+            >
+              Cancel
+            </button>
+            <button type="submit" form="client-form" className="btn-primary">
+              {editingClient ? "Update" : "Add"} Client
+            </button>
+          </>
+        }
+      >
+        <form id="client-form" onSubmit={handleSubmit} className="space-y-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+              <label className="block text-sm font-semibold text-gray-700 mb-3">
+                Client Name *
+                <IconTooltip
+                  content="Enter the primary contact person's name"
+                  icon={InformationCircleIcon}
+                  position="right"
                 >
-                  <TrashIcon className="h-6 w-6" />
-                </button>
-              </div>
-
-              <form onSubmit={handleSubmit} className="space-y-8">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div>
-                    <label className="block text-sm font-semibold text-gray-700 mb-3">
-                      Client Name *
-                      <IconTooltip
-                        content="Enter the primary contact person's name"
-                        icon={InformationCircleIcon}
-                        position="right"
-                      >
-                        <span></span>
-                      </IconTooltip>
-                    </label>
-                    <input
-                      type="text"
-                      required
-                      value={formData.name}
-                      onChange={(e) =>
-                        setFormData({ ...formData, name: e.target.value })
-                      }
-                      className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-semibold text-gray-700 mb-3">
-                      Company *
-                      <IconTooltip
-                        content="Enter the company or organization name"
-                        icon={InformationCircleIcon}
-                        position="right"
-                      >
-                        <span></span>
-                      </IconTooltip>
-                    </label>
-                    <input
-                      type="text"
-                      required
-                      value={formData.company}
-                      onChange={(e) =>
-                        setFormData({ ...formData, company: e.target.value })
-                      }
-                      className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-semibold text-gray-700 mb-3">
-                      Email *
-                      <IconTooltip
-                        content="Primary email address for communication"
-                        icon={InformationCircleIcon}
-                        position="right"
-                      >
-                        <span></span>
-                      </IconTooltip>
-                    </label>
-                    <input
-                      type="email"
-                      required
-                      value={formData.email}
-                      onChange={(e) =>
-                        setFormData({ ...formData, email: e.target.value })
-                      }
-                      className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-semibold text-gray-700 mb-3">
-                      Phone
-                      <IconTooltip
-                        content="Contact phone number"
-                        icon={InformationCircleIcon}
-                        position="right"
-                      >
-                        <span></span>
-                      </IconTooltip>
-                    </label>
-                    <input
-                      type="tel"
-                      value={formData.phone}
-                      onChange={(e) =>
-                        setFormData({ ...formData, phone: e.target.value })
-                      }
-                      className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-semibold text-gray-700 mb-3">
-                      Industry
-                      <IconTooltip
-                        content="Client's business industry or sector"
-                        icon={InformationCircleIcon}
-                        position="right"
-                      >
-                        <span></span>
-                      </IconTooltip>
-                    </label>
-                    <input
-                      type="text"
-                      value={formData.industry}
-                      onChange={(e) =>
-                        setFormData({ ...formData, industry: e.target.value })
-                      }
-                      className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-semibold text-gray-700 mb-3">
-                      Company Size
-                      <IconTooltip
-                        content="Size of the client's organization"
-                        icon={InformationCircleIcon}
-                        position="right"
-                      >
-                        <span></span>
-                      </IconTooltip>
-                    </label>
-                    <select
-                      value={formData.companySize}
-                      onChange={(e) =>
-                        setFormData({
-                          ...formData,
-                          companySize: e.target.value as
-                            | "startup"
-                            | "small"
-                            | "medium"
-                            | "large"
-                            | "enterprise",
-                        })
-                      }
-                      className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200"
-                    >
-                      <option value="startup">Startup</option>
-                      <option value="small">Small</option>
-                      <option value="medium">Medium</option>
-                      <option value="large">Large</option>
-                      <option value="enterprise">Enterprise</option>
-                    </select>
-                  </div>
-                  <div>
-                    <label className="block text-sm font-semibold text-gray-700 mb-3">
-                      Status
-                      <IconTooltip
-                        content="Current relationship status with the client"
-                        icon={InformationCircleIcon}
-                        position="right"
-                      >
-                        <span></span>
-                      </IconTooltip>
-                    </label>
-                    <select
-                      value={formData.status}
-                      onChange={(e) =>
-                        setFormData({
-                          ...formData,
-                          status: e.target.value as
-                            | "active"
-                            | "inactive"
-                            | "prospect"
-                            | "lead",
-                        })
-                      }
-                      className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200"
-                    >
-                      <option value="active">Active</option>
-                      <option value="inactive">Inactive</option>
-                      <option value="prospect">Prospect</option>
-                      <option value="lead">Lead</option>
-                    </select>
-                  </div>
-                  <div>
-                    <label className="block text-sm font-semibold text-gray-700 mb-3">
-                      Annual Revenue (₹)
-                      <IconTooltip
-                        content="Client's annual revenue in Indian Rupees"
-                        icon={InformationCircleIcon}
-                        position="right"
-                      >
-                        <span></span>
-                      </IconTooltip>
-                    </label>
-                    <input
-                      type="number"
-                      value={formData.annualRevenue}
-                      onChange={(e) =>
-                        setFormData({
-                          ...formData,
-                          annualRevenue: e.target.value,
-                        })
-                      }
-                      className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200"
-                      placeholder="Annual revenue in INR"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-semibold text-gray-700 mb-3">
-                      Employee Count
-                      <IconTooltip
-                        content="Number of employees in the organization"
-                        icon={InformationCircleIcon}
-                        position="right"
-                      >
-                        <span></span>
-                      </IconTooltip>
-                    </label>
-                    <input
-                      type="number"
-                      value={formData.employeeCount}
-                      onChange={(e) =>
-                        setFormData({
-                          ...formData,
-                          employeeCount: e.target.value,
-                        })
-                      }
-                      className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200"
-                      placeholder="Number of employees"
-                    />
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div>
-                    <label className="block text-sm font-semibold text-gray-700 mb-3">
-                      Company Website
-                      <IconTooltip
-                        content="Client's official website URL"
-                        icon={InformationCircleIcon}
-                        position="right"
-                      >
-                        <span></span>
-                      </IconTooltip>
-                    </label>
-                    <input
-                      type="url"
-                      value={formData.companyWebsite}
-                      onChange={(e) =>
-                        setFormData({
-                          ...formData,
-                          companyWebsite: e.target.value,
-                        })
-                      }
-                      className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-semibold text-gray-700 mb-3">
-                      Company Address
-                      <IconTooltip
-                        content="Physical address of the company"
-                        icon={InformationCircleIcon}
-                        position="right"
-                      >
-                        <span></span>
-                      </IconTooltip>
-                    </label>
-                    <input
-                      type="text"
-                      value={formData.companyAddress}
-                      onChange={(e) =>
-                        setFormData({
-                          ...formData,
-                          companyAddress: e.target.value,
-                        })
-                      }
-                      className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200"
-                    />
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div>
-                    <label className="block text-sm font-semibold text-gray-700 mb-3">
-                      POC Name
-                      <IconTooltip
-                        content="Point of contact person's name"
-                        icon={InformationCircleIcon}
-                        position="right"
-                      >
-                        <span></span>
-                      </IconTooltip>
-                    </label>
-                    <input
-                      type="text"
-                      value={formData.pocName}
-                      onChange={(e) =>
-                        setFormData({ ...formData, pocName: e.target.value })
-                      }
-                      className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-semibold text-gray-700 mb-3">
-                      POC Email
-                      <IconTooltip
-                        content="Point of contact's email address"
-                        icon={InformationCircleIcon}
-                        position="right"
-                      >
-                        <span></span>
-                      </IconTooltip>
-                    </label>
-                    <input
-                      type="email"
-                      value={formData.pocEmail}
-                      onChange={(e) =>
-                        setFormData({ ...formData, pocEmail: e.target.value })
-                      }
-                      className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200"
-                    />
-                  </div>
-                </div>
-
-                <div className="md:col-span-2">
-                  <label className="block text-sm font-semibold text-gray-700 mb-3">
-                    Notes
-                    <IconTooltip
-                      content="Additional notes about the client"
-                      icon={InformationCircleIcon}
-                      position="right"
-                    >
-                      <span></span>
-                    </IconTooltip>
-                  </label>
-                  <textarea
-                    value={formData.notes}
-                    onChange={(e) =>
-                      setFormData({ ...formData, notes: e.target.value })
-                    }
-                    className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200"
-                    rows={3}
-                    placeholder="Additional notes about the client"
-                  />
-                </div>
-
-                <div className="flex justify-end space-x-4 pt-6 border-t border-gray-200">
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setIsModalOpen(false);
-                      setEditingClient(null);
-                      setFormData({
-                        name: "",
-                        email: "",
-                        phone: "",
-                        company: "",
-                        address: "",
-                        gstId: "",
-                        companyAddress: "",
-                        companyWebsite: "",
-                        companyLinkedin: "",
-                        companyOwner: "",
-                        pocName: "",
-                        pocEmail: "",
-                        pocContact: "",
-                        companyLogo: "",
-                        industry: "",
-                        companySize: "small" as const,
-                        status: "active" as const,
-                        source: "",
-                        notes: "",
-                        tags: [] as string[],
-                        annualRevenue: "",
-                        employeeCount: "",
-                      });
-                    }}
-                    className="px-6 py-3 border border-gray-300 text-gray-700 rounded-xl font-medium hover:bg-gray-50 transition-colors duration-200"
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    type="submit"
-                    className="px-6 py-3 bg-primary-600 text-white rounded-xl font-medium hover:bg-primary-700 transition-colors duration-200 flex items-center"
-                  >
-                    <PlusIcon className="h-4 w-4 mr-2" />
-                    {editingClient ? "Update" : "Add"} Client
-                  </button>
-                </div>
-              </form>
+                  <span></span>
+                </IconTooltip>
+              </label>
+              <input
+                type="text"
+                required
+                value={formData.name}
+                onChange={(e) =>
+                  setFormData({ ...formData, name: e.target.value })
+                }
+                className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-semibold text-gray-700 mb-3">
+                Company *
+                <IconTooltip
+                  content="Enter the company or organization name"
+                  icon={InformationCircleIcon}
+                  position="right"
+                >
+                  <span></span>
+                </IconTooltip>
+              </label>
+              <input
+                type="text"
+                required
+                value={formData.company}
+                onChange={(e) =>
+                  setFormData({ ...formData, company: e.target.value })
+                }
+                className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-semibold text-gray-700 mb-3">
+                Email *
+                <IconTooltip
+                  content="Primary email address for communication"
+                  icon={InformationCircleIcon}
+                  position="right"
+                >
+                  <span></span>
+                </IconTooltip>
+              </label>
+              <input
+                type="email"
+                required
+                value={formData.email}
+                onChange={(e) =>
+                  setFormData({ ...formData, email: e.target.value })
+                }
+                className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-semibold text-gray-700 mb-3">
+                Phone
+                <IconTooltip
+                  content="Contact phone number"
+                  icon={InformationCircleIcon}
+                  position="right"
+                >
+                  <span></span>
+                </IconTooltip>
+              </label>
+              <input
+                type="tel"
+                value={formData.phone}
+                onChange={(e) =>
+                  setFormData({ ...formData, phone: e.target.value })
+                }
+                className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-semibold text-gray-700 mb-3">
+                Industry
+                <IconTooltip
+                  content="Client's business industry or sector"
+                  icon={InformationCircleIcon}
+                  position="right"
+                >
+                  <span></span>
+                </IconTooltip>
+              </label>
+              <input
+                type="text"
+                value={formData.industry}
+                onChange={(e) =>
+                  setFormData({ ...formData, industry: e.target.value })
+                }
+                className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-semibold text-gray-700 mb-3">
+                Company Size
+                <IconTooltip
+                  content="Size of the client's organization"
+                  icon={InformationCircleIcon}
+                  position="right"
+                >
+                  <span></span>
+                </IconTooltip>
+              </label>
+              <select
+                value={formData.companySize}
+                onChange={(e) =>
+                  setFormData({
+                    ...formData,
+                    companySize: e.target.value as
+                      | "startup"
+                      | "small"
+                      | "medium"
+                      | "large"
+                      | "enterprise",
+                  })
+                }
+                className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200"
+              >
+                <option value="startup">Startup</option>
+                <option value="small">Small</option>
+                <option value="medium">Medium</option>
+                <option value="large">Large</option>
+                <option value="enterprise">Enterprise</option>
+              </select>
+            </div>
+            <div>
+              <label className="block text-sm font-semibold text-gray-700 mb-3">
+                Status
+                <IconTooltip
+                  content="Current relationship status with the client"
+                  icon={InformationCircleIcon}
+                  position="right"
+                >
+                  <span></span>
+                </IconTooltip>
+              </label>
+              <select
+                value={formData.status}
+                onChange={(e) =>
+                  setFormData({
+                    ...formData,
+                    status: e.target.value as
+                      | "active"
+                      | "inactive"
+                      | "prospect"
+                      | "lead",
+                  })
+                }
+                className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200"
+              >
+                <option value="active">Active</option>
+                <option value="inactive">Inactive</option>
+                <option value="prospect">Prospect</option>
+                <option value="lead">Lead</option>
+              </select>
+            </div>
+            <div>
+              <label className="block text-sm font-semibold text-gray-700 mb-3">
+                Annual Revenue (₹)
+                <IconTooltip
+                  content="Client's annual revenue in Indian Rupees"
+                  icon={InformationCircleIcon}
+                  position="right"
+                >
+                  <span></span>
+                </IconTooltip>
+              </label>
+              <input
+                type="number"
+                value={formData.annualRevenue}
+                onChange={(e) =>
+                  setFormData({
+                    ...formData,
+                    annualRevenue: e.target.value,
+                  })
+                }
+                className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200"
+                placeholder="Annual revenue in INR"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-semibold text-gray-700 mb-3">
+                Employee Count
+                <IconTooltip
+                  content="Number of employees in the organization"
+                  icon={InformationCircleIcon}
+                  position="right"
+                >
+                  <span></span>
+                </IconTooltip>
+              </label>
+              <input
+                type="number"
+                value={formData.employeeCount}
+                onChange={(e) =>
+                  setFormData({
+                    ...formData,
+                    employeeCount: e.target.value,
+                  })
+                }
+                className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200"
+                placeholder="Number of employees"
+              />
             </div>
           </div>
-        </div>
-      )}
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+              <label className="block text-sm font-semibold text-gray-700 mb-3">
+                Company Website
+                <IconTooltip
+                  content="Client's official website URL"
+                  icon={InformationCircleIcon}
+                  position="right"
+                >
+                  <span></span>
+                </IconTooltip>
+              </label>
+              <input
+                type="url"
+                value={formData.companyWebsite}
+                onChange={(e) =>
+                  setFormData({
+                    ...formData,
+                    companyWebsite: e.target.value,
+                  })
+                }
+                className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-semibold text-gray-700 mb-3">
+                Company Address
+                <IconTooltip
+                  content="Physical address of the company"
+                  icon={InformationCircleIcon}
+                  position="right"
+                >
+                  <span></span>
+                </IconTooltip>
+              </label>
+              <input
+                type="text"
+                value={formData.companyAddress}
+                onChange={(e) =>
+                  setFormData({
+                    ...formData,
+                    companyAddress: e.target.value,
+                  })
+                }
+                className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200"
+              />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+              <label className="block text-sm font-semibold text-gray-700 mb-3">
+                POC Name
+                <IconTooltip
+                  content="Point of contact person's name"
+                  icon={InformationCircleIcon}
+                  position="right"
+                >
+                  <span></span>
+                </IconTooltip>
+              </label>
+              <input
+                type="text"
+                value={formData.pocName}
+                onChange={(e) =>
+                  setFormData({ ...formData, pocName: e.target.value })
+                }
+                className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-semibold text-gray-700 mb-3">
+                POC Email
+                <IconTooltip
+                  content="Point of contact's email address"
+                  icon={InformationCircleIcon}
+                  position="right"
+                >
+                  <span></span>
+                </IconTooltip>
+              </label>
+              <input
+                type="email"
+                value={formData.pocEmail}
+                onChange={(e) =>
+                  setFormData({ ...formData, pocEmail: e.target.value })
+                }
+                className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200"
+              />
+            </div>
+          </div>
+
+          <div className="md:col-span-2">
+            <label className="block text-sm font-semibold text-gray-700 mb-3">
+              Notes
+              <IconTooltip
+                content="Additional notes about the client"
+                icon={InformationCircleIcon}
+                position="right"
+              >
+                <span></span>
+              </IconTooltip>
+            </label>
+            <textarea
+              value={formData.notes}
+              onChange={(e) =>
+                setFormData({ ...formData, notes: e.target.value })
+              }
+              className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200"
+              rows={3}
+              placeholder="Additional notes about the client"
+            />
+          </div>
+        </form>
+      </Modal>
 
       {/* Confirmation Dialog */}
       <ConfirmationDialog

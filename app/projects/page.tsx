@@ -11,12 +11,17 @@ import {
 } from "@heroicons/react/24/outline";
 import { format } from "date-fns";
 import toast from "react-hot-toast";
+import clsx from "clsx";
+import Modal from "@/components/Modal";
 
 export default function ProjectsPage() {
   const { projects, clients, addProject, updateProject, deleteProject } =
     useAccountingStore();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingProject, setEditingProject] = useState<Project | null>(null);
+  const [selectedTab, setSelectedTab] = useState<"all" | "active" | "inactive">(
+    "all"
+  );
   const [formData, setFormData] = useState({
     projectCode: "",
     name: "",
@@ -36,10 +41,12 @@ export default function ProjectsPage() {
     e.preventDefault();
 
     const budget = parseFloat(formData.budget);
-    const billingRate = parseFloat(formData.billingRate);
+    const billingRate = formData.billingRate
+      ? parseFloat(formData.billingRate)
+      : undefined;
     const estimatedHours = parseFloat(formData.estimatedHours);
     const gstRate = parseFloat(formData.gstRate);
-    
+
     // Calculate cost breakdown
     const subtotal = budget;
     const gstAmount = (subtotal * gstRate) / 100;
@@ -104,7 +111,7 @@ export default function ProjectsPage() {
       startDate: format(new Date(project.startDate), "yyyy-MM-dd"),
       status: project.status,
       billingTerms: project.billingTerms.toString(),
-      billingRate: project.billingRate.toString(),
+      billingRate: project.billingRate?.toString() || "",
       estimatedHours: project.estimatedHours.toString(),
       gstRate: project.gstRate.toString(),
       gstInclusive: project.gstInclusive,
@@ -141,13 +148,25 @@ export default function ProjectsPage() {
     }
   };
 
+  // Filter projects based on selected tab
+  const filteredProjects = projects.filter((project) => {
+    if (selectedTab === "all") return true;
+    if (selectedTab === "active") return project.status === "active";
+    if (selectedTab === "inactive") return project.status === "inactive";
+    return true;
+  });
+
   return (
     <div className="space-y-6">
       {/* Header */}
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Projects</h1>
-          <p className="text-gray-600 dark:text-gray-400">Manage your client projects</p>
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
+            Projects
+          </h1>
+          <p className="text-gray-600 dark:text-gray-400">
+            Manage your client projects
+          </p>
         </div>
         <button
           onClick={() => setIsModalOpen(true)}
@@ -157,7 +176,27 @@ export default function ProjectsPage() {
           Add Project
         </button>
       </div>
-
+      {/* Tabs */}
+      <div className="flex space-x-2 border-b border-gray-200 dark:border-gray-700 mb-2">
+        {[
+          { label: "All", value: "all" },
+          { label: "Active", value: "active" },
+          { label: "Inactive", value: "inactive" },
+        ].map((tab) => (
+          <button
+            key={tab.value}
+            onClick={() => setSelectedTab(tab.value as any)}
+            className={clsx(
+              "px-4 py-2 text-sm font-medium focus:outline-none border-b-2 transition",
+              selectedTab === tab.value
+                ? "border-primary-600 text-primary-600 dark:text-primary-400 dark:border-primary-400"
+                : "border-transparent text-gray-600 dark:text-gray-400 hover:text-primary-600 dark:hover:text-primary-400"
+            )}
+          >
+            {tab.label}
+          </button>
+        ))}
+      </div>
       {/* Projects Table */}
       <div className="card">
         <div className="overflow-x-auto">
@@ -176,12 +215,13 @@ export default function ProjectsPage() {
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
-              {projects.map((project) => {
+              {filteredProjects.map((project) => {
                 const client = clients.find((c) => c.id === project.clientId);
                 return (
                   <tr key={project.id}>
+                    {/* Project Code as first column, rectangular background */}
                     <td>
-                      <span className="font-mono font-medium text-primary-600">
+                      <span className="font-mono font-semibold text-primary-700 bg-primary-50 dark:bg-primary-900 px-4 py-2 rounded-md border border-primary-200 dark:border-primary-800">
                         {project.projectCode}
                       </span>
                     </td>
@@ -195,14 +235,19 @@ export default function ProjectsPage() {
                         </div>
                       </div>
                     </td>
-                    <td className="text-gray-900 dark:text-white">{client?.name || "Unknown Client"}</td>
+                    <td className="text-gray-900 dark:text-white">
+                      {client?.name || "Unknown Client"}
+                    </td>
                     <td>
                       <div className="space-y-1">
                         <div className="font-medium text-gray-900 dark:text-white">
                           ₹{project.budget.toLocaleString()}
                         </div>
                         <div className="text-xs text-gray-500 dark:text-gray-400">
-                          ₹{project.billingRate}/hr × {project.estimatedHours}h
+                          {project.billingRate
+                            ? `₹${project.billingRate}/hr × `
+                            : ""}
+                          {project.estimatedHours}h
                         </div>
                       </div>
                     </td>
@@ -212,7 +257,8 @@ export default function ProjectsPage() {
                           ₹{project.costBreakdown.gstAmount.toLocaleString()}
                         </div>
                         <div className="text-xs text-gray-500 dark:text-gray-400">
-                          {project.gstRate}% {project.gstInclusive ? "(Inclusive)" : "(Exclusive)"}
+                          {project.gstRate}%{" "}
+                          {project.gstInclusive ? "(Inclusive)" : "(Exclusive)"}
                         </div>
                       </div>
                     </td>
@@ -261,7 +307,7 @@ export default function ProjectsPage() {
               })}
             </tbody>
           </table>
-          {projects.length === 0 && (
+          {filteredProjects.length === 0 && (
             <div className="text-center py-8">
               <p className="text-gray-500">
                 No projects found. Add your first project to get started.
@@ -272,299 +318,286 @@ export default function ProjectsPage() {
       </div>
 
       {/* Modal */}
-      {isModalOpen && (
-        <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50 flex items-center justify-center p-4">
-          <div className="relative bg-white rounded-lg shadow-xl w-full max-w-4xl mx-auto">
-            <div className="p-6">
-              <h3 className="text-lg font-medium text-gray-900 mb-6">
-                {editingProject ? "Edit Project" : "Add New Project"}
-              </h3>
-              <form onSubmit={handleSubmit} className="space-y-6">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Project Code *
-                    </label>
-                    <input
-                      type="text"
-                      required
-                      value={formData.projectCode}
-                      onChange={(e) =>
-                        setFormData({
-                          ...formData,
-                          projectCode: e.target.value,
-                        })
-                      }
-                      className="input"
-                      placeholder="e.g., BST-01, BST-02"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Project Name
-                    </label>
-                    <input
-                      type="text"
-                      required
-                      value={formData.name}
-                      onChange={(e) =>
-                        setFormData({ ...formData, name: e.target.value })
-                      }
-                      className="input"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Client
-                    </label>
-                    <select
-                      required
-                      value={formData.clientId}
-                      onChange={(e) =>
-                        setFormData({ ...formData, clientId: e.target.value })
-                      }
-                      className="input"
-                    >
-                      <option value="">Select a client</option>
-                      {clients.map((client) => (
-                        <option key={client.id} value={client.id}>
-                          {client.name} - {client.company}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Status
-                    </label>
-                    <select
-                      required
-                      value={formData.status}
-                      onChange={(e) =>
-                        setFormData({
-                          ...formData,
-                          status: e.target.value as
-                            | "active"
-                            | "completed"
-                            | "on-hold"
-                            | "archived",
-                        })
-                      }
-                      className="input"
-                    >
-                      <option value="active">Active</option>
-                      <option value="completed">Completed</option>
-                      <option value="on-hold">On Hold</option>
-                      <option value="archived">Archived</option>
-                    </select>
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Budget (₹)
-                    </label>
-                    <input
-                      type="number"
-                      required
-                      min="0"
-                      step="0.01"
-                      value={formData.budget}
-                      onChange={(e) =>
-                        setFormData({
-                          ...formData,
-                          budget: e.target.value,
-                        })
-                      }
-                      className="input"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Billing Terms
-                    </label>
-                    <select
-                      required
-                      value={formData.billingTerms}
-                      onChange={(e) =>
-                        setFormData({
-                          ...formData,
-                          billingTerms: e.target.value,
-                        })
-                      }
-                      className="input"
-                    >
-                      <option value="10">10 days</option>
-                      <option value="15">15 days</option>
-                      <option value="30">30 days</option>
-                      <option value="45">45 days</option>
-                      <option value="60">60 days</option>
-                      <option value="90">90 days</option>
-                    </select>
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Billing Rate (₹/hr)
-                    </label>
-                    <input
-                      type="number"
-                      required
-                      min="0"
-                      step="0.01"
-                      value={formData.billingRate}
-                      onChange={(e) =>
-                        setFormData({
-                          ...formData,
-                          billingRate: e.target.value,
-                        })
-                      }
-                      className="input"
-                      placeholder="e.g., 1200"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Estimated Hours
-                    </label>
-                    <input
-                      type="number"
-                      required
-                      min="0"
-                      step="0.01"
-                      value={formData.estimatedHours}
-                      onChange={(e) =>
-                        setFormData({
-                          ...formData,
-                          estimatedHours: e.target.value,
-                        })
-                      }
-                      className="input"
-                      placeholder="e.g., 400"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      GST Rate (%)
-                    </label>
-                    <input
-                      type="number"
-                      required
-                      min="0"
-                      max="100"
-                      step="0.01"
-                      value={formData.gstRate}
-                      onChange={(e) =>
-                        setFormData({
-                          ...formData,
-                          gstRate: e.target.value,
-                        })
-                      }
-                      className="input"
-                      placeholder="e.g., 18"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      GST Inclusive
-                    </label>
-                    <div className="flex items-center space-x-4">
-                      <label className="flex items-center">
-                        <input
-                          type="radio"
-                          name="gstInclusive"
-                          value="false"
-                          checked={!formData.gstInclusive}
-                          onChange={() =>
-                            setFormData({
-                              ...formData,
-                              gstInclusive: false,
-                            })
-                          }
-                          className="mr-2"
-                        />
-                        <span className="text-sm text-gray-700">Exclusive</span>
-                      </label>
-                      <label className="flex items-center">
-                        <input
-                          type="radio"
-                          name="gstInclusive"
-                          value="true"
-                          checked={formData.gstInclusive}
-                          onChange={() =>
-                            setFormData({
-                              ...formData,
-                              gstInclusive: true,
-                            })
-                          }
-                          className="mr-2"
-                        />
-                        <span className="text-sm text-gray-700">Inclusive</span>
-                      </label>
-                    </div>
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Start Date
-                    </label>
-                    <input
-                      type="date"
-                      required
-                      value={formData.startDate}
-                      onChange={(e) =>
-                        setFormData({ ...formData, startDate: e.target.value })
-                      }
-                      className="input"
-                    />
-                  </div>
-                  <div className="md:col-span-2">
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Description
-                    </label>
-                    <textarea
-                      value={formData.description}
-                      onChange={(e) =>
-                        setFormData({
-                          ...formData,
-                          description: e.target.value,
-                        })
-                      }
-                      className="input"
-                      rows={3}
-                    />
-                  </div>
-                </div>
-                <div className="flex justify-end space-x-3 pt-6 border-t border-gray-200">
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setIsModalOpen(false);
-                      setEditingProject(null);
+      <Modal
+        isOpen={isModalOpen}
+        onClose={() => {
+          setIsModalOpen(false);
+          setEditingProject(null);
+        }}
+        title={editingProject ? "Edit Project" : "Add New Project"}
+        footer={
+          <>
+            <button
+              type="button"
+              onClick={() => {
+                setIsModalOpen(false);
+                setEditingProject(null);
+              }}
+              className="btn-secondary mr-2"
+            >
+              Cancel
+            </button>
+            <button type="submit" form="project-form" className="btn-primary">
+              {editingProject ? "Update" : "Create"}
+            </button>
+          </>
+        }
+      >
+        <form id="project-form" onSubmit={handleSubmit} className="space-y-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Project Code *
+              </label>
+              <input
+                type="text"
+                required
+                value={formData.projectCode}
+                onChange={(e) =>
+                  setFormData({
+                    ...formData,
+                    projectCode: e.target.value,
+                  })
+                }
+                className="input"
+                placeholder="e.g., BST-01, BST-02"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Project Name
+              </label>
+              <input
+                type="text"
+                required
+                value={formData.name}
+                onChange={(e) =>
+                  setFormData({ ...formData, name: e.target.value })
+                }
+                className="input"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Client
+              </label>
+              <select
+                required
+                value={formData.clientId}
+                onChange={(e) =>
+                  setFormData({ ...formData, clientId: e.target.value })
+                }
+                className="input"
+              >
+                <option value="">Select a client</option>
+                {clients.map((client) => (
+                  <option key={client.id} value={client.id}>
+                    {client.name} - {client.company}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Status
+              </label>
+              <select
+                required
+                value={formData.status}
+                onChange={(e) =>
+                  setFormData({
+                    ...formData,
+                    status: e.target.value as
+                      | "active"
+                      | "inactive"
+                      | "completed"
+                      | "on-hold"
+                      | "archived",
+                  })
+                }
+                className="input"
+              >
+                <option value="active">Active</option>
+                <option value="inactive">Inactive</option>
+                <option value="completed">Completed</option>
+                <option value="on-hold">On Hold</option>
+                <option value="archived">Archived</option>
+              </select>
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Budget (₹)
+              </label>
+              <input
+                type="number"
+                required
+                min="0"
+                step="0.01"
+                value={formData.budget}
+                onChange={(e) =>
+                  setFormData({
+                    ...formData,
+                    budget: e.target.value,
+                  })
+                }
+                className="input"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Billing Terms
+              </label>
+              <select
+                required
+                value={formData.billingTerms}
+                onChange={(e) =>
+                  setFormData({
+                    ...formData,
+                    billingTerms: e.target.value,
+                  })
+                }
+                className="input"
+              >
+                <option value="10">10 days</option>
+                <option value="15">15 days</option>
+                <option value="30">30 days</option>
+                <option value="45">45 days</option>
+                <option value="60">60 days</option>
+                <option value="90">90 days</option>
+              </select>
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Billing Rate (₹/hr) (Optional)
+              </label>
+              <input
+                type="number"
+                min="0"
+                step="0.01"
+                value={formData.billingRate}
+                onChange={(e) =>
+                  setFormData({
+                    ...formData,
+                    billingRate: e.target.value,
+                  })
+                }
+                className="input"
+                placeholder="e.g., 1200"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Estimated Hours
+              </label>
+              <input
+                type="number"
+                required
+                min="0"
+                step="0.01"
+                value={formData.estimatedHours}
+                onChange={(e) =>
+                  setFormData({
+                    ...formData,
+                    estimatedHours: e.target.value,
+                  })
+                }
+                className="input"
+                placeholder="e.g., 400"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                GST Rate (%)
+              </label>
+              <input
+                type="number"
+                required
+                min="0"
+                max="100"
+                step="0.01"
+                value={formData.gstRate}
+                onChange={(e) =>
+                  setFormData({
+                    ...formData,
+                    gstRate: e.target.value,
+                  })
+                }
+                className="input"
+                placeholder="e.g., 18"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                GST Inclusive
+              </label>
+              <div className="flex items-center space-x-4">
+                <label className="flex items-center">
+                  <input
+                    type="radio"
+                    name="gstInclusive"
+                    value="false"
+                    checked={!formData.gstInclusive}
+                    onChange={() =>
                       setFormData({
-                        projectCode: "",
-                        name: "",
-                        clientId: "",
-                        description: "",
-                        budget: "",
-                        startDate: "",
-                        status: "active",
-                        billingTerms: "30",
-                        billingRate: "",
-                        estimatedHours: "",
-                        gstRate: "18",
+                        ...formData,
                         gstInclusive: false,
-                      });
-                    }}
-                    className="btn-secondary"
-                  >
-                    Cancel
-                  </button>
-                  <button type="submit" className="btn-primary">
-                    {editingProject ? "Update" : "Add"} Project
-                  </button>
-                </div>
-              </form>
+                      })
+                    }
+                    className="mr-2"
+                  />
+                  <span className="text-sm text-gray-700">Exclusive</span>
+                </label>
+                <label className="flex items-center">
+                  <input
+                    type="radio"
+                    name="gstInclusive"
+                    value="true"
+                    checked={formData.gstInclusive}
+                    onChange={() =>
+                      setFormData({
+                        ...formData,
+                        gstInclusive: true,
+                      })
+                    }
+                    className="mr-2"
+                  />
+                  <span className="text-sm text-gray-700">Inclusive</span>
+                </label>
+              </div>
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Start Date
+              </label>
+              <input
+                type="date"
+                required
+                value={formData.startDate}
+                onChange={(e) =>
+                  setFormData({ ...formData, startDate: e.target.value })
+                }
+                className="input"
+              />
+            </div>
+            <div className="md:col-span-2">
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Description
+              </label>
+              <textarea
+                value={formData.description}
+                onChange={(e) =>
+                  setFormData({
+                    ...formData,
+                    description: e.target.value,
+                  })
+                }
+                className="input"
+                rows={3}
+              />
             </div>
           </div>
-        </div>
-      )}
+        </form>
+      </Modal>
     </div>
   );
 }

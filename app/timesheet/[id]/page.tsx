@@ -143,24 +143,32 @@ const WorkCalculationCard = React.memo(
                     {timesheet.daysWorked} days
                   </span>
                 </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-gray-600">Hours Per Day:</span>
-                  <span className="font-semibold text-gray-900">
-                    {timesheet.hoursPerDay} hours
-                  </span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-gray-600">Total Hours:</span>
-                  <span className="font-semibold text-gray-900">
-                    {timesheet.totalHours} hours
-                  </span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-gray-600">Billing Rate:</span>
-                  <span className="font-semibold text-gray-900">
-                    ₹{timesheet.billingRate}/hr
-                  </span>
-                </div>
+                {timesheet.hoursPerDay && (
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-gray-600">
+                      Hours Per Day:
+                    </span>
+                    <span className="font-semibold text-gray-900">
+                      {timesheet.hoursPerDay} hours
+                    </span>
+                  </div>
+                )}
+                {timesheet.totalHours && (
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-gray-600">Total Hours:</span>
+                    <span className="font-semibold text-gray-900">
+                      {timesheet.totalHours} hours
+                    </span>
+                  </div>
+                )}
+                {timesheet.billingRate && (
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-gray-600">Billing Rate:</span>
+                    <span className="font-semibold text-gray-900">
+                      ₹{timesheet.billingRate}/hr
+                    </span>
+                  </div>
+                )}
               </div>
             </div>
           </div>
@@ -173,11 +181,14 @@ const WorkCalculationCard = React.memo(
                 Total Amount
               </span>
               <div className="text-3xl font-bold mt-1">
-                {formatCurrency(timesheet.totalAmount)}
+                {timesheet.totalAmount
+                  ? formatCurrency(timesheet.totalAmount)
+                  : "Not calculated"}
               </div>
               <div className="text-sm opacity-80 mt-2">
-                {timesheet.daysWorked} days × {timesheet.hoursPerDay}h × ₹
-                {timesheet.billingRate}/hr
+                {timesheet.daysWorked} days
+                {timesheet.hoursPerDay && ` × ${timesheet.hoursPerDay}h`}
+                {timesheet.billingRate && ` × ₹${timesheet.billingRate}/hr`}
               </div>
             </div>
             <div className="p-4 bg-white bg-opacity-20 rounded-xl">

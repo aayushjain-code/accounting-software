@@ -34,12 +34,12 @@ export interface Project {
   clientId: string;
   description: string;
   startDate: Date;
-  status: "active" | "completed" | "on-hold" | "archived";
+  status: "active" | "inactive" | "completed" | "on-hold" | "archived";
   budget: number;
   billingTerms: number;
-  
+
   // Costing and GST fields
-  billingRate: number; // Per hour rate
+  billingRate?: number; // Per hour rate (optional)
   estimatedHours: number; // Estimated total hours for the project
   gstRate: number; // GST percentage (default 18%)
   gstInclusive: boolean; // Whether GST is included in billing rate
@@ -49,7 +49,7 @@ export interface Project {
     gstAmount: number;
     total: number;
   };
-  
+
   createdAt: Date;
   updatedAt: Date;
 }
@@ -80,12 +80,12 @@ export interface Timesheet {
   totalWorkingDays: number; // Total days in the month (excluding weekends)
   daysWorked: number; // Actual days worked
   daysLeave: number; // Leave days taken
-  hoursPerDay: number; // Default 8 hours per day
+  hoursPerDay?: number; // Default 8 hours per day (optional)
 
   // Costing calculations (derived from project)
-  billingRate: number; // Per hour rate from project
-  totalHours: number; // daysWorked * hoursPerDay
-  totalAmount: number; // totalHours * billingRate
+  billingRate?: number; // Per hour rate from project (optional)
+  totalHours?: number; // daysWorked * hoursPerDay (optional)
+  totalAmount?: number; // totalHours * billingRate (optional)
 
   // Approval workflow
   submittedAt?: Date;

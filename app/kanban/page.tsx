@@ -3,8 +3,8 @@
 import { useState, useMemo, useCallback } from "react";
 import { useAccountingStore } from "@/store";
 import { Timesheet, Invoice } from "@/types";
-import { 
-  PlusIcon, 
+import {
+  PlusIcon,
   CheckIcon,
   XMarkIcon,
   ClockIcon,
@@ -16,7 +16,7 @@ import {
   UserIcon,
   CalendarIcon,
   BuildingOfficeIcon,
-  EyeIcon
+  EyeIcon,
 } from "@heroicons/react/24/outline";
 import { format } from "date-fns";
 import { Tooltip, ActionTooltip } from "@/components/Tooltip";
@@ -35,9 +35,9 @@ interface KanbanItem {
   priority: "low" | "medium" | "high" | "critical";
 }
 
-const KanbanCard = ({ 
-  item, 
-  onDragStart 
+const KanbanCard = ({
+  item,
+  onDragStart,
 }: {
   item: KanbanItem;
   onDragStart: (e: React.DragEvent) => void;
@@ -85,26 +85,33 @@ const KanbanCard = ({
           ) : (
             <CurrencyRupeeIcon className="h-4 w-4 text-purple-600" />
           )}
-          <span className={`inline-flex items-center px-1.5 py-0.5 rounded-full text-xs font-medium border ${getPriorityColor(item.priority)}`}>
+          <span
+            className={`inline-flex items-center px-1.5 py-0.5 rounded-full text-xs font-medium border ${getPriorityColor(
+              item.priority
+            )}`}
+          >
             {getPriorityIcon(item.priority)}
             <span className="ml-1 capitalize text-xs">{item.priority}</span>
           </span>
         </div>
-        <ActionTooltip content="View details" action="Click to see full information">
+        <ActionTooltip
+          content="View details"
+          action="Click to see full information"
+        >
           <button className="p-1 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded transition-colors">
             <EyeIcon className="h-3 w-3" />
           </button>
         </ActionTooltip>
       </div>
-      
+
       <h4 className="font-medium text-gray-900 dark:text-white mb-1 text-sm group-hover:text-primary-600 dark:group-hover:text-primary-400 transition-colors line-clamp-1">
         {item.title}
       </h4>
-      
+
       <p className="text-xs text-gray-600 dark:text-gray-400 mb-2 line-clamp-2">
         {item.description}
       </p>
-      
+
       <div className="space-y-1">
         {item.project && (
           <div className="flex items-center space-x-1 text-xs text-gray-600 dark:text-gray-400">
@@ -112,12 +119,12 @@ const KanbanCard = ({
             <span className="truncate">{item.project}</span>
           </div>
         )}
-        
+
         <div className="flex items-center space-x-1 text-xs text-gray-600 dark:text-gray-400">
           <CalendarIcon className="h-3 w-3 text-gray-400 dark:text-gray-500" />
           <span>{format(item.date, "MMM dd")}</span>
         </div>
-        
+
         {item.amount && (
           <div className="flex items-center space-x-1 text-xs font-medium text-gray-900 dark:text-white">
             <CurrencyRupeeIcon className="h-3 w-3 text-green-600" />
@@ -129,12 +136,12 @@ const KanbanCard = ({
   );
 };
 
-const KanbanColumn = ({ 
-  title, 
-  items, 
-  status, 
-  onDrop, 
-  onDragOver 
+const KanbanColumn = ({
+  title,
+  items,
+  status,
+  onDrop,
+  onDragOver,
 }: {
   title: string;
   items: KanbanItem[];
@@ -170,13 +177,19 @@ const KanbanColumn = ({
     <div className="flex-1 min-w-0">
       <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-4 h-full">
         <div className="flex items-center justify-between mb-4">
-          <h3 className="text-sm font-semibold text-gray-900 dark:text-white">{title}</h3>
-          <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium border ${getStatusColor(status)}`}>
+          <h3 className="text-sm font-semibold text-gray-900 dark:text-white">
+            {title}
+          </h3>
+          <span
+            className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium border ${getStatusColor(
+              status
+            )}`}
+          >
             {items.length}
           </span>
         </div>
-        
-        <div 
+
+        <div
           className="space-y-2 min-h-[400px] max-h-[600px] overflow-y-auto"
           onDrop={onDrop}
           onDragOver={onDragOver}
@@ -188,7 +201,7 @@ const KanbanColumn = ({
               onDragStart={(e) => handleDragStart(e, item.id)}
             />
           ))}
-          
+
           {items.length === 0 && (
             <div className="flex items-center justify-center h-24 text-gray-400 dark:text-gray-500 border-2 border-dashed border-gray-200 dark:border-gray-600 rounded-lg">
               <div className="text-center">
@@ -204,7 +217,14 @@ const KanbanColumn = ({
 };
 
 export default function KanbanPage() {
-  const { timesheets, invoices, projects, clients, updateTimesheet, updateInvoice } = useAccountingStore();
+  const {
+    timesheets,
+    invoices,
+    projects,
+    clients,
+    updateTimesheet,
+    updateInvoice,
+  } = useAccountingStore();
   const [draggedItem, setDraggedItem] = useState<string | null>(null);
 
   const kanbanItems = useMemo(() => {
@@ -212,9 +232,9 @@ export default function KanbanPage() {
 
     // Convert timesheets to kanban items
     timesheets.forEach((timesheet) => {
-      const project = projects.find(p => p.id === timesheet.projectId);
-      const client = clients.find(c => c.id === project?.clientId);
-      
+      const project = projects.find((p) => p.id === timesheet.projectId);
+      const client = clients.find((c) => c.id === project?.clientId);
+
       let status = "timesheet-created";
       let priority: "low" | "medium" | "high" | "critical" = "medium";
 
@@ -239,7 +259,9 @@ export default function KanbanPage() {
         id: timesheet.id,
         type: "timesheet",
         title: `Timesheet - ${project?.name || "Unknown Project"}`,
-        description: `${timesheet.daysWorked} days × ${timesheet.hoursPerDay}h × ₹${timesheet.billingRate}/hr`,
+        description: `${timesheet.daysWorked} days${
+          timesheet.hoursPerDay ? ` × ${timesheet.hoursPerDay}h` : ""
+        }${timesheet.billingRate ? ` × ₹${timesheet.billingRate}/hr` : ""}`,
         status,
         amount: timesheet.totalAmount,
         date: new Date(timesheet.month),
@@ -250,7 +272,7 @@ export default function KanbanPage() {
 
     // Convert invoices to kanban items
     invoices.forEach((invoice) => {
-      const client = clients.find(c => c.id === invoice.clientId);
+      const client = clients.find((c) => c.id === invoice.clientId);
       let status = "invoice-raised";
       let priority: "low" | "medium" | "high" | "critical" = "medium";
 
@@ -269,7 +291,10 @@ export default function KanbanPage() {
         id: invoice.id,
         type: "invoice",
         title: `Invoice - ${client?.name || "Unknown Client"}`,
-        description: `Invoice #${invoice.invoiceNumber} - Due: ${format(new Date(invoice.dueDate), "MMM dd")}`,
+        description: `Invoice #${invoice.invoiceNumber} - Due: ${format(
+          new Date(invoice.dueDate),
+          "MMM dd"
+        )}`,
         status,
         amount: invoice.total,
         date: new Date(invoice.issueDate),
@@ -286,31 +311,33 @@ export default function KanbanPage() {
       id: "timesheet-created",
       title: "Timesheet Created",
       status: "timesheet-created",
-      items: kanbanItems.filter(item => item.status === "timesheet-created"),
+      items: kanbanItems.filter((item) => item.status === "timesheet-created"),
     },
     {
       id: "timesheet-approved",
       title: "Approved Timesheet",
       status: "timesheet-approved",
-      items: kanbanItems.filter(item => item.status === "timesheet-approved"),
+      items: kanbanItems.filter((item) => item.status === "timesheet-approved"),
     },
     {
       id: "invoice-raised",
       title: "Invoice Raised",
       status: "invoice-raised",
-      items: kanbanItems.filter(item => item.status === "invoice-raised"),
+      items: kanbanItems.filter((item) => item.status === "invoice-raised"),
     },
     {
       id: "payment-cleared",
       title: "Payment Cleared",
       status: "payment-cleared",
-      items: kanbanItems.filter(item => item.status === "payment-cleared"),
+      items: kanbanItems.filter((item) => item.status === "payment-cleared"),
     },
     {
       id: "blocked",
       title: "Blocked/Critical",
       status: "blocked",
-      items: kanbanItems.filter(item => item.status === "blocked" || item.priority === "critical"),
+      items: kanbanItems.filter(
+        (item) => item.status === "blocked" || item.priority === "critical"
+      ),
     },
   ];
 
@@ -319,67 +346,74 @@ export default function KanbanPage() {
     e.dataTransfer.dropEffect = "move";
   }, []);
 
-  const handleDrop = useCallback((e: React.DragEvent, targetStatus: string) => {
-    e.preventDefault();
-    const itemId = e.dataTransfer.getData("text/plain");
-    
-    // Find the item
-    const item = kanbanItems.find(i => i.id === itemId);
-    if (!item) return;
+  const handleDrop = useCallback(
+    (e: React.DragEvent, targetStatus: string) => {
+      e.preventDefault();
+      const itemId = e.dataTransfer.getData("text/plain");
 
-    // Update the item status based on target column
-    if (item.type === "timesheet") {
-      const timesheet = timesheets.find(t => t.id === itemId);
-      if (timesheet) {
-        let newStatus = timesheet.status;
-        
-        switch (targetStatus) {
-          case "timesheet-created":
-            newStatus = "draft";
-            break;
-          case "timesheet-approved":
-            newStatus = "approved";
-            break;
-          case "invoice-raised":
-            newStatus = "submitted";
-            break;
-          case "payment-cleared":
-            newStatus = "invoiced";
-            break;
-          case "blocked":
-            newStatus = "rejected";
-            break;
+      // Find the item
+      const item = kanbanItems.find((i) => i.id === itemId);
+      if (!item) return;
+
+      // Update the item status based on target column
+      if (item.type === "timesheet") {
+        const timesheet = timesheets.find((t) => t.id === itemId);
+        if (timesheet) {
+          let newStatus = timesheet.status;
+
+          switch (targetStatus) {
+            case "timesheet-created":
+              newStatus = "draft";
+              break;
+            case "timesheet-approved":
+              newStatus = "approved";
+              break;
+            case "invoice-raised":
+              newStatus = "submitted";
+              break;
+            case "payment-cleared":
+              newStatus = "invoiced";
+              break;
+            case "blocked":
+              newStatus = "rejected";
+              break;
+          }
+
+          updateTimesheet(itemId, { status: newStatus });
+          toast.success(`Timesheet moved to ${targetStatus.replace("-", " ")}`);
         }
-        
-        updateTimesheet(itemId, { status: newStatus });
-        toast.success(`Timesheet moved to ${targetStatus.replace("-", " ")}`);
-      }
-    } else if (item.type === "invoice") {
-      const invoice = invoices.find(i => i.id === itemId);
-      if (invoice) {
-        let newStatus = invoice.status;
-        
-        switch (targetStatus) {
-          case "invoice-raised":
-            newStatus = "draft";
-            break;
-          case "payment-cleared":
-            newStatus = "paid";
-            break;
-          case "blocked":
-            newStatus = "sent";
-            break;
+      } else if (item.type === "invoice") {
+        const invoice = invoices.find((i) => i.id === itemId);
+        if (invoice) {
+          let newStatus = invoice.status;
+
+          switch (targetStatus) {
+            case "invoice-raised":
+              newStatus = "draft";
+              break;
+            case "payment-cleared":
+              newStatus = "paid";
+              break;
+            case "blocked":
+              newStatus = "sent";
+              break;
+          }
+
+          updateInvoice(itemId, { status: newStatus });
+          toast.success(`Invoice moved to ${targetStatus.replace("-", " ")}`);
         }
-        
-        updateInvoice(itemId, { status: newStatus });
-        toast.success(`Invoice moved to ${targetStatus.replace("-", " ")}`);
       }
-    }
-  }, [kanbanItems, timesheets, invoices, updateTimesheet, updateInvoice]);
+    },
+    [kanbanItems, timesheets, invoices, updateTimesheet, updateInvoice]
+  );
 
   const totalItems = kanbanItems.length;
-  const criticalItems = kanbanItems.filter(item => item.priority === "critical").length;
-  const overdueItems = kanbanItems.filter(item => item.status === "blocked").length;
+  const criticalItems = kanbanItems.filter(
+    (item) => item.priority === "critical"
+  ).length;
+  const overdueItems = kanbanItems.filter(
+    (item) => item.status === "blocked"
+  ).length;
 
   return (
     <div className="space-y-6">
@@ -387,23 +421,37 @@ export default function KanbanPage() {
       <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
         <div className="flex flex-col md:flex-row md:items-center justify-between space-y-4 md:space-y-0">
           <div>
-            <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Invoicing Kanban</h1>
+            <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
+              Invoicing Kanban
+            </h1>
             <p className="text-gray-600 dark:text-gray-400 mt-1 text-sm">
               Track the flow from timesheet creation to payment clearance
             </p>
           </div>
           <div className="flex items-center space-x-6">
             <div className="text-center">
-              <p className="text-xl font-bold text-primary-600 dark:text-primary-400">{totalItems}</p>
-              <p className="text-xs text-gray-600 dark:text-gray-400">Total Items</p>
+              <p className="text-xl font-bold text-primary-600 dark:text-primary-400">
+                {totalItems}
+              </p>
+              <p className="text-xs text-gray-600 dark:text-gray-400">
+                Total Items
+              </p>
             </div>
             <div className="text-center">
-              <p className="text-xl font-bold text-red-600 dark:text-red-400">{criticalItems}</p>
-              <p className="text-xs text-gray-600 dark:text-gray-400">Critical</p>
+              <p className="text-xl font-bold text-red-600 dark:text-red-400">
+                {criticalItems}
+              </p>
+              <p className="text-xs text-gray-600 dark:text-gray-400">
+                Critical
+              </p>
             </div>
             <div className="text-center">
-              <p className="text-xl font-bold text-orange-600 dark:text-orange-400">{overdueItems}</p>
-              <p className="text-xs text-gray-600 dark:text-gray-400">Overdue</p>
+              <p className="text-xl font-bold text-orange-600 dark:text-orange-400">
+                {overdueItems}
+              </p>
+              <p className="text-xs text-gray-600 dark:text-gray-400">
+                Overdue
+              </p>
             </div>
           </div>
         </div>
@@ -411,34 +459,44 @@ export default function KanbanPage() {
 
       {/* Workflow Diagram */}
       <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-4">
-        <h3 className="text-sm font-semibold text-gray-900 dark:text-white mb-3">Workflow Overview</h3>
+        <h3 className="text-sm font-semibold text-gray-900 dark:text-white mb-3">
+          Workflow Overview
+        </h3>
         <div className="flex items-center justify-center space-x-3">
           <div className="flex items-center space-x-2">
             <div className="w-6 h-6 bg-blue-100 dark:bg-blue-900 rounded-full flex items-center justify-center">
               <DocumentTextIcon className="h-3 w-3 text-blue-600 dark:text-blue-400" />
             </div>
-            <span className="text-xs font-medium text-gray-700 dark:text-gray-300">Created</span>
+            <span className="text-xs font-medium text-gray-700 dark:text-gray-300">
+              Created
+            </span>
           </div>
           <ArrowRightIcon className="h-4 w-4 text-gray-400 dark:text-gray-500" />
           <div className="flex items-center space-x-2">
             <div className="w-6 h-6 bg-green-100 dark:bg-green-900 rounded-full flex items-center justify-center">
               <CheckIcon className="h-3 w-3 text-green-600 dark:text-green-400" />
             </div>
-            <span className="text-xs font-medium text-gray-700 dark:text-gray-300">Approved</span>
+            <span className="text-xs font-medium text-gray-700 dark:text-gray-300">
+              Approved
+            </span>
           </div>
           <ArrowRightIcon className="h-4 w-4 text-gray-400 dark:text-gray-500" />
           <div className="flex items-center space-x-2">
             <div className="w-6 h-6 bg-purple-100 dark:bg-purple-900 rounded-full flex items-center justify-center">
               <CurrencyRupeeIcon className="h-3 w-3 text-purple-600 dark:text-purple-400" />
             </div>
-            <span className="text-xs font-medium text-gray-700 dark:text-gray-300">Invoice</span>
+            <span className="text-xs font-medium text-gray-700 dark:text-gray-300">
+              Invoice
+            </span>
           </div>
           <ArrowRightIcon className="h-4 w-4 text-gray-400 dark:text-gray-500" />
           <div className="flex items-center space-x-2">
             <div className="w-6 h-6 bg-emerald-100 dark:bg-emerald-900 rounded-full flex items-center justify-center">
               <CheckCircleIcon className="h-3 w-3 text-emerald-600 dark:text-emerald-400" />
             </div>
-            <span className="text-xs font-medium text-gray-700 dark:text-gray-300">Paid</span>
+            <span className="text-xs font-medium text-gray-700 dark:text-gray-300">
+              Paid
+            </span>
           </div>
         </div>
       </div>
@@ -464,10 +522,17 @@ export default function KanbanPage() {
             <DocumentTextIcon className="h-4 w-4 text-blue-600 dark:text-blue-400" />
           </div>
           <div>
-            <h3 className="text-sm font-semibold text-blue-900 dark:text-blue-100 mb-1">How to Use</h3>
+            <h3 className="text-sm font-semibold text-blue-900 dark:text-blue-100 mb-1">
+              How to Use
+            </h3>
             <ul className="text-xs text-blue-800 dark:text-blue-200 space-y-0.5">
-              <li>• Drag and drop items between columns to update their status</li>
-              <li>• Items are automatically categorized based on their current state</li>
+              <li>
+                • Drag and drop items between columns to update their status
+              </li>
+              <li>
+                • Items are automatically categorized based on their current
+                state
+              </li>
               <li>• Critical items appear in the Blocked/Critical column</li>
               <li>• Click the eye icon to view detailed information</li>
               <li>• Color-coded priorities help identify urgent items</li>
@@ -477,4 +542,4 @@ export default function KanbanPage() {
       </div>
     </div>
   );
-} 
+}

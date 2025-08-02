@@ -5,12 +5,14 @@ import { useAccountingStore } from "@/store";
 import { PlusIcon, PencilIcon, TrashIcon } from "@heroicons/react/24/outline";
 import { format } from "date-fns";
 import toast from "react-hot-toast";
+import Modal from "@/components/Modal";
 
 export default function InvoicesPage() {
   const {
     invoices,
     clients,
     projects,
+    timesheets,
     addInvoice,
     updateInvoice,
     deleteInvoice,
@@ -133,8 +135,12 @@ export default function InvoicesPage() {
       {/* Header */}
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Invoices</h1>
-          <p className="text-gray-600 dark:text-gray-400">Manage your client invoices</p>
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
+            Invoices
+          </h1>
+          <p className="text-gray-600 dark:text-gray-400">
+            Manage your client invoices
+          </p>
         </div>
         <button
           onClick={() => setIsModalOpen(true)}
@@ -156,7 +162,9 @@ export default function InvoicesPage() {
           </p>
         </div>
         <div className="card">
-          <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">Paid</h3>
+          <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
+            Paid
+          </h3>
           <p className="text-3xl font-bold text-success-600 dark:text-success-400">
             {formatCurrency(
               invoices
@@ -166,7 +174,9 @@ export default function InvoicesPage() {
           </p>
         </div>
         <div className="card">
-          <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">Sent</h3>
+          <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
+            Sent
+          </h3>
           <p className="text-3xl font-bold text-warning-600 dark:text-warning-400">
             {formatCurrency(
               invoices
@@ -262,183 +272,202 @@ export default function InvoicesPage() {
       </div>
 
       {/* Modal */}
-      {isModalOpen && (
-        <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50 flex items-center justify-center p-4">
-          <div className="relative bg-white dark:bg-gray-800 rounded-lg shadow-xl w-full max-w-4xl mx-auto">
-            <div className="p-6">
-              <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-6">
-                {editingInvoice ? "Edit Invoice" : "Create New Invoice"}
-              </h3>
-              <form onSubmit={handleSubmit} className="space-y-6">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                      Client
-                    </label>
-                    <select
-                      required
-                      value={formData.clientId}
-                      onChange={(e) =>
-                        setFormData({ ...formData, clientId: e.target.value })
-                      }
-                      className="input"
-                    >
-                      <option value="">Select a client</option>
-                      {clients.map((client) => (
-                        <option key={client.id} value={client.id}>
-                          {client.name} - {client.company}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                      Project
-                    </label>
-                    <select
-                      required
-                      value={formData.projectId}
-                      onChange={(e) =>
-                        setFormData({ ...formData, projectId: e.target.value })
-                      }
-                      className="input"
-                    >
-                      <option value="">Select a project</option>
-                      {projects.map((project) => (
-                        <option key={project.id} value={project.id}>
-                          {project.name}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                      Invoice Number
-                    </label>
-                    <input
-                      type="text"
-                      required
-                      value={formData.invoiceNumber}
-                      onChange={(e) =>
-                        setFormData({
-                          ...formData,
-                          invoiceNumber: e.target.value,
-                        })
-                      }
-                      className="input"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                      Issue Date
-                    </label>
-                    <input
-                      type="date"
-                      required
-                      value={formData.issueDate}
-                      onChange={(e) =>
-                        setFormData({ ...formData, issueDate: e.target.value })
-                      }
-                      className="input"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                      Due Date
-                    </label>
-                    <input
-                      type="date"
-                      required
-                      value={formData.dueDate}
-                      onChange={(e) =>
-                        setFormData({ ...formData, dueDate: e.target.value })
-                      }
-                      className="input"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                      Subtotal (₹)
-                    </label>
-                    <input
-                      type="number"
-                      required
-                      min="0"
-                      step="0.01"
-                      value={formData.subtotal}
-                      onChange={(e) =>
-                        setFormData({
-                          ...formData,
-                          subtotal: e.target.value,
-                        })
-                      }
-                      className="input"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                      Tax Rate (%)
-                    </label>
-                    <input
-                      type="number"
-                      required
-                      min="0"
-                      step="0.01"
-                      value={formData.taxRate}
-                      onChange={(e) =>
-                        setFormData({
-                          ...formData,
-                          taxRate: e.target.value,
-                        })
-                      }
-                      className="input"
-                    />
-                  </div>
-                  <div className="md:col-span-2">
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                      Notes
-                    </label>
-                    <textarea
-                      value={formData.notes}
-                      onChange={(e) =>
-                        setFormData({ ...formData, notes: e.target.value })
-                      }
-                      className="input"
-                      rows={3}
-                    />
-                  </div>
-                </div>
-                <div className="flex justify-end space-x-3 pt-6 border-t border-gray-200">
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setIsModalOpen(false);
-                      setEditingInvoice(null);
-                      setFormData({
-                        timesheetId: "",
-                        clientId: "",
-                        projectId: "",
-                        invoiceNumber: "",
-                        issueDate: "",
-                        dueDate: "",
-                        subtotal: "",
-                        taxRate: "",
-                        notes: "",
-                      });
-                    }}
-                    className="btn-secondary"
-                  >
-                    Cancel
-                  </button>
-                  <button type="submit" className="btn-primary">
-                    {editingInvoice ? "Update" : "Create"} Invoice
-                  </button>
-                </div>
-              </form>
+      <Modal
+        isOpen={isModalOpen}
+        onClose={() => {
+          setIsModalOpen(false);
+          setEditingInvoice(null);
+          setFormData({
+            timesheetId: "",
+            clientId: "",
+            projectId: "",
+            invoiceNumber: "",
+            issueDate: "",
+            dueDate: "",
+            subtotal: "",
+            taxRate: "",
+            notes: "",
+          });
+        }}
+        title={editingInvoice ? "Edit Invoice" : "Create New Invoice"}
+        footer={
+          <>
+            <button
+              type="button"
+              onClick={() => {
+                setIsModalOpen(false);
+                setEditingInvoice(null);
+                setFormData({
+                  timesheetId: "",
+                  clientId: "",
+                  projectId: "",
+                  invoiceNumber: "",
+                  issueDate: "",
+                  dueDate: "",
+                  subtotal: "",
+                  taxRate: "",
+                  notes: "",
+                });
+              }}
+              className="btn-secondary mr-2"
+            >
+              Cancel
+            </button>
+            <button type="submit" form="invoice-form" className="btn-primary">
+              {editingInvoice ? "Update" : "Create"} Invoice
+            </button>
+          </>
+        }
+      >
+        <form id="invoice-form" onSubmit={handleSubmit} className="space-y-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {/* Timesheet selection */}
+            <div className="md:col-span-2">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                Timesheet
+              </label>
+              <select
+                required
+                value={formData.timesheetId}
+                onChange={(e) => {
+                  const timesheetId = e.target.value;
+                  setFormData((prev) => ({ ...prev, timesheetId }));
+                }}
+                className="input"
+              >
+                <option value="">Select a timesheet</option>
+                {timesheets.map((t) => (
+                  <option key={t.id} value={t.id}>
+                    {t.month} - {t.year} ({t.status})
+                  </option>
+                ))}
+              </select>
+            </div>
+            {/* Show derived info if timesheet is selected */}
+            {formData.timesheetId &&
+              (() => {
+                const timesheet = timesheets.find(
+                  (t) => t.id === formData.timesheetId
+                );
+                const project =
+                  timesheet &&
+                  projects.find((p) => p.id === timesheet.projectId);
+                const client =
+                  project && clients.find((c) => c.id === project.clientId);
+                return (
+                  <>
+                    <div>
+                      <label className="block text-xs font-medium text-gray-500 mb-1">
+                        Client
+                      </label>
+                      <div className="bg-gray-50 dark:bg-gray-800 rounded px-3 py-2 text-gray-900 dark:text-white text-sm">
+                        {client?.name || "Unknown Client"}
+                      </div>
+                    </div>
+                    <div>
+                      <label className="block text-xs font-medium text-gray-500 mb-1">
+                        Project
+                      </label>
+                      <div className="bg-gray-50 dark:bg-gray-800 rounded px-3 py-2 text-gray-900 dark:text-white text-sm">
+                        {project?.name || "Unknown Project"}
+                      </div>
+                    </div>
+                    <div>
+                      <label className="block text-xs font-medium text-gray-500 mb-1">
+                        Invoice Number
+                      </label>
+                      <div className="bg-gray-50 dark:bg-gray-800 rounded px-3 py-2 text-gray-900 dark:text-white text-sm">
+                        {editingInvoice
+                          ? editingInvoice.invoiceNumber
+                          : generateInvoiceNumber()}
+                      </div>
+                    </div>
+                  </>
+                );
+              })()}
+            {/* ...keep the rest of the form (issue date, due date, subtotal, tax, notes)... */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                Issue Date
+              </label>
+              <input
+                type="date"
+                required
+                value={formData.issueDate}
+                onChange={(e) =>
+                  setFormData({ ...formData, issueDate: e.target.value })
+                }
+                className="input"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                Due Date
+              </label>
+              <input
+                type="date"
+                required
+                value={formData.dueDate}
+                onChange={(e) =>
+                  setFormData({ ...formData, dueDate: e.target.value })
+                }
+                className="input"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                Subtotal (₹)
+              </label>
+              <input
+                type="number"
+                required
+                min="0"
+                step="0.01"
+                value={formData.subtotal}
+                onChange={(e) =>
+                  setFormData({
+                    ...formData,
+                    subtotal: e.target.value,
+                  })
+                }
+                className="input"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                Tax Rate (%)
+              </label>
+              <input
+                type="number"
+                required
+                min="0"
+                step="0.01"
+                value={formData.taxRate}
+                onChange={(e) =>
+                  setFormData({
+                    ...formData,
+                    taxRate: e.target.value,
+                  })
+                }
+                className="input"
+              />
+            </div>
+            <div className="md:col-span-2">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                Notes
+              </label>
+              <textarea
+                value={formData.notes}
+                onChange={(e) =>
+                  setFormData({ ...formData, notes: e.target.value })
+                }
+                className="input"
+                rows={3}
+              />
             </div>
           </div>
-        </div>
-      )}
+        </form>
+      </Modal>
     </div>
   );
 }

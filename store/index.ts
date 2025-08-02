@@ -91,7 +91,7 @@ interface AccountingStore {
   generateInvoiceFromTimesheet: (timesheetId: string) => Invoice;
   getDailyLogsByDate: (date: Date) => DailyLog[];
   getDailyLogsByCategory: (category: DailyLog["category"]) => DailyLog[];
-  
+
   // Helper functions to demonstrate data relationships
   getProjectsByClient: (clientId: string) => Project[];
   getTimesheetsByProject: (projectId: string) => Timesheet[];
@@ -547,7 +547,8 @@ export const useAccountingStore = create<AccountingStore>()(
           id: "log1",
           date: new Date("2024-03-15"),
           title: "Monthly GST Filing Completed",
-          description: "Successfully filed GST returns for February 2024. All invoices processed and tax calculations verified. Payment of ₹45,000 submitted to government portal.",
+          description:
+            "Successfully filed GST returns for February 2024. All invoices processed and tax calculations verified. Payment of ₹45,000 submitted to government portal.",
           category: "accounting",
           priority: "high",
           tags: ["GST", "tax-filing", "compliance"],
@@ -558,7 +559,8 @@ export const useAccountingStore = create<AccountingStore>()(
           id: "log2",
           date: new Date("2024-03-14"),
           title: "New Client Onboarding - TechCorp Solutions",
-          description: "Signed new client contract worth ₹2.5L for 6-month project. Initial payment of ₹50,000 received. Project kickoff scheduled for next week.",
+          description:
+            "Signed new client contract worth ₹2.5L for 6-month project. Initial payment of ₹50,000 received. Project kickoff scheduled for next week.",
           category: "important",
           priority: "high",
           tags: ["new-client", "contract", "payment"],
@@ -569,7 +571,8 @@ export const useAccountingStore = create<AccountingStore>()(
           id: "log3",
           date: new Date("2024-03-13"),
           title: "Office Rent Payment Due",
-          description: "Monthly office rent payment of ₹25,000 due on 20th March. Need to process payment and update expense records.",
+          description:
+            "Monthly office rent payment of ₹25,000 due on 20th March. Need to process payment and update expense records.",
           category: "reminder",
           priority: "medium",
           tags: ["rent", "expense", "payment"],
@@ -580,7 +583,8 @@ export const useAccountingStore = create<AccountingStore>()(
           id: "log4",
           date: new Date("2024-03-12"),
           title: "Project Milestone - E-commerce Platform",
-          description: "Completed Phase 1 of e-commerce platform development. Client approved deliverables. Invoice for ₹1.2L to be generated this week.",
+          description:
+            "Completed Phase 1 of e-commerce platform development. Client approved deliverables. Invoice for ₹1.2L to be generated this week.",
           category: "milestone",
           priority: "high",
           tags: ["milestone", "project-completion", "invoice"],
@@ -591,7 +595,8 @@ export const useAccountingStore = create<AccountingStore>()(
           id: "log5",
           date: new Date("2024-03-11"),
           title: "Bank Reconciliation Completed",
-          description: "March bank statement reconciled. All transactions matched. Outstanding checks cleared. No discrepancies found.",
+          description:
+            "March bank statement reconciled. All transactions matched. Outstanding checks cleared. No discrepancies found.",
           category: "accounting",
           priority: "medium",
           tags: ["bank-reconciliation", "reconciliation"],
@@ -919,7 +924,7 @@ export const useAccountingStore = create<AccountingStore>()(
         }
 
         // Use timesheet's calculated amount and billing rate
-        const subtotal = timesheet.totalAmount;
+        const subtotal = timesheet.totalAmount || 0;
         const taxRate = 18; // 18% GST
         const taxAmount = subtotal * (taxRate / 100);
         const total = subtotal + taxAmount;
@@ -939,7 +944,11 @@ export const useAccountingStore = create<AccountingStore>()(
           taxRate,
           taxAmount,
           total,
-          notes: `Work timesheet for ${project.name} (${timesheet.month}) - ${timesheet.daysWorked} days × ${timesheet.hoursPerDay}h × ₹${timesheet.billingRate}/hr`,
+          notes: `Work timesheet for ${project.name} (${timesheet.month}) - ${
+            timesheet.daysWorked
+          } days${timesheet.hoursPerDay ? ` × ${timesheet.hoursPerDay}h` : ""}${
+            timesheet.billingRate ? ` × ₹${timesheet.billingRate}/hr` : ""
+          }`,
           createdAt: new Date(),
           updatedAt: new Date(),
         };
@@ -960,7 +969,7 @@ export const useAccountingStore = create<AccountingStore>()(
         targetDate.setHours(0, 0, 0, 0);
         const nextDate = new Date(targetDate);
         nextDate.setDate(nextDate.getDate() + 1);
-        
+
         return get().dailyLogs.filter((log) => {
           const logDate = new Date(log.date);
           logDate.setHours(0, 0, 0, 0);

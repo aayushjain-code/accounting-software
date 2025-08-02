@@ -5,6 +5,7 @@ import { useAccountingStore } from "@/store";
 import { PlusIcon, PencilIcon, TrashIcon } from "@heroicons/react/24/outline";
 import { format } from "date-fns";
 import toast from "react-hot-toast";
+import Modal from "@/components/Modal";
 
 export default function ExpensesPage() {
   const { expenses, projects, addExpense, updateExpense, deleteExpense } =
@@ -118,8 +119,12 @@ export default function ExpensesPage() {
       {/* Header */}
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Expenses</h1>
-          <p className="text-gray-600 dark:text-gray-400">Track your business expenses</p>
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
+            Expenses
+          </h1>
+          <p className="text-gray-600 dark:text-gray-400">
+            Track your business expenses
+          </p>
         </div>
         <button
           onClick={() => setIsModalOpen(true)}
@@ -141,7 +146,9 @@ export default function ExpensesPage() {
           </p>
         </div>
         <div className="card">
-          <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">This Month</h3>
+          <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
+            This Month
+          </h3>
           <p className="text-3xl font-bold text-primary-600 dark:text-primary-400">
             {formatCurrency(
               expenses
@@ -161,7 +168,9 @@ export default function ExpensesPage() {
           <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
             Total Expenses
           </h3>
-          <p className="text-3xl font-bold text-gray-600 dark:text-gray-400">{expenses.length}</p>
+          <p className="text-3xl font-bold text-gray-600 dark:text-gray-400">
+            {expenses.length}
+          </p>
         </div>
       </div>
 
@@ -272,133 +281,140 @@ export default function ExpensesPage() {
       </div>
 
       {/* Modal */}
-      {isModalOpen && (
-        <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50 flex items-center justify-center p-4">
-          <div className="relative bg-white rounded-lg shadow-xl w-full max-w-4xl mx-auto">
-            <div className="p-6">
-              <h3 className="text-lg font-medium text-gray-900 mb-6">
-                {editingExpense ? "Edit Expense" : "Add New Expense"}
-              </h3>
-              <form onSubmit={handleSubmit} className="space-y-6">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Category
-                    </label>
-                    <select
-                      required
-                      value={formData.category}
-                      onChange={(e) =>
-                        setFormData({ ...formData, category: e.target.value })
-                      }
-                      className="input"
-                    >
-                      <option value="">Select a category</option>
-                      {expenseCategories.map((category) => (
-                        <option key={category} value={category}>
-                          {category}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Amount (₹)
-                    </label>
-                    <input
-                      type="number"
-                      required
-                      min="0"
-                      step="0.01"
-                      value={formData.amount}
-                      onChange={(e) =>
-                        setFormData({
-                          ...formData,
-                          amount: e.target.value,
-                        })
-                      }
-                      className="input"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Date
-                    </label>
-                    <input
-                      type="date"
-                      required
-                      value={formData.date}
-                      onChange={(e) =>
-                        setFormData({ ...formData, date: e.target.value })
-                      }
-                      className="input"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Project (Optional)
-                    </label>
-                    <select
-                      value={formData.projectId}
-                      onChange={(e) =>
-                        setFormData({ ...formData, projectId: e.target.value })
-                      }
-                      className="input"
-                    >
-                      <option value="">No specific project</option>
-                      {projects.map((project) => (
-                        <option key={project.id} value={project.id}>
-                          {project.name}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-                  <div className="md:col-span-2">
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Description
-                    </label>
-                    <input
-                      type="text"
-                      required
-                      value={formData.description}
-                      onChange={(e) =>
-                        setFormData({
-                          ...formData,
-                          description: e.target.value,
-                        })
-                      }
-                      className="input"
-                      placeholder="What was this expense for?"
-                    />
-                  </div>
-                </div>
-                <div className="flex justify-end space-x-3 pt-6 border-t border-gray-200">
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setIsModalOpen(false);
-                      setEditingExpense(null);
-                      setFormData({
-                        category: "",
-                        description: "",
-                        amount: "",
-                        date: "",
-                        projectId: "",
-                      });
-                    }}
-                    className="btn-secondary"
-                  >
-                    Cancel
-                  </button>
-                  <button type="submit" className="btn-primary">
-                    {editingExpense ? "Update" : "Add"} Expense
-                  </button>
-                </div>
-              </form>
+      <Modal
+        isOpen={isModalOpen}
+        onClose={() => {
+          setIsModalOpen(false);
+          setEditingExpense(null);
+          setFormData({
+            category: "",
+            description: "",
+            amount: "",
+            date: "",
+            projectId: "",
+          });
+        }}
+        title={editingExpense ? "Edit Expense" : "Add New Expense"}
+        footer={
+          <>
+            <button
+              type="button"
+              onClick={() => {
+                setIsModalOpen(false);
+                setEditingExpense(null);
+                setFormData({
+                  category: "",
+                  description: "",
+                  amount: "",
+                  date: "",
+                  projectId: "",
+                });
+              }}
+              className="btn-secondary mr-2"
+            >
+              Cancel
+            </button>
+            <button type="submit" form="expense-form" className="btn-primary">
+              {editingExpense ? "Update" : "Add"} Expense
+            </button>
+          </>
+        }
+      >
+        <form id="expense-form" onSubmit={handleSubmit} className="space-y-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Category
+              </label>
+              <select
+                required
+                value={formData.category}
+                onChange={(e) =>
+                  setFormData({ ...formData, category: e.target.value })
+                }
+                className="input"
+              >
+                <option value="">Select a category</option>
+                {expenseCategories.map((category) => (
+                  <option key={category} value={category}>
+                    {category}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Amount (₹)
+              </label>
+              <input
+                type="number"
+                required
+                min="0"
+                step="0.01"
+                value={formData.amount}
+                onChange={(e) =>
+                  setFormData({
+                    ...formData,
+                    amount: e.target.value,
+                  })
+                }
+                className="input"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Date
+              </label>
+              <input
+                type="date"
+                required
+                value={formData.date}
+                onChange={(e) =>
+                  setFormData({ ...formData, date: e.target.value })
+                }
+                className="input"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Project (Optional)
+              </label>
+              <select
+                value={formData.projectId}
+                onChange={(e) =>
+                  setFormData({ ...formData, projectId: e.target.value })
+                }
+                className="input"
+              >
+                <option value="">No specific project</option>
+                {projects.map((project) => (
+                  <option key={project.id} value={project.id}>
+                    {project.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div className="md:col-span-2">
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Description
+              </label>
+              <input
+                type="text"
+                required
+                value={formData.description}
+                onChange={(e) =>
+                  setFormData({
+                    ...formData,
+                    description: e.target.value,
+                  })
+                }
+                className="input"
+                placeholder="What was this expense for?"
+              />
             </div>
           </div>
-        </div>
-      )}
+        </form>
+      </Modal>
     </div>
   );
 }

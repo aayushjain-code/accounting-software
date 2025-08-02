@@ -6,8 +6,21 @@ import { PlusIcon, PencilIcon, TrashIcon } from "@heroicons/react/24/outline";
 import { format } from "date-fns";
 import toast from "react-hot-toast";
 import Modal from "@/components/Modal";
+import FileUpload from "@/components/FileUpload";
+import FileList from "@/components/FileList";
+import { CloudArrowUpIcon } from "@heroicons/react/24/outline";
+import React from "react";
+import { InvoiceFile } from "@/types";
 
 export default function InvoicesPage() {
+  const [isClient, setIsClient] = useState(false);
+  const [uploadedFiles, setUploadedFiles] = useState<File[]>([]);
+  const [isUploading, setIsUploading] = useState(false);
+
+  React.useEffect(() => {
+    setIsClient(true);
+  }, []);
+
   const {
     invoices,
     clients,
@@ -16,6 +29,8 @@ export default function InvoicesPage() {
     addInvoice,
     updateInvoice,
     deleteInvoice,
+    addInvoiceFile,
+    removeInvoiceFile,
   } = useAccountingStore();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingInvoice, setEditingInvoice] = useState<any>(null);
@@ -94,6 +109,46 @@ export default function InvoicesPage() {
     if (confirm("Are you sure you want to delete this invoice?")) {
       deleteInvoice(id);
       toast.success("Invoice deleted successfully");
+    }
+  };
+
+  const handleFileUpload = async () => {
+    if (uploadedFiles.length === 0 || !editingInvoice) return;
+
+    setIsUploading(true);
+    try {
+      // Simulate file upload
+      for (const file of uploadedFiles) {
+        const fileData: InvoiceFile = {
+          id: `file_${Date.now()}_${Math.random()}`,
+          invoiceId: editingInvoice.id,
+          fileName: `invoice_${editingInvoice.id}_${file.name}`,
+          originalName: file.name,
+          fileSize: file.size,
+          fileType: file.type || `.${file.name.split('.').pop()}`,
+          uploadDate: new Date(),
+          uploadedBy: "Admin User",
+          filePath: `/uploads/invoices/${file.name}`,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        };
+
+        addInvoiceFile(editingInvoice.id, fileData);
+      }
+
+      setUploadedFiles([]);
+      toast.success("Files uploaded successfully!");
+    } catch (error) {
+      toast.error("Failed to upload files");
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
+  const handleFileDelete = (fileId: string) => {
+    if (editingInvoice) {
+      removeInvoiceFile(editingInvoice.id, fileId);
+      toast.success("File deleted successfully!");
     }
   };
 
@@ -288,6 +343,7 @@ export default function InvoicesPage() {
             taxRate: "",
             notes: "",
           });
+          setUploadedFiles([]);
         }}
         title={editingInvoice ? "Edit Invoice" : "Create New Invoice"}
         footer={
@@ -308,6 +364,7 @@ export default function InvoicesPage() {
                   taxRate: "",
                   notes: "",
                 });
+                setUploadedFiles([]);
               }}
               className="btn-secondary mr-2"
             >
@@ -466,6 +523,53 @@ export default function InvoicesPage() {
               />
             </div>
           </div>
+
+          {/* File Upload Section */}
+          <div className="border-t border-gray-200 dark:border-gray-700 pt-6">
+            <FileUpload
+              files={uploadedFiles}
+              onFilesChange={setUploadedFiles}
+              maxFiles={5}
+              maxSize={10}
+              title="Upload Invoice Files"
+              description="Upload invoice documents, receipts, or supporting files"
+              acceptedTypes={[".pdf", ".doc", ".docx", ".xls", ".xlsx", ".jpg", ".jpeg", ".png"]}
+            />
+            
+            {uploadedFiles.length > 0 && (
+              <div className="mt-4 flex justify-end">
+                <button
+                  type="button"
+                  onClick={handleFileUpload}
+                  disabled={isUploading}
+                  className="btn-secondary flex items-center space-x-2"
+                >
+                  {isUploading ? (
+                    <>
+                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-gray-600"></div>
+                      <span>Uploading...</span>
+                    </>
+                  ) : (
+                    <>
+                      <CloudArrowUpIcon className="h-4 w-4" />
+                      <span>Upload Files</span>
+                    </>
+                  )}
+                </button>
+              </div>
+            )}
+          </div>
+
+          {/* File List Section */}
+          {editingInvoice?.files && editingInvoice.files.length > 0 && (
+            <div className="border-t border-gray-200 dark:border-gray-700 pt-6">
+              <FileList
+                files={editingInvoice.files}
+                onDelete={handleFileDelete}
+                title="Invoice Files"
+              />
+            </div>
+          )}
         </form>
       </Modal>
     </div>

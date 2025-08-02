@@ -69,6 +69,34 @@ export interface TimesheetEntry {
   updatedAt: Date;
 }
 
+export interface TimesheetFile {
+  id: string;
+  timesheetId: string;
+  fileName: string;
+  originalName: string;
+  fileSize: number;
+  fileType: string;
+  uploadDate: Date;
+  uploadedBy: string;
+  filePath: string;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface InvoiceFile {
+  id: string;
+  invoiceId: string;
+  fileName: string;
+  originalName: string;
+  fileSize: number;
+  fileType: string;
+  uploadDate: Date;
+  uploadedBy: string;
+  filePath: string;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
 export interface Timesheet {
   id: string;
   projectId: string;
@@ -97,6 +125,9 @@ export interface Timesheet {
   invoiceId?: string; // Reference to generated invoice
   invoicedAt?: Date;
 
+  // File attachments
+  files?: TimesheetFile[];
+
   createdAt: Date;
   updatedAt: Date;
 }
@@ -115,6 +146,10 @@ export interface Invoice {
   taxAmount: number;
   total: number;
   notes?: string;
+
+  // File attachments
+  files?: InvoiceFile[];
+
   createdAt: Date;
   updatedAt: Date;
 }
@@ -126,22 +161,6 @@ export interface InvoiceItem {
   quantity: number;
   unitPrice: number;
   total: number;
-}
-
-export interface InvoiceFile {
-  id: string;
-  invoiceId: string;
-  fileName: string;
-  originalName: string;
-  fileSize: number;
-  fileType: string;
-  uploadDate: Date;
-  month: string; // Format: "YYYY-MM"
-  year: number;
-  uploadedBy: string;
-  filePath: string;
-  createdAt: Date;
-  updatedAt: Date;
 }
 
 export interface Expense {

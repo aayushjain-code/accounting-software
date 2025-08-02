@@ -18,10 +18,11 @@ import {
   ArrowLeftIcon,
   ChartBarIcon,
   ChartBarSquareIcon,
+  CloudArrowUpIcon,
 } from "@heroicons/react/24/outline";
 import { format } from "date-fns";
 import toast from "react-hot-toast";
-import { Timesheet, Project } from "@/types";
+import { Timesheet, Project, TimesheetFile } from "@/types";
 import { formatCurrency, getStatusColor } from "@/utils/helpers";
 import { ConfirmationDialog } from "@/components/ConfirmationDialog";
 import { Tooltip, ActionTooltip, IconTooltip } from "@/components/Tooltip";
@@ -30,6 +31,8 @@ import {
   QuestionMarkCircleIcon,
 } from "@heroicons/react/24/outline";
 import Link from "next/link";
+import FileUpload from "@/components/FileUpload";
+import FileList from "@/components/FileList";
 
 // Enhanced Status Badge Component
 const StatusBadge = React.memo(({ status }: { status: string }) => {
@@ -346,11 +349,21 @@ export default function TimesheetDetailPage({
 }: {
   params: { id: string };
 }) {
+  const [isClient, setIsClient] = useState(false);
+  const [uploadedFiles, setUploadedFiles] = useState<File[]>([]);
+  const [isUploading, setIsUploading] = useState(false);
+
+  React.useEffect(() => {
+    setIsClient(true);
+  }, []);
+
   const {
     timesheets,
     projects,
     updateTimesheet,
     generateInvoiceFromTimesheet,
+    addTimesheetFile,
+    removeTimesheetFile,
   } = useAccountingStore();
 
   // Get timesheet data
@@ -401,6 +414,46 @@ export default function TimesheetDetailPage({
     },
     [timesheet, updateTimesheet, generateInvoiceFromTimesheet]
   );
+
+  const handleFileUpload = async () => {
+    if (uploadedFiles.length === 0) return;
+
+    setIsUploading(true);
+    try {
+      // Simulate file upload
+      for (const file of uploadedFiles) {
+        const fileData: TimesheetFile = {
+          id: `file_${Date.now()}_${Math.random()}`,
+          timesheetId: timesheet!.id,
+          fileName: `timesheet_${timesheet!.id}_${file.name}`,
+          originalName: file.name,
+          fileSize: file.size,
+          fileType: file.type || `.${file.name.split('.').pop()}`,
+          uploadDate: new Date(),
+          uploadedBy: "Admin User",
+          filePath: `/uploads/timesheets/${file.name}`,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        };
+
+        addTimesheetFile(timesheet!.id, fileData);
+      }
+
+      setUploadedFiles([]);
+      toast.success("Files uploaded successfully!");
+    } catch (error) {
+      toast.error("Failed to upload files");
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
+  const handleFileDelete = (fileId: string) => {
+    if (timesheet) {
+      removeTimesheetFile(timesheet.id, fileId);
+      toast.success("File deleted successfully!");
+    }
+  };
 
   if (!timesheet) {
     return (
@@ -550,6 +603,52 @@ export default function TimesheetDetailPage({
           </div>
         </div>
       </div>
+
+      {/* File Upload Section */}
+      <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+        <FileUpload
+          files={uploadedFiles}
+          onFilesChange={setUploadedFiles}
+          maxFiles={5}
+          maxSize={10}
+          title="Upload Timesheet Files"
+          description="Upload supporting documents, receipts, or other files related to this timesheet"
+          acceptedTypes={[".pdf", ".doc", ".docx", ".xls", ".xlsx", ".jpg", ".jpeg", ".png"]}
+        />
+        
+        {uploadedFiles.length > 0 && (
+          <div className="mt-4 flex justify-end">
+            <button
+              onClick={handleFileUpload}
+              disabled={isUploading}
+              className="btn-primary flex items-center space-x-2"
+            >
+              {isUploading ? (
+                <>
+                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                  <span>Uploading...</span>
+                </>
+              ) : (
+                <>
+                  <CloudArrowUpIcon className="h-4 w-4" />
+                  <span>Upload Files</span>
+                </>
+              )}
+            </button>
+          </div>
+        )}
+      </div>
+
+      {/* File List Section */}
+      {timesheet?.files && timesheet.files.length > 0 && (
+        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+          <FileList
+            files={timesheet.files}
+            onDelete={handleFileDelete}
+            title="Timesheet Files"
+          />
+        </div>
+      )}
     </div>
   );
 }

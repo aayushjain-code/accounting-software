@@ -12,6 +12,7 @@ import {
   CompanyProfile,
   DashboardStats,
   DailyLog,
+  TimesheetFile,
 } from "@/types";
 
 interface AccountingStore {
@@ -61,9 +62,6 @@ interface AccountingStore {
   updateInvoiceItem: (id: string, item: Partial<InvoiceItem>) => void;
   deleteInvoiceItem: (id: string) => void;
 
-  addInvoiceFile: (
-    file: Omit<InvoiceFile, "id" | "createdAt" | "updatedAt">
-  ) => void;
   updateInvoiceFile: (id: string, file: Partial<InvoiceFile>) => void;
   deleteInvoiceFile: (id: string) => void;
 
@@ -76,6 +74,12 @@ interface AccountingStore {
   addDailyLog: (log: Omit<DailyLog, "id" | "createdAt" | "updatedAt">) => void;
   updateDailyLog: (id: string, log: Partial<DailyLog>) => void;
   deleteDailyLog: (id: string) => void;
+
+  // File management functions
+  addTimesheetFile: (timesheetId: string, file: TimesheetFile) => void;
+  removeTimesheetFile: (timesheetId: string, fileId: string) => void;
+  addInvoiceFile: (invoiceId: string, file: InvoiceFile) => void;
+  removeInvoiceFile: (invoiceId: string, fileId: string) => void;
 
   // Computed
   getDashboardStats: () => DashboardStats;
@@ -759,29 +763,24 @@ export const useAccountingStore = create<AccountingStore>()(
         }));
       },
 
-      addInvoiceFile: (file) => {
-        const newFile: InvoiceFile = {
-          ...file,
-          id: generateId(),
-          createdAt: new Date(),
-          updatedAt: new Date(),
-        };
-        set((state) => ({ invoiceFiles: [...state.invoiceFiles, newFile] }));
-      },
-
-      updateInvoiceFile: (id, file) => {
+      updateInvoiceFile: (id, file) =>
         set((state) => ({
-          invoiceFiles: state.invoiceFiles.map((f) =>
-            f.id === id ? { ...f, ...file, updatedAt: new Date() } : f
+          invoices: state.invoices.map((invoice) =>
+            invoice.id === id
+              ? {
+                  ...invoice,
+                  files: (invoice.files || []).map((f) =>
+                    f.id === id ? { ...f, ...file } : f
+                  ),
+                }
+              : invoice
           ),
-        }));
-      },
+        })),
 
-      deleteInvoiceFile: (id) => {
+      deleteInvoiceFile: (id: string) =>
         set((state) => ({
           invoiceFiles: state.invoiceFiles.filter((f) => f.id !== id),
-        }));
-      },
+        })),
 
       addExpense: (expense) => {
         const newExpense: Expense = {
@@ -830,6 +829,55 @@ export const useAccountingStore = create<AccountingStore>()(
           dailyLogs: state.dailyLogs.filter((l) => l.id !== id),
         }));
       },
+
+      // File management functions
+      addTimesheetFile: (timesheetId: string, file: TimesheetFile) =>
+        set((state) => ({
+          timesheets: state.timesheets.map((timesheet) =>
+            timesheet.id === timesheetId
+              ? {
+                  ...timesheet,
+                  files: [...(timesheet.files || []), file],
+                }
+              : timesheet
+          ),
+        })),
+
+      removeTimesheetFile: (timesheetId: string, fileId: string) =>
+        set((state) => ({
+          timesheets: state.timesheets.map((timesheet) =>
+            timesheet.id === timesheetId
+              ? {
+                  ...timesheet,
+                  files: (timesheet.files || []).filter((file) => file.id !== fileId),
+                }
+              : timesheet
+          ),
+        })),
+
+      addInvoiceFile: (invoiceId: string, file: InvoiceFile) =>
+        set((state) => ({
+          invoices: state.invoices.map((invoice) =>
+            invoice.id === invoiceId
+              ? {
+                  ...invoice,
+                  files: [...(invoice.files || []), file],
+                }
+              : invoice
+          ),
+        })),
+
+      removeInvoiceFile: (invoiceId: string, fileId: string) =>
+        set((state) => ({
+          invoices: state.invoices.map((invoice) =>
+            invoice.id === invoiceId
+              ? {
+                  ...invoice,
+                  files: (invoice.files || []).filter((file) => file.id !== fileId),
+                }
+              : invoice
+          ),
+        })),
 
       getDashboardStats: () => {
         const totalRevenue = get().invoices.reduce((sum, invoice) => {
@@ -898,11 +946,13 @@ export const useAccountingStore = create<AccountingStore>()(
       },
 
       getInvoiceFilesByInvoice: (invoiceId) => {
-        return get().invoiceFiles.filter((f) => f.invoiceId === invoiceId);
+        return get().invoices.find((i) => i.id === invoiceId)?.files || [];
       },
 
       getInvoiceFilesByMonth: (month) => {
-        return get().invoiceFiles.filter((f) => f.month === month);
+        // For now, return all files since we removed the month field
+        // In a real implementation, you might want to add month metadata or use a different approach
+        return get().invoiceFiles;
       },
 
       getExpensesByProject: (projectId) => {

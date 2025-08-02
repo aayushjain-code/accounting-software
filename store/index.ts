@@ -11,6 +11,7 @@ import {
   TimesheetEntry,
   CompanyProfile,
   DashboardStats,
+  DailyLog,
 } from "@/types";
 
 interface AccountingStore {
@@ -24,6 +25,7 @@ interface AccountingStore {
   expenses: Expense[];
   timesheets: Timesheet[];
   timesheetEntries: TimesheetEntry[];
+  dailyLogs: DailyLog[];
 
   // Actions
   updateCompanyProfile: (profile: Partial<CompanyProfile>) => void;
@@ -71,6 +73,10 @@ interface AccountingStore {
   updateExpense: (id: string, expense: Partial<Expense>) => void;
   deleteExpense: (id: string) => void;
 
+  addDailyLog: (log: Omit<DailyLog, "id" | "createdAt" | "updatedAt">) => void;
+  updateDailyLog: (id: string, log: Partial<DailyLog>) => void;
+  deleteDailyLog: (id: string) => void;
+
   // Computed
   getDashboardStats: () => DashboardStats;
   getClientById: (id: string) => Client | undefined;
@@ -83,6 +89,8 @@ interface AccountingStore {
   getInvoiceFilesByMonth: (month: string) => InvoiceFile[];
   getExpensesByProject: (projectId: string) => Expense[];
   generateInvoiceFromTimesheet: (timesheetId: string) => Invoice;
+  getDailyLogsByDate: (date: Date) => DailyLog[];
+  getDailyLogsByCategory: (category: DailyLog["category"]) => DailyLog[];
 }
 
 const generateId = () => Math.random().toString(36).substr(2, 9);
@@ -504,6 +512,63 @@ export const useAccountingStore = create<AccountingStore>()(
           updatedAt: new Date("2024-03-01"),
         },
       ],
+      dailyLogs: [
+        {
+          id: "log1",
+          date: new Date("2024-03-15"),
+          title: "Monthly GST Filing Completed",
+          description: "Successfully filed GST returns for February 2024. All invoices processed and tax calculations verified. Payment of ₹45,000 submitted to government portal.",
+          category: "accounting",
+          priority: "high",
+          tags: ["GST", "tax-filing", "compliance"],
+          createdAt: new Date("2024-03-15"),
+          updatedAt: new Date("2024-03-15"),
+        },
+        {
+          id: "log2",
+          date: new Date("2024-03-14"),
+          title: "New Client Onboarding - TechCorp Solutions",
+          description: "Signed new client contract worth ₹2.5L for 6-month project. Initial payment of ₹50,000 received. Project kickoff scheduled for next week.",
+          category: "important",
+          priority: "high",
+          tags: ["new-client", "contract", "payment"],
+          createdAt: new Date("2024-03-14"),
+          updatedAt: new Date("2024-03-14"),
+        },
+        {
+          id: "log3",
+          date: new Date("2024-03-13"),
+          title: "Office Rent Payment Due",
+          description: "Monthly office rent payment of ₹25,000 due on 20th March. Need to process payment and update expense records.",
+          category: "reminder",
+          priority: "medium",
+          tags: ["rent", "expense", "payment"],
+          createdAt: new Date("2024-03-13"),
+          updatedAt: new Date("2024-03-13"),
+        },
+        {
+          id: "log4",
+          date: new Date("2024-03-12"),
+          title: "Project Milestone - E-commerce Platform",
+          description: "Completed Phase 1 of e-commerce platform development. Client approved deliverables. Invoice for ₹1.2L to be generated this week.",
+          category: "milestone",
+          priority: "high",
+          tags: ["milestone", "project-completion", "invoice"],
+          createdAt: new Date("2024-03-12"),
+          updatedAt: new Date("2024-03-12"),
+        },
+        {
+          id: "log5",
+          date: new Date("2024-03-11"),
+          title: "Bank Reconciliation Completed",
+          description: "March bank statement reconciled. All transactions matched. Outstanding checks cleared. No discrepancies found.",
+          category: "accounting",
+          priority: "medium",
+          tags: ["bank-reconciliation", "reconciliation"],
+          createdAt: new Date("2024-03-11"),
+          updatedAt: new Date("2024-03-11"),
+        },
+      ],
 
       addClient: (client) => {
         const newClient: Client = {
@@ -707,6 +772,30 @@ export const useAccountingStore = create<AccountingStore>()(
         }));
       },
 
+      addDailyLog: (log) => {
+        const newLog: DailyLog = {
+          ...log,
+          id: generateId(),
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        };
+        set((state) => ({ dailyLogs: [...state.dailyLogs, newLog] }));
+      },
+
+      updateDailyLog: (id, log) => {
+        set((state) => ({
+          dailyLogs: state.dailyLogs.map((l) =>
+            l.id === id ? { ...l, ...log, updatedAt: new Date() } : l
+          ),
+        }));
+      },
+
+      deleteDailyLog: (id) => {
+        set((state) => ({
+          dailyLogs: state.dailyLogs.filter((l) => l.id !== id),
+        }));
+      },
+
       getDashboardStats: () => {
         const totalRevenue = get().invoices.reduce((sum, invoice) => {
           return invoice.status === "paid" ? sum + invoice.total : sum;
@@ -834,6 +923,23 @@ export const useAccountingStore = create<AccountingStore>()(
         }));
 
         return newInvoice;
+      },
+
+      getDailyLogsByDate: (date) => {
+        const targetDate = new Date(date);
+        targetDate.setHours(0, 0, 0, 0);
+        const nextDate = new Date(targetDate);
+        nextDate.setDate(nextDate.getDate() + 1);
+        
+        return get().dailyLogs.filter((log) => {
+          const logDate = new Date(log.date);
+          logDate.setHours(0, 0, 0, 0);
+          return logDate >= targetDate && logDate < nextDate;
+        });
+      },
+
+      getDailyLogsByCategory: (category) => {
+        return get().dailyLogs.filter((log) => log.category === category);
       },
     }),
     {

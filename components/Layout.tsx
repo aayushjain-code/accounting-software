@@ -23,12 +23,12 @@ import { ErrorBoundary } from "./ErrorBoundary";
 
 const navigation = [
   { name: "Dashboard", href: "/", icon: HomeIcon },
-  { name: "Profile", href: "/profile", icon: BuildingOfficeIcon },
   { name: "Clients", href: "/clients", icon: BuildingOfficeIcon },
   { name: "Projects", href: "/projects", icon: FolderIcon },
   { name: "Timesheets", href: "/timesheet", icon: ClockIcon },
   { name: "Invoices", href: "/invoices", icon: DocumentTextIcon },
   { name: "Expenses", href: "/expenses", icon: ReceiptRefundIcon },
+  { name: "Daily Logs", href: "/daily-logs", icon: DocumentTextIcon },
   { name: "Kanban", href: "/kanban", icon: ViewColumnsIcon },
   { name: "Reports", href: "/reports", icon: ChartBarIcon },
 ];

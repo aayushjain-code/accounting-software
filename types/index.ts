@@ -199,6 +199,18 @@ export interface CompanyProfile {
   updatedAt: Date;
 }
 
+export interface DailyLog {
+  id: string;
+  date: Date;
+  title: string;
+  description: string;
+  category: "accounting" | "important" | "reminder" | "milestone";
+  priority: "low" | "medium" | "high" | "critical";
+  tags: string[];
+  createdAt: Date;
+  updatedAt: Date;
+}
+
 export interface DashboardStats {
   totalRevenue: number;
   totalExpenses: number;

@@ -185,16 +185,17 @@ const TimesheetRow = React.memo(
               <div className="font-semibold text-gray-900">
                 {project?.name || "Unknown Project"}
               </div>
-              <div className="text-sm text-gray-500 flex items-center space-x-2">
-                <span className="bg-gray-100 px-2 py-0.5 rounded text-xs font-medium">
-                  {project?.projectCode || "N/A"}
-                </span>
-                <span>•</span>
-                <span>
-                  {format(new Date(timesheet.month + "-01"), "MMMM yyyy")}
-                </span>
+              <div className="text-sm text-gray-500">
+                {format(new Date(timesheet.month + "-01"), "MMMM yyyy")}
               </div>
             </div>
+          </div>
+        </td>
+        <td className="px-6 py-4">
+          <div className="flex items-center">
+            <span className="bg-primary-100 text-primary-800 px-3 py-1 rounded-full text-xs font-semibold">
+              {project?.projectCode || "N/A"}
+            </span>
           </div>
         </td>
         <td className="px-6 py-4">
@@ -994,6 +995,9 @@ export default function TimesheetPage() {
               <tr>
                 <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
                   Project
+                </th>
+                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                  Project Code
                 </th>
                 <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
                   Work Details

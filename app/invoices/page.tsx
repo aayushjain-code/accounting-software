@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { useAccountingStore } from "@/store";
 import { PlusIcon, PencilIcon, TrashIcon } from "@heroicons/react/24/outline";
 import { format } from "date-fns";
@@ -10,7 +10,7 @@ import FileUpload from "@/components/FileUpload";
 import FileList from "@/components/FileList";
 import { CloudArrowUpIcon } from "@heroicons/react/24/outline";
 import React from "react";
-import { InvoiceFile } from "@/types";
+import { InvoiceFile, Timesheet, Project, Client } from "@/types";
 
 export default function InvoicesPage() {
   const [isClient, setIsClient] = useState(false);
@@ -36,34 +36,54 @@ export default function InvoicesPage() {
   const [editingInvoice, setEditingInvoice] = useState<any>(null);
   const [formData, setFormData] = useState({
     timesheetId: "",
-    clientId: "",
-    projectId: "",
-    invoiceNumber: "",
     issueDate: "",
     dueDate: "",
-    subtotal: "",
-    taxRate: "",
+    status: "draft" as "draft" | "sent" | "paid",
     notes: "",
   });
+
+  const generateInvoiceNumber = () => {
+    const currentYear = new Date().getFullYear();
+    const invoiceCount = invoices.length + 1;
+    return `INV-${currentYear}-${invoiceCount.toString().padStart(3, "0")}`;
+  };
+
+  // Derive project, client, and amount from timesheet
+  const selectedTimesheet = useMemo(
+    () => timesheets.find((t) => t.id === formData.timesheetId),
+    [formData.timesheetId, timesheets]
+  );
+  const selectedProject = useMemo(
+    () => projects.find((p) => p.id === selectedTimesheet?.projectId),
+    [selectedTimesheet, projects]
+  );
+  const selectedClient = useMemo(
+    () => clients.find((c) => c.id === selectedProject?.clientId),
+    [selectedProject, clients]
+  );
+  const calculatedAmount = selectedTimesheet?.totalAmount || 0;
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
-    const subtotal = parseFloat(formData.subtotal);
-    const taxRate = parseFloat(formData.taxRate);
-    const taxAmount = subtotal * (taxRate / 100);
-    const total = subtotal + taxAmount;
+    if (!selectedTimesheet || !selectedProject || !selectedClient) {
+      toast.error("Please select a valid timesheet");
+      return;
+    }
 
     const invoiceData = {
-      ...formData,
       timesheetId: formData.timesheetId,
+      clientId: selectedClient.id,
+      projectId: selectedProject.id,
+      invoiceNumber: generateInvoiceNumber(),
       issueDate: new Date(formData.issueDate),
       dueDate: new Date(formData.dueDate),
-      subtotal,
-      taxRate,
-      taxAmount,
-      total,
-      status: "draft" as const,
+      status: formData.status,
+      subtotal: calculatedAmount,
+      taxRate: 18, // Default GST rate
+      taxAmount: calculatedAmount * 0.18,
+      total: calculatedAmount * 1.18,
+      notes: formData.notes,
     };
 
     if (editingInvoice) {
@@ -71,35 +91,28 @@ export default function InvoicesPage() {
       toast.success("Invoice updated successfully");
     } else {
       addInvoice(invoiceData);
-      toast.success("Invoice added successfully");
+      toast.success("Invoice created successfully");
     }
 
     setIsModalOpen(false);
     setEditingInvoice(null);
     setFormData({
       timesheetId: "",
-      clientId: "",
-      projectId: "",
-      invoiceNumber: "",
       issueDate: "",
       dueDate: "",
-      subtotal: "",
-      taxRate: "",
+      status: "draft" as const,
       notes: "",
     });
+    setUploadedFiles([]);
   };
 
   const handleEdit = (invoice: any) => {
     setEditingInvoice(invoice);
     setFormData({
       timesheetId: invoice.timesheetId,
-      clientId: invoice.clientId,
-      projectId: invoice.projectId,
-      invoiceNumber: invoice.invoiceNumber,
       issueDate: format(new Date(invoice.issueDate), "yyyy-MM-dd"),
       dueDate: format(new Date(invoice.dueDate), "yyyy-MM-dd"),
-      subtotal: invoice.subtotal.toString(),
-      taxRate: invoice.taxRate.toString(),
+      status: invoice.status,
       notes: invoice.notes || "",
     });
     setIsModalOpen(true);
@@ -125,7 +138,7 @@ export default function InvoicesPage() {
           fileName: `invoice_${editingInvoice.id}_${file.name}`,
           originalName: file.name,
           fileSize: file.size,
-          fileType: file.type || `.${file.name.split('.').pop()}`,
+          fileType: file.type || `.${file.name.split(".").pop()}`,
           uploadDate: new Date(),
           uploadedBy: "Admin User",
           filePath: `/uploads/invoices/${file.name}`,
@@ -170,19 +183,6 @@ export default function InvoicesPage() {
       default:
         return "text-gray-600 bg-gray-100";
     }
-  };
-
-  const generateInvoiceNumber = () => {
-    const date = new Date();
-    const year = date.getFullYear();
-    const month = String(date.getMonth() + 1).padStart(2, "0");
-    const count =
-      invoices.filter(
-        (i) =>
-          new Date(i.createdAt).getFullYear() === year &&
-          new Date(i.createdAt).getMonth() === date.getMonth()
-      ).length + 1;
-    return `INV-${year}${month}-${String(count).padStart(3, "0")}`;
   };
 
   return (
@@ -334,13 +334,9 @@ export default function InvoicesPage() {
           setEditingInvoice(null);
           setFormData({
             timesheetId: "",
-            clientId: "",
-            projectId: "",
-            invoiceNumber: "",
             issueDate: "",
             dueDate: "",
-            subtotal: "",
-            taxRate: "",
+            status: "draft",
             notes: "",
           });
           setUploadedFiles([]);
@@ -355,13 +351,9 @@ export default function InvoicesPage() {
                 setEditingInvoice(null);
                 setFormData({
                   timesheetId: "",
-                  clientId: "",
-                  projectId: "",
-                  invoiceNumber: "",
                   issueDate: "",
                   dueDate: "",
-                  subtotal: "",
-                  taxRate: "",
+                  status: "draft",
                   notes: "",
                 });
                 setUploadedFiles([]);
@@ -377,153 +369,135 @@ export default function InvoicesPage() {
         }
       >
         <form id="invoice-form" onSubmit={handleSubmit} className="space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {/* Timesheet selection */}
-            <div className="md:col-span-2">
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                Timesheet
-              </label>
-              <select
-                required
-                value={formData.timesheetId}
-                onChange={(e) => {
-                  const timesheetId = e.target.value;
-                  setFormData((prev) => ({ ...prev, timesheetId }));
-                }}
-                className="input"
-              >
-                <option value="">Select a timesheet</option>
-                {timesheets.map((t) => (
-                  <option key={t.id} value={t.id}>
-                    {t.month} - {t.year} ({t.status})
-                  </option>
-                ))}
-              </select>
-            </div>
-            {/* Show derived info if timesheet is selected */}
-            {formData.timesheetId &&
-              (() => {
-                const timesheet = timesheets.find(
-                  (t) => t.id === formData.timesheetId
-                );
-                const project =
-                  timesheet &&
-                  projects.find((p) => p.id === timesheet.projectId);
-                const client =
-                  project && clients.find((c) => c.id === project.clientId);
-                return (
-                  <>
-                    <div>
-                      <label className="block text-xs font-medium text-gray-500 mb-1">
-                        Client
-                      </label>
-                      <div className="bg-gray-50 dark:bg-gray-800 rounded px-3 py-2 text-gray-900 dark:text-white text-sm">
-                        {client?.name || "Unknown Client"}
-                      </div>
-                    </div>
-                    <div>
-                      <label className="block text-xs font-medium text-gray-500 mb-1">
-                        Project
-                      </label>
-                      <div className="bg-gray-50 dark:bg-gray-800 rounded px-3 py-2 text-gray-900 dark:text-white text-sm">
-                        {project?.name || "Unknown Project"}
-                      </div>
-                    </div>
-                    <div>
-                      <label className="block text-xs font-medium text-gray-500 mb-1">
-                        Invoice Number
-                      </label>
-                      <div className="bg-gray-50 dark:bg-gray-800 rounded px-3 py-2 text-gray-900 dark:text-white text-sm">
-                        {editingInvoice
-                          ? editingInvoice.invoiceNumber
-                          : generateInvoiceNumber()}
-                      </div>
-                    </div>
-                  </>
-                );
-              })()}
-            {/* ...keep the rest of the form (issue date, due date, subtotal, tax, notes)... */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                Issue Date
-              </label>
-              <input
-                type="date"
-                required
-                value={formData.issueDate}
-                onChange={(e) =>
-                  setFormData({ ...formData, issueDate: e.target.value })
-                }
-                className="input"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                Due Date
-              </label>
-              <input
-                type="date"
-                required
-                value={formData.dueDate}
-                onChange={(e) =>
-                  setFormData({ ...formData, dueDate: e.target.value })
-                }
-                className="input"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                Subtotal (₹)
-              </label>
-              <input
-                type="number"
-                required
-                min="0"
-                step="0.01"
-                value={formData.subtotal}
-                onChange={(e) =>
-                  setFormData({
-                    ...formData,
-                    subtotal: e.target.value,
-                  })
-                }
-                className="input"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                Tax Rate (%)
-              </label>
-              <input
-                type="number"
-                required
-                min="0"
-                step="0.01"
-                value={formData.taxRate}
-                onChange={(e) =>
-                  setFormData({
-                    ...formData,
-                    taxRate: e.target.value,
-                  })
-                }
-                className="input"
-              />
-            </div>
-            <div className="md:col-span-2">
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                Notes
-              </label>
-              <textarea
-                value={formData.notes}
-                onChange={(e) =>
-                  setFormData({ ...formData, notes: e.target.value })
-                }
-                className="input"
-                rows={3}
-              />
-            </div>
+          {/* Timesheet selection */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              Timesheet
+            </label>
+            <select
+              value={formData.timesheetId}
+              onChange={(e) =>
+                setFormData((f) => ({ ...f, timesheetId: e.target.value }))
+              }
+              className="input"
+              required
+              disabled={!!editingInvoice}
+            >
+              <option value="">Select Timesheet</option>
+              {timesheets.map((t) => (
+                <option key={t.id} value={t.id}>
+                  {t.month} {t.year} -{" "}
+                  {projects.find((p) => p.id === t.projectId)?.name || ""}
+                </option>
+              ))}
+            </select>
           </div>
-
+          {/* Project (read-only) */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              Project
+            </label>
+            <input
+              type="text"
+              value={selectedProject ? `${selectedProject.projectCode} - ${selectedProject.name}` : ""}
+              className="input bg-gray-100 dark:bg-gray-800 cursor-not-allowed"
+              readOnly
+              tabIndex={-1}
+            />
+          </div>
+          {/* Client (read-only) */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              Client
+            </label>
+            <input
+              type="text"
+              value={selectedClient ? `${selectedClient.name} (${selectedClient.company})` : ""}
+              className="input bg-gray-100 dark:bg-gray-800 cursor-not-allowed"
+              readOnly
+              tabIndex={-1}
+            />
+          </div>
+          {/* Amount (read-only) */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              Amount
+            </label>
+            <input
+              type="text"
+              value={calculatedAmount.toLocaleString("en-IN", {
+                style: "currency",
+                currency: "INR",
+              })}
+              className="input bg-gray-100 dark:bg-gray-800 cursor-not-allowed"
+              readOnly
+              tabIndex={-1}
+            />
+          </div>
+          {/* Status dropdown */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              Status
+            </label>
+            <select
+              value={formData.status}
+              onChange={(e) =>
+                setFormData((f) => ({
+                  ...f,
+                  status: e.target.value as "draft" | "sent" | "paid",
+                }))
+              }
+              className="input"
+            >
+              <option value="draft">Draft</option>
+              <option value="sent">Sent</option>
+              <option value="paid">Paid</option>
+            </select>
+          </div>
+          {/* Issue Date */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              Issue Date
+            </label>
+            <input
+              type="date"
+              value={formData.issueDate}
+              onChange={(e) =>
+                setFormData((f) => ({ ...f, issueDate: e.target.value }))
+              }
+              className="input"
+              required
+            />
+          </div>
+          {/* Due Date */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              Due Date
+            </label>
+            <input
+              type="date"
+              value={formData.dueDate}
+              onChange={(e) =>
+                setFormData((f) => ({ ...f, dueDate: e.target.value }))
+              }
+              className="input"
+              required
+            />
+          </div>
+          {/* Notes */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              Notes
+            </label>
+            <textarea
+              value={formData.notes}
+              onChange={(e) =>
+                setFormData((f) => ({ ...f, notes: e.target.value }))
+              }
+              className="input"
+              rows={2}
+            />
+          </div>
           {/* File Upload Section */}
           <div className="border-t border-gray-200 dark:border-gray-700 pt-6">
             <FileUpload
@@ -533,9 +507,18 @@ export default function InvoicesPage() {
               maxSize={10}
               title="Upload Invoice Files"
               description="Upload invoice documents, receipts, or supporting files"
-              acceptedTypes={[".pdf", ".doc", ".docx", ".xls", ".xlsx", ".jpg", ".jpeg", ".png"]}
+              acceptedTypes={[
+                ".pdf",
+                ".doc",
+                ".docx",
+                ".xls",
+                ".xlsx",
+                ".jpg",
+                ".jpeg",
+                ".png",
+              ]}
             />
-            
+
             {uploadedFiles.length > 0 && (
               <div className="mt-4 flex justify-end">
                 <button

@@ -1,9 +1,13 @@
 import React from "react";
-import { DocumentIcon, TrashIcon, ArrowDownTrayIcon } from "@heroicons/react/24/outline";
-import { TimesheetFile, InvoiceFile } from "@/types";
+import {
+  DocumentIcon,
+  TrashIcon,
+  ArrowDownTrayIcon,
+} from "@heroicons/react/24/outline";
+import { TimesheetFile, InvoiceFile, ExpenseFile } from "@/types";
 
 interface FileListProps {
-  files: (TimesheetFile | InvoiceFile)[];
+  files: (TimesheetFile | InvoiceFile | ExpenseFile)[];
   onDelete?: (fileId: string) => void;
   title?: string;
   showActions?: boolean;
@@ -36,7 +40,12 @@ const FileList: React.FC<FileListProps> = ({
     if (extension.includes("pdf")) return "📄";
     if (extension.includes("doc")) return "📝";
     if (extension.includes("xls")) return "📊";
-    if (extension.includes("jpg") || extension.includes("jpeg") || extension.includes("png")) return "🖼️";
+    if (
+      extension.includes("jpg") ||
+      extension.includes("jpeg") ||
+      extension.includes("png")
+    )
+      return "🖼️";
     return "📎";
   };
 
@@ -104,4 +113,4 @@ const FileList: React.FC<FileListProps> = ({
   );
 };
 
-export default FileList; 
+export default FileList;

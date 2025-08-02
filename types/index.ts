@@ -163,13 +163,35 @@ export interface InvoiceItem {
   total: number;
 }
 
+export interface ExpenseFile {
+  id: string;
+  expenseId: string;
+  fileName: string;
+  originalName: string;
+  fileSize: number;
+  fileType: string;
+  uploadDate: Date;
+  uploadedBy: string;
+  filePath: string;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
 export interface Expense {
   id: string;
   category: string;
   description: string;
   amount: number;
   date: Date;
-  projectId: string;
+  projectId?: string;
+  status: "pending" | "approved" | "rejected";
+  approvedBy?: string;
+  approvedAt?: Date;
+  rejectionReason?: string;
+
+  // File attachments
+  files?: ExpenseFile[];
+
   createdAt: Date;
   updatedAt: Date;
 }

@@ -37,6 +37,10 @@ import {
   QuestionMarkCircleIcon,
 } from "@heroicons/react/24/outline";
 import Modal from "@/components/Modal";
+import FileUpload from "@/components/FileUpload";
+import FileList from "@/components/FileList";
+import { CloudArrowUpIcon } from "@heroicons/react/24/outline";
+import { TimesheetFile } from "@/types";
 
 // Enhanced Status Badge Component
 const StatusBadge = React.memo(({ status }: { status: string }) => {
@@ -341,7 +345,8 @@ const TimesheetModal = React.memo(
           };
       }
     };
-    const { projects } = useAccountingStore();
+    const { projects, addTimesheetFile, removeTimesheetFile } =
+      useAccountingStore();
     const [formData, setFormData] = useState({
       projectId: "",
       month: "",
@@ -356,6 +361,8 @@ const TimesheetModal = React.memo(
     const [selectedProject, setSelectedProject] = useState<Project | null>(
       null
     );
+    const [uploadedFiles, setUploadedFiles] = useState<File[]>([]);
+    const [isUploading, setIsUploading] = useState(false);
 
     // Reset form when modal opens/closes
     React.useEffect(() => {
@@ -460,6 +467,42 @@ const TimesheetModal = React.memo(
       },
       [formData, validateForm, onSubmit, selectedProject]
     );
+
+    const handleFileUpload = async () => {
+      if (uploadedFiles.length === 0) return;
+      setIsUploading(true);
+      try {
+        for (const file of uploadedFiles) {
+          const fileData: TimesheetFile = {
+            id: `file_${Date.now()}_${Math.random()}`,
+            timesheetId: editingTimesheet?.id || "new",
+            fileName: `timesheet_${editingTimesheet?.id || "new"}_${file.name}`,
+            originalName: file.name,
+            fileSize: file.size,
+            fileType: file.type || `.${file.name.split(".").pop()}`,
+            uploadDate: new Date(),
+            uploadedBy: "Admin User",
+            filePath: `/uploads/timesheets/${file.name}`,
+            createdAt: new Date(),
+            updatedAt: new Date(),
+          };
+          addTimesheetFile(editingTimesheet?.id || "new", fileData);
+        }
+        setUploadedFiles([]);
+        toast.success("Files uploaded successfully!");
+      } catch (error) {
+        toast.error("Failed to upload files");
+      } finally {
+        setIsUploading(false);
+      }
+    };
+
+    const handleFileDelete = (fileId: string) => {
+      if (editingTimesheet) {
+        removeTimesheetFile(editingTimesheet.id, fileId);
+        toast.success("File deleted successfully!");
+      }
+    };
 
     if (!isOpen) return null;
 
@@ -698,6 +741,57 @@ const TimesheetModal = React.memo(
                 </p>
               </div>
             </div>
+          </div>
+        )}
+        <div className="border-t border-gray-200 dark:border-gray-700 pt-6">
+          <FileUpload
+            files={uploadedFiles}
+            onFilesChange={setUploadedFiles}
+            maxFiles={5}
+            maxSize={10}
+            title="Upload Timesheet Files"
+            description="Upload supporting documents, receipts, or other files for this timesheet"
+            acceptedTypes={[
+              ".pdf",
+              ".doc",
+              ".docx",
+              ".xls",
+              ".xlsx",
+              ".jpg",
+              ".jpeg",
+              ".png",
+            ]}
+          />
+          {uploadedFiles.length > 0 && (
+            <div className="mt-4 flex justify-end">
+              <button
+                type="button"
+                onClick={handleFileUpload}
+                disabled={isUploading}
+                className="btn-secondary flex items-center space-x-2"
+              >
+                {isUploading ? (
+                  <>
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-gray-600"></div>
+                    <span>Uploading...</span>
+                  </>
+                ) : (
+                  <>
+                    <CloudArrowUpIcon className="h-4 w-4" />
+                    <span>Upload Files</span>
+                  </>
+                )}
+              </button>
+            </div>
+          )}
+        </div>
+        {editingTimesheet?.files && editingTimesheet.files.length > 0 && (
+          <div className="border-t border-gray-200 dark:border-gray-700 pt-6">
+            <FileList
+              files={editingTimesheet.files}
+              onDelete={handleFileDelete}
+              title="Timesheet Files"
+            />
           </div>
         )}
       </form>

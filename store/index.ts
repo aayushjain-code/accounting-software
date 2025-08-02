@@ -1,18 +1,19 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import {
+  CompanyProfile,
   Client,
   Project,
   Invoice,
   InvoiceItem,
-  InvoiceFile,
   Expense,
   Timesheet,
   TimesheetEntry,
-  CompanyProfile,
   DashboardStats,
   DailyLog,
   TimesheetFile,
+  InvoiceFile,
+  ExpenseFile,
 } from "@/types";
 
 interface AccountingStore {
@@ -80,6 +81,8 @@ interface AccountingStore {
   removeTimesheetFile: (timesheetId: string, fileId: string) => void;
   addInvoiceFile: (invoiceId: string, file: InvoiceFile) => void;
   removeInvoiceFile: (invoiceId: string, fileId: string) => void;
+  addExpenseFile: (expenseId: string, file: ExpenseFile) => void;
+  removeExpenseFile: (expenseId: string, fileId: string) => void;
 
   // Computed
   getDashboardStats: () => DashboardStats;
@@ -355,41 +358,51 @@ export const useAccountingStore = create<AccountingStore>()(
           id: "expense1",
           category: "Office Rent",
           description: "Monthly office rent - Bangalore",
-          amount: 75000,
-          date: new Date("2024-01-01"),
+          amount: 50000,
+          date: new Date("2024-01-15"),
           projectId: "project1",
+          status: "approved",
+          approvedBy: "Admin User",
+          approvedAt: new Date("2024-01-16"),
           createdAt: new Date("2024-01-01"),
           updatedAt: new Date("2024-01-01"),
         },
         {
           id: "expense2",
           category: "Software Licenses",
-          description: "Annual software licenses renewal",
-          amount: 45000,
-          date: new Date("2024-01-15"),
+          description: "Annual software licenses - Development tools",
+          amount: 25000,
+          date: new Date("2024-01-20"),
           projectId: "project2",
-          createdAt: new Date("2024-01-15"),
-          updatedAt: new Date("2024-01-15"),
+          status: "approved",
+          approvedBy: "Admin User",
+          approvedAt: new Date("2024-01-21"),
+          createdAt: new Date("2024-01-01"),
+          updatedAt: new Date("2024-01-01"),
         },
         {
           id: "expense3",
-          category: "Internet & Utilities",
-          description: "Monthly internet and utility bills",
+          category: "Travel",
+          description: "Client meeting travel expenses",
           amount: 15000,
-          date: new Date("2024-01-31"),
+          date: new Date("2024-01-25"),
           projectId: "project3",
-          createdAt: new Date("2024-01-31"),
-          updatedAt: new Date("2024-01-31"),
+          status: "pending",
+          createdAt: new Date("2024-01-01"),
+          updatedAt: new Date("2024-01-01"),
         },
         {
           id: "expense4",
           category: "Marketing",
           description: "Digital marketing campaign",
-          amount: 25000,
+          amount: 75000,
           date: new Date("2024-02-15"),
           projectId: "project1",
-          createdAt: new Date("2024-02-15"),
-          updatedAt: new Date("2024-02-15"),
+          status: "approved",
+          approvedBy: "Admin User",
+          approvedAt: new Date("2024-02-16"),
+          createdAt: new Date("2024-01-01"),
+          updatedAt: new Date("2024-01-01"),
         },
         {
           id: "expense5",
@@ -398,6 +411,7 @@ export const useAccountingStore = create<AccountingStore>()(
           amount: 12000,
           date: new Date("2024-02-28"),
           projectId: "project2",
+          status: "pending",
           createdAt: new Date("2024-02-28"),
           updatedAt: new Date("2024-02-28"),
         },
@@ -408,6 +422,9 @@ export const useAccountingStore = create<AccountingStore>()(
           amount: 180000,
           date: new Date("2024-03-10"),
           projectId: "project3",
+          status: "approved",
+          approvedBy: "Admin User",
+          approvedAt: new Date("2024-03-11"),
           createdAt: new Date("2024-03-10"),
           updatedAt: new Date("2024-03-10"),
         },
@@ -849,7 +866,9 @@ export const useAccountingStore = create<AccountingStore>()(
             timesheet.id === timesheetId
               ? {
                   ...timesheet,
-                  files: (timesheet.files || []).filter((file) => file.id !== fileId),
+                  files: (timesheet.files || []).filter(
+                    (file) => file.id !== fileId
+                  ),
                 }
               : timesheet
           ),
@@ -873,9 +892,37 @@ export const useAccountingStore = create<AccountingStore>()(
             invoice.id === invoiceId
               ? {
                   ...invoice,
-                  files: (invoice.files || []).filter((file) => file.id !== fileId),
+                  files: (invoice.files || []).filter(
+                    (file) => file.id !== fileId
+                  ),
                 }
               : invoice
+          ),
+        })),
+
+      addExpenseFile: (expenseId: string, file: ExpenseFile) =>
+        set((state) => ({
+          expenses: state.expenses.map((expense) =>
+            expense.id === expenseId
+              ? {
+                  ...expense,
+                  files: [...(expense.files || []), file],
+                }
+              : expense
+          ),
+        })),
+
+      removeExpenseFile: (expenseId: string, fileId: string) =>
+        set((state) => ({
+          expenses: state.expenses.map((expense) =>
+            expense.id === expenseId
+              ? {
+                  ...expense,
+                  files: (expense.files || []).filter(
+                    (file) => file.id !== fileId
+                  ),
+                }
+              : expense
           ),
         })),
 

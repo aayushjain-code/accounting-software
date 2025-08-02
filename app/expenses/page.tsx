@@ -6,10 +6,30 @@ import { PlusIcon, PencilIcon, TrashIcon } from "@heroicons/react/24/outline";
 import { format } from "date-fns";
 import toast from "react-hot-toast";
 import Modal from "@/components/Modal";
+import FileUpload from "@/components/FileUpload";
+import FileList from "@/components/FileList";
+import { CloudArrowUpIcon } from "@heroicons/react/24/outline";
+import React from "react";
+import { ExpenseFile } from "@/types";
 
 export default function ExpensesPage() {
-  const { expenses, projects, addExpense, updateExpense, deleteExpense } =
-    useAccountingStore();
+  const [isClient, setIsClient] = useState(false);
+  const [uploadedFiles, setUploadedFiles] = useState<File[]>([]);
+  const [isUploading, setIsUploading] = useState(false);
+
+  React.useEffect(() => {
+    setIsClient(true);
+  }, []);
+
+  const {
+    expenses,
+    projects,
+    addExpense,
+    updateExpense,
+    deleteExpense,
+    addExpenseFile,
+    removeExpenseFile,
+  } = useAccountingStore();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingExpense, setEditingExpense] = useState<any>(null);
   const [formData, setFormData] = useState({
@@ -37,9 +57,12 @@ export default function ExpensesPage() {
     e.preventDefault();
 
     const expenseData = {
-      ...formData,
+      category: formData.category,
+      description: formData.description,
       amount: parseFloat(formData.amount),
       date: new Date(formData.date),
+      projectId: formData.projectId || undefined,
+      status: "pending" as const,
     };
 
     if (editingExpense) {
@@ -77,6 +100,46 @@ export default function ExpensesPage() {
     if (confirm("Are you sure you want to delete this expense?")) {
       deleteExpense(id);
       toast.success("Expense deleted successfully");
+    }
+  };
+
+  const handleFileUpload = async () => {
+    if (uploadedFiles.length === 0 || !editingExpense) return;
+
+    setIsUploading(true);
+    try {
+      // Simulate file upload
+      for (const file of uploadedFiles) {
+        const fileData: ExpenseFile = {
+          id: `file_${Date.now()}_${Math.random()}`,
+          expenseId: editingExpense.id,
+          fileName: `expense_${editingExpense.id}_${file.name}`,
+          originalName: file.name,
+          fileSize: file.size,
+          fileType: file.type || `.${file.name.split(".").pop()}`,
+          uploadDate: new Date(),
+          uploadedBy: "Admin User",
+          filePath: `/uploads/expenses/${file.name}`,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        };
+
+        addExpenseFile(editingExpense.id, fileData);
+      }
+
+      setUploadedFiles([]);
+      toast.success("Files uploaded successfully!");
+    } catch (error) {
+      toast.error("Failed to upload files");
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
+  const handleFileDelete = (fileId: string) => {
+    if (editingExpense) {
+      removeExpenseFile(editingExpense.id, fileId);
+      toast.success("File deleted successfully!");
     }
   };
 
@@ -293,6 +356,7 @@ export default function ExpensesPage() {
             date: "",
             projectId: "",
           });
+          setUploadedFiles([]);
         }}
         title={editingExpense ? "Edit Expense" : "Add New Expense"}
         footer={
@@ -309,6 +373,7 @@ export default function ExpensesPage() {
                   date: "",
                   projectId: "",
                 });
+                setUploadedFiles([]);
               }}
               className="btn-secondary mr-2"
             >
@@ -413,6 +478,62 @@ export default function ExpensesPage() {
               />
             </div>
           </div>
+
+          {/* File Upload Section */}
+          <div className="border-t border-gray-200 dark:border-gray-700 pt-6">
+            <FileUpload
+              files={uploadedFiles}
+              onFilesChange={setUploadedFiles}
+              maxFiles={5}
+              maxSize={10}
+              title="Upload Expense Files"
+              description="Upload receipts, invoices, or supporting documents for this expense"
+              acceptedTypes={[
+                ".pdf",
+                ".doc",
+                ".docx",
+                ".xls",
+                ".xlsx",
+                ".jpg",
+                ".jpeg",
+                ".png",
+              ]}
+            />
+
+            {uploadedFiles.length > 0 && (
+              <div className="mt-4 flex justify-end">
+                <button
+                  type="button"
+                  onClick={handleFileUpload}
+                  disabled={isUploading}
+                  className="btn-secondary flex items-center space-x-2"
+                >
+                  {isUploading ? (
+                    <>
+                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-gray-600"></div>
+                      <span>Uploading...</span>
+                    </>
+                  ) : (
+                    <>
+                      <CloudArrowUpIcon className="h-4 w-4" />
+                      <span>Upload Files</span>
+                    </>
+                  )}
+                </button>
+              </div>
+            )}
+          </div>
+
+          {/* File List Section */}
+          {editingExpense?.files && editingExpense.files.length > 0 && (
+            <div className="border-t border-gray-200 dark:border-gray-700 pt-6">
+              <FileList
+                files={editingExpense.files}
+                onDelete={handleFileDelete}
+                title="Expense Files"
+              />
+            </div>
+          )}
         </form>
       </Modal>
     </div>

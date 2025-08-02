@@ -133,8 +133,8 @@ export default function InvoicesPage() {
       {/* Header */}
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Invoices</h1>
-          <p className="text-gray-600">Manage your client invoices</p>
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Invoices</h1>
+          <p className="text-gray-600 dark:text-gray-400">Manage your client invoices</p>
         </div>
         <button
           onClick={() => setIsModalOpen(true)}
@@ -148,16 +148,16 @@ export default function InvoicesPage() {
       {/* Summary Stats */}
       <div className="grid grid-cols-1 gap-6 sm:grid-cols-4">
         <div className="card">
-          <h3 className="text-lg font-medium text-gray-900 mb-2">
+          <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
             Total Invoices
           </h3>
-          <p className="text-3xl font-bold text-primary-600">
+          <p className="text-3xl font-bold text-primary-600 dark:text-primary-400">
             {invoices.length}
           </p>
         </div>
         <div className="card">
-          <h3 className="text-lg font-medium text-gray-900 mb-2">Paid</h3>
-          <p className="text-3xl font-bold text-success-600">
+          <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">Paid</h3>
+          <p className="text-3xl font-bold text-success-600 dark:text-success-400">
             {formatCurrency(
               invoices
                 .filter((i) => i.status === "paid")
@@ -166,8 +166,8 @@ export default function InvoicesPage() {
           </p>
         </div>
         <div className="card">
-          <h3 className="text-lg font-medium text-gray-900 mb-2">Sent</h3>
-          <p className="text-3xl font-bold text-warning-600">
+          <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">Sent</h3>
+          <p className="text-3xl font-bold text-warning-600 dark:text-warning-400">
             {formatCurrency(
               invoices
                 .filter((i) => i.status === "sent")
@@ -193,7 +193,7 @@ export default function InvoicesPage() {
                 <th>Actions</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-200">
+            <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
               {invoices
                 .sort(
                   (a, b) =>
@@ -264,15 +264,15 @@ export default function InvoicesPage() {
       {/* Modal */}
       {isModalOpen && (
         <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50 flex items-center justify-center p-4">
-          <div className="relative bg-white rounded-lg shadow-xl w-full max-w-4xl mx-auto">
+          <div className="relative bg-white dark:bg-gray-800 rounded-lg shadow-xl w-full max-w-4xl mx-auto">
             <div className="p-6">
-              <h3 className="text-lg font-medium text-gray-900 mb-6">
+              <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-6">
                 {editingInvoice ? "Edit Invoice" : "Create New Invoice"}
               </h3>
               <form onSubmit={handleSubmit} className="space-y-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                       Client
                     </label>
                     <select
@@ -292,7 +292,7 @@ export default function InvoicesPage() {
                     </select>
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                       Project
                     </label>
                     <select
@@ -312,7 +312,7 @@ export default function InvoicesPage() {
                     </select>
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                       Invoice Number
                     </label>
                     <input
@@ -329,7 +329,7 @@ export default function InvoicesPage() {
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                       Issue Date
                     </label>
                     <input
@@ -343,7 +343,7 @@ export default function InvoicesPage() {
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                       Due Date
                     </label>
                     <input
@@ -357,7 +357,7 @@ export default function InvoicesPage() {
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                       Subtotal (₹)
                     </label>
                     <input
@@ -376,7 +376,7 @@ export default function InvoicesPage() {
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                       Tax Rate (%)
                     </label>
                     <input
@@ -395,7 +395,7 @@ export default function InvoicesPage() {
                     />
                   </div>
                   <div className="md:col-span-2">
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                       Notes
                     </label>
                     <textarea

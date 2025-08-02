@@ -146,8 +146,8 @@ export default function ProjectsPage() {
       {/* Header */}
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Projects</h1>
-          <p className="text-gray-600">Manage your client projects</p>
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Projects</h1>
+          <p className="text-gray-600 dark:text-gray-400">Manage your client projects</p>
         </div>
         <button
           onClick={() => setIsModalOpen(true)}
@@ -175,7 +175,7 @@ export default function ProjectsPage() {
                 <th>Actions</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-200">
+            <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
               {projects.map((project) => {
                 const client = clients.find((c) => c.id === project.clientId);
                 return (
@@ -187,36 +187,36 @@ export default function ProjectsPage() {
                     </td>
                     <td>
                       <div>
-                        <div className="font-medium text-gray-900">
+                        <div className="font-medium text-gray-900 dark:text-white">
                           {project.name}
                         </div>
-                        <div className="text-sm text-gray-500">
+                        <div className="text-sm text-gray-500 dark:text-gray-400">
                           {project.description}
                         </div>
                       </div>
                     </td>
-                    <td>{client?.name || "Unknown Client"}</td>
+                    <td className="text-gray-900 dark:text-white">{client?.name || "Unknown Client"}</td>
                     <td>
                       <div className="space-y-1">
-                        <div className="font-medium text-gray-900">
+                        <div className="font-medium text-gray-900 dark:text-white">
                           ₹{project.budget.toLocaleString()}
                         </div>
-                        <div className="text-xs text-gray-500">
+                        <div className="text-xs text-gray-500 dark:text-gray-400">
                           ₹{project.billingRate}/hr × {project.estimatedHours}h
                         </div>
                       </div>
                     </td>
                     <td>
                       <div className="space-y-1">
-                        <div className="font-medium text-gray-900">
+                        <div className="font-medium text-gray-900 dark:text-white">
                           ₹{project.costBreakdown.gstAmount.toLocaleString()}
                         </div>
-                        <div className="text-xs text-gray-500">
+                        <div className="text-xs text-gray-500 dark:text-gray-400">
                           {project.gstRate}% {project.gstInclusive ? "(Inclusive)" : "(Exclusive)"}
                         </div>
                       </div>
                     </td>
-                    <td className="font-medium text-green-600">
+                    <td className="font-medium text-green-600 dark:text-green-400">
                       ₹{project.totalCost.toLocaleString()}
                     </td>
                     <td>
@@ -235,14 +235,14 @@ export default function ProjectsPage() {
                       <div className="flex space-x-2">
                         <button
                           onClick={() => handleEdit(project)}
-                          className="text-primary-600 hover:text-primary-900"
+                          className="text-primary-600 dark:text-primary-400 hover:text-primary-900 dark:hover:text-primary-300"
                         >
                           <PencilIcon className="h-4 w-4" />
                         </button>
                         {project.status !== "archived" && (
                           <button
                             onClick={() => handleArchive(project.id)}
-                            className="text-warning-600 hover:text-warning-900"
+                            className="text-warning-600 dark:text-warning-400 hover:text-warning-900 dark:hover:text-warning-300"
                             title="Archive Project"
                           >
                             <ArchiveBoxIcon className="h-4 w-4" />

@@ -302,7 +302,6 @@ export const useAccountingStore = create<AccountingStore>()(
           budget: 3200000,
           billingTerms: 60,
           billingRate: 1500, // Premium rate for Global Systems (enterprise client)
-          estimatedHours: 500,
           gstRate: 18,
           gstInclusive: false,
           totalCost: 3776000,

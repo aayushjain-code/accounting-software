@@ -27,12 +27,12 @@ export default function ProjectsPage() {
     name: "",
     clientId: "",
     description: "",
-    budget: "",
     startDate: "",
-    status: "active",
-    billingTerms: "30",
+    status: "active" as "active" | "inactive" | "completed" | "on-hold" | "archived",
+    budget: "",
+    billingTerms: "",
     billingRate: "",
-    estimatedHours: "",
+    estimatedHours: "", // Made optional
     gstRate: "18",
     gstInclusive: false,
   });
@@ -53,25 +53,24 @@ export default function ProjectsPage() {
     const total = subtotal + gstAmount;
 
     const projectData = {
-      ...formData,
+      projectCode: formData.projectCode,
+      name: formData.name,
+      clientId: formData.clientId,
+      description: formData.description,
       startDate: new Date(formData.startDate),
-      budget,
+      status: formData.status,
+      budget: parseFloat(formData.budget),
       billingTerms: parseInt(formData.billingTerms),
-      billingRate,
-      estimatedHours,
-      gstRate,
+      billingRate: parseFloat(formData.billingRate),
+      estimatedHours: formData.estimatedHours ? parseFloat(formData.estimatedHours) : undefined,
+      gstRate: parseFloat(formData.gstRate),
       gstInclusive: formData.gstInclusive,
-      totalCost: total,
+      totalCost: parseFloat(formData.budget) * (1 + parseFloat(formData.gstRate) / 100),
       costBreakdown: {
-        subtotal,
-        gstAmount,
-        total,
+        subtotal: parseFloat(formData.budget),
+        gstAmount: parseFloat(formData.budget) * (parseFloat(formData.gstRate) / 100),
+        total: parseFloat(formData.budget) * (1 + parseFloat(formData.gstRate) / 100),
       },
-      status: formData.status as
-        | "active"
-        | "completed"
-        | "on-hold"
-        | "archived",
     };
 
     if (editingProject) {
@@ -89,10 +88,10 @@ export default function ProjectsPage() {
       name: "",
       clientId: "",
       description: "",
-      budget: "",
       startDate: "",
-      status: "active",
-      billingTerms: "30",
+      status: "active" as const,
+      budget: "",
+      billingTerms: "",
       billingRate: "",
       estimatedHours: "",
       gstRate: "18",
@@ -112,7 +111,7 @@ export default function ProjectsPage() {
       status: project.status,
       billingTerms: project.billingTerms.toString(),
       billingRate: project.billingRate?.toString() || "",
-      estimatedHours: project.estimatedHours.toString(),
+      estimatedHours: project.estimatedHours?.toString() || "",
       gstRate: project.gstRate.toString(),
       gstInclusive: project.gstInclusive,
     });
@@ -247,7 +246,7 @@ export default function ProjectsPage() {
                           {project.billingRate
                             ? `₹${project.billingRate}/hr × `
                             : ""}
-                          {project.estimatedHours}h
+                          {project.estimatedHours ? `${project.estimatedHours} hrs` : "Not specified"}
                         </div>
                       </div>
                     </td>
@@ -487,11 +486,10 @@ export default function ProjectsPage() {
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Estimated Hours
+                Estimated Hours (Optional)
               </label>
               <input
                 type="number"
-                required
                 min="0"
                 step="0.01"
                 value={formData.estimatedHours}

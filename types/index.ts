@@ -31,25 +31,22 @@ export interface Project {
   id: string;
   projectCode: string; // BST-01, BST-02, etc.
   name: string;
-  clientId: string;
+  clientId: string; // Required - Project derives from Client
   description: string;
   startDate: Date;
   status: "active" | "inactive" | "completed" | "on-hold" | "archived";
   budget: number;
-  billingTerms: number;
-
-  // Costing and GST fields
-  billingRate?: number; // Per hour rate (optional)
-  estimatedHours: number; // Estimated total hours for the project
-  gstRate: number; // GST percentage (default 18%)
-  gstInclusive: boolean; // Whether GST is included in billing rate
-  totalCost: number; // Total project cost including GST
+  billingTerms: number; // Days
+  billingRate: number; // Per hour rate
+  estimatedHours?: number; // Made optional
+  gstRate: number;
+  gstInclusive: boolean;
+  totalCost: number;
   costBreakdown: {
     subtotal: number;
     gstAmount: number;
     total: number;
   };
-
   createdAt: Date;
   updatedAt: Date;
 }

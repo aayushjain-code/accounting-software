@@ -53,13 +53,13 @@ const LogCard = React.memo(({ log, onEdit, onDelete }: any) => {
   };
 
   return (
-    <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition-all duration-200">
+    <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6 hover:shadow-md transition-all duration-200">
       <div className="flex items-start justify-between mb-4">
         <div className="flex items-center space-x-3">
           <span className="text-2xl">{getCategoryIcon(log.category)}</span>
           <div>
-            <h3 className="text-lg font-semibold text-gray-900">{log.title}</h3>
-            <p className="text-sm text-gray-500">{format(new Date(log.date), "MMM dd, yyyy")}</p>
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white">{log.title}</h3>
+            <p className="text-sm text-gray-500 dark:text-gray-400">{format(new Date(log.date), "MMM dd, yyyy")}</p>
           </div>
         </div>
         <div className="flex items-center space-x-2">
@@ -72,12 +72,12 @@ const LogCard = React.memo(({ log, onEdit, onDelete }: any) => {
         </div>
       </div>
 
-      <p className="text-gray-700 mb-4 leading-relaxed">{log.description}</p>
+      <p className="text-gray-700 dark:text-gray-300 mb-4 leading-relaxed">{log.description}</p>
 
       {log.tags.length > 0 && (
         <div className="flex flex-wrap gap-2 mb-4">
           {log.tags.map((tag: string, index: number) => (
-            <span key={index} className="px-2 py-1 bg-gray-100 text-gray-600 text-xs rounded-md flex items-center">
+            <span key={index} className="px-2 py-1 bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400 text-xs rounded-md flex items-center">
               <TagIcon className="h-3 w-3 mr-1" />
               {tag}
             </span>
@@ -85,8 +85,8 @@ const LogCard = React.memo(({ log, onEdit, onDelete }: any) => {
         </div>
       )}
 
-      <div className="flex items-center justify-between pt-4 border-t border-gray-100">
-        <div className="flex items-center text-xs text-gray-500">
+              <div className="flex items-center justify-between pt-4 border-t border-gray-100 dark:border-gray-700">
+        <div className="flex items-center text-xs text-gray-500 dark:text-gray-400">
           <CalendarIcon className="h-4 w-4 mr-1" />
           Created: {format(new Date(log.createdAt), "MMM dd, yyyy")}
         </div>
@@ -182,7 +182,7 @@ const LogModal = React.memo(({ isOpen, onClose, editingLog, onSubmit }: any) => 
         <div className="p-6 border-b border-gray-200">
           <div className="flex items-center justify-between">
             <div>
-              <h3 className="text-2xl font-bold text-gray-900">
+              <h3 className="text-2xl font-bold text-gray-900 dark:text-white">
                 {editingLog ? "Edit Log Entry" : "Create New Log Entry"}
               </h3>
               <p className="text-gray-600 mt-1">
@@ -395,11 +395,11 @@ export default function DailyLogsPage() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-8">
+      <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700 p-8">
         <div className="flex flex-col md:flex-row md:items-center justify-between space-y-4 md:space-y-0">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">Daily Logs</h1>
-            <p className="text-gray-600 mt-2">Record and track important accounting activities and events</p>
+            <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Daily Logs</h1>
+            <p className="text-gray-600 dark:text-gray-400 mt-2">Record and track important accounting activities and events</p>
           </div>
           <button
             onClick={() => {
@@ -416,20 +416,20 @@ export default function DailyLogsPage() {
 
       {/* Stats Cards */}
       <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-5">
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
           <div className="flex items-center">
             <div className="flex-shrink-0">
-              <div className="w-8 h-8 bg-primary-100 rounded-lg flex items-center justify-center">
-                <CalendarIcon className="h-5 w-5 text-primary-600" />
+              <div className="w-8 h-8 bg-primary-100 dark:bg-primary-900 rounded-lg flex items-center justify-center">
+                <CalendarIcon className="h-5 w-5 text-primary-600 dark:text-primary-400" />
               </div>
             </div>
             <div className="ml-4">
-              <p className="text-sm font-medium text-gray-600">Total Logs</p>
-              <p className="text-2xl font-bold text-gray-900">{stats.totalLogs}</p>
+              <p className="text-sm font-medium text-gray-600 dark:text-gray-400 dark:text-gray-400">Total Logs</p>
+              <p className="text-2xl font-bold text-gray-900 dark:text-white dark:text-white">{stats.totalLogs}</p>
             </div>
           </div>
         </div>
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
           <div className="flex items-center">
             <div className="flex-shrink-0">
               <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
@@ -437,12 +437,12 @@ export default function DailyLogsPage() {
               </div>
             </div>
             <div className="ml-4">
-              <p className="text-sm font-medium text-gray-600">Accounting</p>
+              <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Accounting</p>
               <p className="text-2xl font-bold text-blue-600">{stats.accountingLogs}</p>
             </div>
           </div>
         </div>
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
           <div className="flex items-center">
             <div className="flex-shrink-0">
               <div className="w-8 h-8 bg-purple-100 rounded-lg flex items-center justify-center">
@@ -450,12 +450,12 @@ export default function DailyLogsPage() {
               </div>
             </div>
             <div className="ml-4">
-              <p className="text-sm font-medium text-gray-600">Important</p>
+              <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Important</p>
               <p className="text-2xl font-bold text-purple-600">{stats.importantLogs}</p>
             </div>
           </div>
         </div>
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
           <div className="flex items-center">
             <div className="flex-shrink-0">
               <div className="w-8 h-8 bg-red-100 rounded-lg flex items-center justify-center">
@@ -463,12 +463,12 @@ export default function DailyLogsPage() {
               </div>
             </div>
             <div className="ml-4">
-              <p className="text-sm font-medium text-gray-600">Critical</p>
+              <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Critical</p>
               <p className="text-2xl font-bold text-red-600">{stats.criticalLogs}</p>
             </div>
           </div>
         </div>
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
           <div className="flex items-center">
             <div className="flex-shrink-0">
               <div className="w-8 h-8 bg-orange-100 rounded-lg flex items-center justify-center">
@@ -476,7 +476,7 @@ export default function DailyLogsPage() {
               </div>
             </div>
             <div className="ml-4">
-              <p className="text-sm font-medium text-gray-600">High Priority</p>
+              <p className="text-sm font-medium text-gray-600 dark:text-gray-400">High Priority</p>
               <p className="text-2xl font-bold text-orange-600">{stats.highPriorityLogs}</p>
             </div>
           </div>
@@ -484,7 +484,7 @@ export default function DailyLogsPage() {
       </div>
 
       {/* Search and Filters */}
-      <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
         <div className="flex flex-col lg:flex-row lg:items-center space-y-4 lg:space-y-0 lg:space-x-6">
           <div className="relative flex-1">
             <MagnifyingGlassIcon className="absolute left-4 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />

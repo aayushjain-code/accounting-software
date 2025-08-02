@@ -33,8 +33,8 @@ export default function ReportsPage() {
     <div className="space-y-6">
       {/* Header */}
       <div>
-        <h1 className="text-2xl font-bold text-gray-900">Financial Reports</h1>
-        <p className="text-gray-600">
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Financial Reports</h1>
+        <p className="text-gray-600 dark:text-gray-400">
           Comprehensive financial analysis and insights
         </p>
       </div>
@@ -42,32 +42,32 @@ export default function ReportsPage() {
       {/* Summary Cards */}
       <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
         <div className="card">
-          <h3 className="text-lg font-medium text-gray-900 mb-2">
+          <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
             Total Revenue
           </h3>
-          <p className="text-3xl font-bold text-success-600">
+          <p className="text-3xl font-bold text-success-600 dark:text-success-400">
             {formatCurrency(stats.totalRevenue)}
           </p>
         </div>
         <div className="card">
-          <h3 className="text-lg font-medium text-gray-900 mb-2">
+          <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
             Total Expenses
           </h3>
-          <p className="text-3xl font-bold text-danger-600">
+          <p className="text-3xl font-bold text-danger-600 dark:text-danger-400">
             {formatCurrency(stats.totalExpenses)}
           </p>
         </div>
         <div className="card">
-          <h3 className="text-lg font-medium text-gray-900 mb-2">Net Profit</h3>
-          <p className="text-3xl font-bold text-primary-600">
+          <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">Net Profit</h3>
+          <p className="text-3xl font-bold text-primary-600 dark:text-primary-400">
             {formatCurrency(stats.netProfit)}
           </p>
         </div>
         <div className="card">
-          <h3 className="text-lg font-medium text-gray-900 mb-2">
+          <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
             Outstanding
           </h3>
-          <p className="text-3xl font-bold text-warning-600">
+          <p className="text-3xl font-bold text-warning-600 dark:text-warning-400">
             {formatCurrency(stats.outstandingAmount)}
           </p>
         </div>
@@ -82,20 +82,20 @@ export default function ReportsPage() {
           </h3>
           <div className="space-y-4">
             <div className="flex justify-between items-center">
-              <span className="text-sm text-gray-600">Paid Invoices</span>
-              <span className="text-sm font-medium text-gray-900">
+              <span className="text-sm text-gray-600 dark:text-gray-400">Paid Invoices</span>
+              <span className="text-sm font-medium text-gray-900 dark:text-white">
                 {invoices.filter((i) => i.status === "paid").length}
               </span>
             </div>
             <div className="flex justify-between items-center">
-              <span className="text-sm text-gray-600">Pending Invoices</span>
-              <span className="text-sm font-medium text-gray-900">
+              <span className="text-sm text-gray-600 dark:text-gray-400">Pending Invoices</span>
+              <span className="text-sm font-medium text-gray-900 dark:text-white">
                 {invoices.filter((i) => i.status === "sent").length}
               </span>
             </div>
             <div className="flex justify-between items-center">
-              <span className="text-sm text-gray-600">Draft Invoices</span>
-              <span className="text-sm font-medium text-gray-900">
+              <span className="text-sm text-gray-600 dark:text-gray-400">Draft Invoices</span>
+              <span className="text-sm font-medium text-gray-900 dark:text-white">
                 {invoices.filter((i) => i.status === "draft").length}
               </span>
             </div>
@@ -109,14 +109,14 @@ export default function ReportsPage() {
           </h3>
           <div className="space-y-4">
             <div className="flex justify-between items-center">
-              <span className="text-sm text-gray-600">Total Expenses</span>
-              <span className="text-sm font-medium text-gray-900">
+              <span className="text-sm text-gray-600 dark:text-gray-400">Total Expenses</span>
+              <span className="text-sm font-medium text-gray-900 dark:text-white">
                 {formatCurrency(expenses.reduce((sum, e) => sum + e.amount, 0))}
               </span>
             </div>
             <div className="flex justify-between items-center">
-              <span className="text-sm text-gray-600">This Month</span>
-              <span className="text-sm font-medium text-gray-900">
+              <span className="text-sm text-gray-600 dark:text-gray-400">This Month</span>
+              <span className="text-sm font-medium text-gray-900 dark:text-white">
                 {formatCurrency(
                   expenses
                     .filter((e) => {
@@ -132,8 +132,8 @@ export default function ReportsPage() {
               </span>
             </div>
             <div className="flex justify-between items-center">
-              <span className="text-sm text-gray-600">Average per Month</span>
-              <span className="text-sm font-medium text-gray-900">
+              <span className="text-sm text-gray-600 dark:text-gray-400">Average per Month</span>
+              <span className="text-sm font-medium text-gray-900 dark:text-white">
                 {formatCurrency(
                   expenses.length > 0
                     ? expenses.reduce((sum, e) => sum + e.amount, 0) / 12
@@ -161,18 +161,18 @@ export default function ReportsPage() {
             .map((invoice) => (
               <div
                 key={invoice.id}
-                className="flex items-center justify-between p-3 bg-gray-50 rounded-lg"
+                className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-800 rounded-lg"
               >
                 <div>
-                  <p className="font-medium text-gray-900">
+                  <p className="font-medium text-gray-900 dark:text-white">
                     {invoice.invoiceNumber}
                   </p>
-                  <p className="text-sm text-gray-600">
+                  <p className="text-sm text-gray-600 dark:text-gray-400">
                     {format(new Date(invoice.issueDate), "MMM dd, yyyy")}
                   </p>
                 </div>
                 <div className="text-right">
-                  <p className="font-medium text-gray-900">
+                  <p className="font-medium text-gray-900 dark:text-white">
                     {formatCurrency(invoice.total)}
                   </p>
                   <span

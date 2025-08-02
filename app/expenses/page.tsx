@@ -118,8 +118,8 @@ export default function ExpensesPage() {
       {/* Header */}
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Expenses</h1>
-          <p className="text-gray-600">Track your business expenses</p>
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Expenses</h1>
+          <p className="text-gray-600 dark:text-gray-400">Track your business expenses</p>
         </div>
         <button
           onClick={() => setIsModalOpen(true)}
@@ -133,16 +133,16 @@ export default function ExpensesPage() {
       {/* Summary Stats */}
       <div className="grid grid-cols-1 gap-6 sm:grid-cols-3">
         <div className="card">
-          <h3 className="text-lg font-medium text-gray-900 mb-2">
+          <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
             Total Expenses
           </h3>
-          <p className="text-3xl font-bold text-danger-600">
+          <p className="text-3xl font-bold text-danger-600 dark:text-danger-400">
             {formatCurrency(totalExpenses)}
           </p>
         </div>
         <div className="card">
-          <h3 className="text-lg font-medium text-gray-900 mb-2">This Month</h3>
-          <p className="text-3xl font-bold text-primary-600">
+          <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">This Month</h3>
+          <p className="text-3xl font-bold text-primary-600 dark:text-primary-400">
             {formatCurrency(
               expenses
                 .filter((e) => {
@@ -158,10 +158,10 @@ export default function ExpensesPage() {
           </p>
         </div>
         <div className="card">
-          <h3 className="text-lg font-medium text-gray-900 mb-2">
+          <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
             Total Expenses
           </h3>
-          <p className="text-3xl font-bold text-gray-600">{expenses.length}</p>
+          <p className="text-3xl font-bold text-gray-600 dark:text-gray-400">{expenses.length}</p>
         </div>
       </div>
 
@@ -179,7 +179,7 @@ export default function ExpensesPage() {
                 <th>Actions</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-200">
+            <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
               {expenses
                 .sort(
                   (a, b) =>

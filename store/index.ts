@@ -107,12 +107,12 @@ export const useAccountingStore = create<AccountingStore>()(
   persist(
     (set, get) => ({
       companyProfile: {
-        id: "company1",
-        name: "Brandsmashers Tech",
-        legalName: "Brandsmashers Tech Private Limited",
-        email: "info@brandsmashers.com",
+        id: "1",
+        name: "BST",
+        legalName: "BST Private Limited",
+        email: "info@bst.com",
         phone: "+91-98765-43210",
-        website: "https://brandsmashers.com",
+        website: "https://bst.com",
         address: "123 Business Park, Whitefield",
         city: "Bangalore",
         state: "Karnataka",

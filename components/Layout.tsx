@@ -63,7 +63,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
             </button>
             <div className="ml-4 lg:ml-0">
               <h1 className="text-xl font-bold text-gray-900 dark:text-white">
-                Brandsmashers Tech
+                BST
               </h1>
               <p className="text-xs text-gray-500 dark:text-gray-400">Accounting Management</p>
             </div>
@@ -80,7 +80,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
               </div>
               <div className="hidden sm:block text-left">
                 <p className="text-sm font-medium text-gray-900 dark:text-white">Admin User</p>
-                <p className="text-xs text-gray-500 dark:text-gray-400">admin@brandsmashers.com</p>
+                <p className="text-xs text-gray-500 dark:text-gray-400">admin@bst.com</p>
               </div>
             </button>
 
@@ -140,7 +140,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
           <div className="flex h-16 items-center justify-between px-4">
             <div>
               <h1 className="text-xl font-semibold text-gray-900 dark:text-white">
-                Brandsmashers Tech
+                BST
               </h1>
               <p className="text-xs text-gray-500 dark:text-gray-400">Accounting Management</p>
             </div>
@@ -188,7 +188,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
           <div className="flex h-16 items-center px-4">
             <div>
               <h1 className="text-xl font-semibold text-gray-900 dark:text-white">
-                Brandsmashers Tech
+                BST
               </h1>
               <p className="text-xs text-gray-500 dark:text-gray-400">Accounting Management</p>
             </div>

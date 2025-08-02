@@ -176,7 +176,7 @@ export default function Dashboard() {
       {/* Header */}
       <div>
         <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Dashboard</h1>
-        <p className="text-gray-600 dark:text-gray-400">Overview of Brandsmashers Tech accounting system</p>
+        <p className="text-gray-600 dark:text-gray-400">Overview of BST accounting system</p>
       </div>
 
       {/* Stats Cards */}

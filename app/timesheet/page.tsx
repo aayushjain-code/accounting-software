@@ -384,9 +384,9 @@ const TimesheetModal = React.memo(
             projectId: editingTimesheet.projectId,
             month: editingTimesheet.month,
             year: editingTimesheet.year,
-            daysWorked: editingTimesheet.daysWorked.toString(),
-            hoursPerDay: editingTimesheet.hoursPerDay.toString(),
-            totalWorkingDays: editingTimesheet.totalWorkingDays.toString(),
+            daysWorked: (editingTimesheet.daysWorked || 0).toString(),
+            hoursPerDay: (editingTimesheet.hoursPerDay || 8).toString(),
+            totalWorkingDays: (editingTimesheet.totalWorkingDays || 0).toString(),
           });
           const project = projects.find(
             (p) => p.id === editingTimesheet.projectId
@@ -744,8 +744,8 @@ export default function TimesheetPage() {
     const invoicedTimesheets = timesheets.filter(
       (t) => t.status === "invoiced"
     ).length;
-    const totalAmount = timesheets.reduce((sum, t) => sum + t.totalAmount, 0);
-    const totalHours = timesheets.reduce((sum, t) => sum + t.totalHours, 0);
+    const totalAmount = timesheets.reduce((sum, t) => sum + (t.totalAmount || 0), 0);
+    const totalHours = timesheets.reduce((sum, t) => sum + (t.totalHours || 0), 0);
 
     return {
       totalTimesheets,

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useCallback } from "react";
 import { useAccountingStore } from "@/store";
 import { Timesheet, Invoice } from "@/types";
 import { 
@@ -15,10 +15,12 @@ import {
   ArrowRightIcon,
   UserIcon,
   CalendarIcon,
-  BuildingOfficeIcon
+  BuildingOfficeIcon,
+  EyeIcon
 } from "@heroicons/react/24/outline";
 import { format } from "date-fns";
 import { Tooltip, ActionTooltip } from "@/components/Tooltip";
+import toast from "react-hot-toast";
 
 interface KanbanItem {
   id: string;
@@ -32,6 +34,100 @@ interface KanbanItem {
   project?: string;
   priority: "low" | "medium" | "high" | "critical";
 }
+
+const KanbanCard = ({ 
+  item, 
+  onDragStart 
+}: {
+  item: KanbanItem;
+  onDragStart: (e: React.DragEvent) => void;
+}) => {
+  const getPriorityColor = (priority: string) => {
+    switch (priority) {
+      case "critical":
+        return "bg-red-100 text-red-800 border-red-200";
+      case "high":
+        return "bg-orange-100 text-orange-800 border-orange-200";
+      case "medium":
+        return "bg-yellow-100 text-yellow-800 border-yellow-200";
+      case "low":
+        return "bg-green-100 text-green-800 border-green-200";
+      default:
+        return "bg-gray-100 text-gray-800 border-gray-200";
+    }
+  };
+
+  const getPriorityIcon = (priority: string) => {
+    switch (priority) {
+      case "critical":
+        return <ExclamationTriangleIcon className="h-3 w-3 text-red-600" />;
+      case "high":
+        return <ExclamationTriangleIcon className="h-3 w-3 text-orange-600" />;
+      case "medium":
+        return <ClockIcon className="h-3 w-3 text-yellow-600" />;
+      case "low":
+        return <CheckCircleIcon className="h-3 w-3 text-green-600" />;
+      default:
+        return <ClockIcon className="h-3 w-3 text-gray-600" />;
+    }
+  };
+
+  return (
+    <div
+      draggable
+      onDragStart={onDragStart}
+      className="bg-white border border-gray-200 rounded-lg p-3 shadow-sm hover:shadow-md transition-all duration-200 cursor-move group hover:border-primary-300"
+    >
+      <div className="flex items-start justify-between mb-2">
+        <div className="flex items-center space-x-1">
+          {item.type === "timesheet" ? (
+            <DocumentTextIcon className="h-4 w-4 text-blue-600" />
+          ) : (
+            <CurrencyRupeeIcon className="h-4 w-4 text-purple-600" />
+          )}
+          <span className={`inline-flex items-center px-1.5 py-0.5 rounded-full text-xs font-medium border ${getPriorityColor(item.priority)}`}>
+            {getPriorityIcon(item.priority)}
+            <span className="ml-1 capitalize text-xs">{item.priority}</span>
+          </span>
+        </div>
+        <ActionTooltip content="View details" action="Click to see full information">
+          <button className="p-1 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded transition-colors">
+            <EyeIcon className="h-3 w-3" />
+          </button>
+        </ActionTooltip>
+      </div>
+      
+      <h4 className="font-medium text-gray-900 mb-1 text-sm group-hover:text-primary-600 transition-colors line-clamp-1">
+        {item.title}
+      </h4>
+      
+      <p className="text-xs text-gray-600 mb-2 line-clamp-2">
+        {item.description}
+      </p>
+      
+      <div className="space-y-1">
+        {item.project && (
+          <div className="flex items-center space-x-1 text-xs text-gray-600">
+            <BuildingOfficeIcon className="h-3 w-3 text-gray-400" />
+            <span className="truncate">{item.project}</span>
+          </div>
+        )}
+        
+        <div className="flex items-center space-x-1 text-xs text-gray-600">
+          <CalendarIcon className="h-3 w-3 text-gray-400" />
+          <span>{format(item.date, "MMM dd")}</span>
+        </div>
+        
+        {item.amount && (
+          <div className="flex items-center space-x-1 text-xs font-medium text-gray-900">
+            <CurrencyRupeeIcon className="h-3 w-3 text-green-600" />
+            <span>₹{item.amount.toLocaleString()}</span>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
 
 const KanbanColumn = ({ 
   title, 
@@ -65,122 +161,39 @@ const KanbanColumn = ({
     }
   };
 
-  const getPriorityColor = (priority: string) => {
-    switch (priority) {
-      case "critical":
-        return "bg-red-100 text-red-800 border-red-200";
-      case "high":
-        return "bg-orange-100 text-orange-800 border-orange-200";
-      case "medium":
-        return "bg-yellow-100 text-yellow-800 border-yellow-200";
-      case "low":
-        return "bg-green-100 text-green-800 border-green-200";
-      default:
-        return "bg-gray-100 text-gray-800 border-gray-200";
-    }
-  };
-
-  const getPriorityIcon = (priority: string) => {
-    switch (priority) {
-      case "critical":
-        return <ExclamationTriangleIcon className="h-4 w-4 text-red-600" />;
-      case "high":
-        return <ExclamationTriangleIcon className="h-4 w-4 text-orange-600" />;
-      case "medium":
-        return <ClockIcon className="h-4 w-4 text-yellow-600" />;
-      case "low":
-        return <CheckCircleIcon className="h-4 w-4 text-green-600" />;
-      default:
-        return <ClockIcon className="h-4 w-4 text-gray-600" />;
-    }
-  };
+  const handleDragStart = useCallback((e: React.DragEvent, itemId: string) => {
+    e.dataTransfer.setData("text/plain", itemId);
+    e.dataTransfer.effectAllowed = "move";
+  }, []);
 
   return (
     <div className="flex-1 min-w-0">
-      <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-        <div className="flex items-center justify-between mb-6">
-          <h3 className="text-lg font-semibold text-gray-900">{title}</h3>
-          <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium border ${getStatusColor(status)}`}>
-            {items.length} items
+      <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 h-full">
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="text-sm font-semibold text-gray-900">{title}</h3>
+          <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium border ${getStatusColor(status)}`}>
+            {items.length}
           </span>
         </div>
         
         <div 
-          className="space-y-4 min-h-[600px]"
+          className="space-y-2 min-h-[400px] max-h-[600px] overflow-y-auto"
           onDrop={onDrop}
           onDragOver={onDragOver}
         >
           {items.map((item) => (
-            <div
+            <KanbanCard
               key={item.id}
-              draggable
-              onDragStart={(e) => {
-                e.dataTransfer.setData("text/plain", item.id);
-              }}
-              className="bg-white border border-gray-200 rounded-lg p-4 shadow-sm hover:shadow-md transition-all duration-200 cursor-move group"
-            >
-              <div className="flex items-start justify-between mb-3">
-                <div className="flex items-center space-x-2">
-                  {item.type === "timesheet" ? (
-                    <DocumentTextIcon className="h-5 w-5 text-blue-600" />
-                  ) : (
-                    <CurrencyRupeeIcon className="h-5 w-5 text-purple-600" />
-                  )}
-                  <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium border ${getPriorityColor(item.priority)}`}>
-                    {getPriorityIcon(item.priority)}
-                    <span className="ml-1 capitalize">{item.priority}</span>
-                  </span>
-                </div>
-                <ActionTooltip content="View details" action="Click to see full information">
-                  <button className="p-1 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded transition-colors">
-                    <ArrowRightIcon className="h-4 w-4" />
-                  </button>
-                </ActionTooltip>
-              </div>
-              
-              <h4 className="font-medium text-gray-900 mb-2 group-hover:text-primary-600 transition-colors">
-                {item.title}
-              </h4>
-              
-              <p className="text-sm text-gray-600 mb-3 line-clamp-2">
-                {item.description}
-              </p>
-              
-              <div className="space-y-2">
-                {item.project && (
-                  <div className="flex items-center space-x-2 text-sm text-gray-600">
-                    <BuildingOfficeIcon className="h-4 w-4 text-gray-400" />
-                    <span>{item.project}</span>
-                  </div>
-                )}
-                
-                {item.assignee && (
-                  <div className="flex items-center space-x-2 text-sm text-gray-600">
-                    <UserIcon className="h-4 w-4 text-gray-400" />
-                    <span>{item.assignee}</span>
-                  </div>
-                )}
-                
-                <div className="flex items-center space-x-2 text-sm text-gray-600">
-                  <CalendarIcon className="h-4 w-4 text-gray-400" />
-                  <span>{format(item.date, "MMM dd, yyyy")}</span>
-                </div>
-                
-                {item.amount && (
-                  <div className="flex items-center space-x-2 text-sm font-medium text-gray-900">
-                    <CurrencyRupeeIcon className="h-4 w-4 text-green-600" />
-                    <span>₹{item.amount.toLocaleString()}</span>
-                  </div>
-                )}
-              </div>
-            </div>
+              item={item}
+              onDragStart={(e) => handleDragStart(e, item.id)}
+            />
           ))}
           
           {items.length === 0 && (
-            <div className="flex items-center justify-center h-32 text-gray-400 border-2 border-dashed border-gray-200 rounded-lg">
+            <div className="flex items-center justify-center h-24 text-gray-400 border-2 border-dashed border-gray-200 rounded-lg">
               <div className="text-center">
-                <DocumentTextIcon className="h-8 w-8 mx-auto mb-2" />
-                <p className="text-sm">No items</p>
+                <DocumentTextIcon className="h-6 w-6 mx-auto mb-1" />
+                <p className="text-xs">No items</p>
               </div>
             </div>
           )}
@@ -191,7 +204,7 @@ const KanbanColumn = ({
 };
 
 export default function KanbanPage() {
-  const { timesheets, invoices, projects, clients } = useAccountingStore();
+  const { timesheets, invoices, projects, clients, updateTimesheet, updateInvoice } = useAccountingStore();
   const [draggedItem, setDraggedItem] = useState<string | null>(null);
 
   const kanbanItems = useMemo(() => {
@@ -204,39 +217,32 @@ export default function KanbanPage() {
       
       let status = "timesheet-created";
       let priority: "low" | "medium" | "high" | "critical" = "medium";
-      
+
       if (timesheet.status === "approved") {
         status = "timesheet-approved";
-        priority = "high";
-      } else if (timesheet.status === "invoiced") {
-        status = "invoice-raised";
-        priority = "critical";
-      } else if (timesheet.status === "draft") {
-        status = "timesheet-created";
         priority = "low";
       } else if (timesheet.status === "submitted") {
         status = "timesheet-created";
+        priority = "high";
+      } else if (timesheet.status === "draft") {
+        status = "timesheet-created";
         priority = "medium";
-      }
-
-      // Check if payment is cleared
-      if (timesheet.invoiceId) {
-        const invoice = invoices.find(i => i.id === timesheet.invoiceId);
-        if (invoice?.status === "paid") {
-          status = "payment-cleared";
-          priority = "low";
-        }
+      } else if (timesheet.status === "rejected") {
+        status = "blocked";
+        priority = "critical";
+      } else if (timesheet.status === "invoiced") {
+        status = "payment-cleared";
+        priority = "low";
       }
 
       items.push({
         id: timesheet.id,
         type: "timesheet",
         title: `Timesheet - ${project?.name || "Unknown Project"}`,
-        description: `${timesheet.daysWorked || 0} days worked in ${timesheet.month} ${timesheet.year}`,
+        description: `${timesheet.daysWorked} days × ${timesheet.hoursPerDay}h × ₹${timesheet.billingRate}/hr`,
         status,
         amount: timesheet.totalAmount,
-        date: new Date(timesheet.createdAt),
-        assignee: "Team Member",
+        date: new Date(timesheet.month),
         project: project?.name,
         priority,
       });
@@ -262,13 +268,12 @@ export default function KanbanPage() {
       items.push({
         id: invoice.id,
         type: "invoice",
-        title: `Invoice #${invoice.invoiceNumber}`,
-        description: `Invoice for ${client?.name || "Unknown Client"}`,
+        title: `Invoice - ${client?.name || "Unknown Client"}`,
+        description: `Invoice #${invoice.invoiceNumber} - Due: ${format(new Date(invoice.dueDate), "MMM dd")}`,
         status,
         amount: invoice.total,
-        date: new Date(invoice.createdAt),
-        assignee: "Finance Team",
-        project: "Billing",
+        date: new Date(invoice.issueDate),
+        project: client?.name,
         priority,
       });
     });
@@ -309,89 +314,137 @@ export default function KanbanPage() {
     },
   ];
 
-  const handleDragOver = (e: React.DragEvent) => {
+  const handleDragOver = useCallback((e: React.DragEvent) => {
     e.preventDefault();
-  };
+    e.dataTransfer.dropEffect = "move";
+  }, []);
 
-  const handleDrop = (e: React.DragEvent, targetStatus: string) => {
+  const handleDrop = useCallback((e: React.DragEvent, targetStatus: string) => {
     e.preventDefault();
     const itemId = e.dataTransfer.getData("text/plain");
     
-    // In a real application, you would update the item status here
-    console.log(`Moving item ${itemId} to status ${targetStatus}`);
-    
-    // For now, we'll just show a toast notification
-    // You can implement actual status updates by calling store actions
-  };
+    // Find the item
+    const item = kanbanItems.find(i => i.id === itemId);
+    if (!item) return;
+
+    // Update the item status based on target column
+    if (item.type === "timesheet") {
+      const timesheet = timesheets.find(t => t.id === itemId);
+      if (timesheet) {
+        let newStatus = timesheet.status;
+        
+        switch (targetStatus) {
+          case "timesheet-created":
+            newStatus = "draft";
+            break;
+          case "timesheet-approved":
+            newStatus = "approved";
+            break;
+          case "invoice-raised":
+            newStatus = "submitted";
+            break;
+          case "payment-cleared":
+            newStatus = "invoiced";
+            break;
+          case "blocked":
+            newStatus = "rejected";
+            break;
+        }
+        
+        updateTimesheet(itemId, { status: newStatus });
+        toast.success(`Timesheet moved to ${targetStatus.replace("-", " ")}`);
+      }
+    } else if (item.type === "invoice") {
+      const invoice = invoices.find(i => i.id === itemId);
+      if (invoice) {
+        let newStatus = invoice.status;
+        
+        switch (targetStatus) {
+          case "invoice-raised":
+            newStatus = "draft";
+            break;
+          case "payment-cleared":
+            newStatus = "paid";
+            break;
+          case "blocked":
+            newStatus = "sent";
+            break;
+        }
+        
+        updateInvoice(itemId, { status: newStatus });
+        toast.success(`Invoice moved to ${targetStatus.replace("-", " ")}`);
+      }
+    }
+  }, [kanbanItems, timesheets, invoices, updateTimesheet, updateInvoice]);
 
   const totalItems = kanbanItems.length;
   const criticalItems = kanbanItems.filter(item => item.priority === "critical").length;
   const overdueItems = kanbanItems.filter(item => item.status === "blocked").length;
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-6">
       {/* Header */}
-      <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-8">
+      <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
         <div className="flex flex-col md:flex-row md:items-center justify-between space-y-4 md:space-y-0">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">Invoicing Kanban</h1>
-            <p className="text-gray-600 mt-2">
+            <h1 className="text-2xl font-bold text-gray-900">Invoicing Kanban</h1>
+            <p className="text-gray-600 mt-1 text-sm">
               Track the flow from timesheet creation to payment clearance
             </p>
           </div>
-          <div className="flex items-center space-x-4">
+          <div className="flex items-center space-x-6">
             <div className="text-center">
-              <p className="text-2xl font-bold text-primary-600">{totalItems}</p>
-              <p className="text-sm text-gray-600">Total Items</p>
+              <p className="text-xl font-bold text-primary-600">{totalItems}</p>
+              <p className="text-xs text-gray-600">Total Items</p>
             </div>
             <div className="text-center">
-              <p className="text-2xl font-bold text-red-600">{criticalItems}</p>
-              <p className="text-sm text-gray-600">Critical</p>
+              <p className="text-xl font-bold text-red-600">{criticalItems}</p>
+              <p className="text-xs text-gray-600">Critical</p>
             </div>
             <div className="text-center">
-              <p className="text-2xl font-bold text-orange-600">{overdueItems}</p>
-              <p className="text-sm text-gray-600">Overdue</p>
+              <p className="text-xl font-bold text-orange-600">{overdueItems}</p>
+              <p className="text-xs text-gray-600">Overdue</p>
             </div>
           </div>
         </div>
       </div>
 
       {/* Workflow Diagram */}
-      <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">Workflow Overview</h3>
-        <div className="flex items-center justify-center space-x-4">
+      <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4">
+        <h3 className="text-sm font-semibold text-gray-900 mb-3">Workflow Overview</h3>
+        <div className="flex items-center justify-center space-x-3">
           <div className="flex items-center space-x-2">
-            <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
-              <DocumentTextIcon className="h-4 w-4 text-blue-600" />
+            <div className="w-6 h-6 bg-blue-100 rounded-full flex items-center justify-center">
+              <DocumentTextIcon className="h-3 w-3 text-blue-600" />
             </div>
-            <span className="text-sm font-medium text-gray-700">Timesheet Created</span>
+            <span className="text-xs font-medium text-gray-700">Created</span>
           </div>
-          <ArrowRightIcon className="h-5 w-5 text-gray-400" />
+          <ArrowRightIcon className="h-4 w-4 text-gray-400" />
           <div className="flex items-center space-x-2">
-            <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">
-              <CheckIcon className="h-4 w-4 text-green-600" />
+            <div className="w-6 h-6 bg-green-100 rounded-full flex items-center justify-center">
+              <CheckIcon className="h-3 w-3 text-green-600" />
             </div>
-            <span className="text-sm font-medium text-gray-700">Approved</span>
+            <span className="text-xs font-medium text-gray-700">Approved</span>
           </div>
-          <ArrowRightIcon className="h-5 w-5 text-gray-400" />
+          <ArrowRightIcon className="h-4 w-4 text-gray-400" />
           <div className="flex items-center space-x-2">
-            <div className="w-8 h-8 bg-purple-100 rounded-full flex items-center justify-center">
-              <CurrencyRupeeIcon className="h-4 w-4 text-purple-600" />
+            <div className="w-6 h-6 bg-purple-100 rounded-full flex items-center justify-center">
+              <CurrencyRupeeIcon className="h-3 w-3 text-purple-600" />
             </div>
-            <span className="text-sm font-medium text-gray-700">Invoice Raised</span>
+            <span className="text-xs font-medium text-gray-700">Invoice</span>
           </div>
-          <ArrowRightIcon className="h-5 w-5 text-gray-400" />
+          <ArrowRightIcon className="h-4 w-4 text-gray-400" />
           <div className="flex items-center space-x-2">
-            <div className="w-8 h-8 bg-emerald-100 rounded-full flex items-center justify-center">
-              <CheckCircleIcon className="h-4 w-4 text-emerald-600" />
+            <div className="w-6 h-6 bg-emerald-100 rounded-full flex items-center justify-center">
+              <CheckCircleIcon className="h-3 w-3 text-emerald-600" />
             </div>
-            <span className="text-sm font-medium text-gray-700">Payment Cleared</span>
+            <span className="text-xs font-medium text-gray-700">Paid</span>
           </div>
         </div>
       </div>
 
       {/* Kanban Board */}
-      <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-5 gap-4">
         {columns.map((column) => (
           <KanbanColumn
             key={column.id}
@@ -405,18 +458,18 @@ export default function KanbanPage() {
       </div>
 
       {/* Instructions */}
-      <div className="bg-blue-50 rounded-xl p-6 border border-blue-200">
+      <div className="bg-blue-50 rounded-xl p-4 border border-blue-200">
         <div className="flex items-start space-x-3">
-          <div className="p-2 bg-blue-100 rounded-lg">
-            <DocumentTextIcon className="h-5 w-5 text-blue-600" />
+          <div className="p-1.5 bg-blue-100 rounded-lg">
+            <DocumentTextIcon className="h-4 w-4 text-blue-600" />
           </div>
           <div>
-            <h3 className="text-lg font-semibold text-blue-900 mb-2">How to Use</h3>
-            <ul className="text-sm text-blue-800 space-y-1">
+            <h3 className="text-sm font-semibold text-blue-900 mb-1">How to Use</h3>
+            <ul className="text-xs text-blue-800 space-y-0.5">
               <li>• Drag and drop items between columns to update their status</li>
               <li>• Items are automatically categorized based on their current state</li>
               <li>• Critical items appear in the Blocked/Critical column</li>
-              <li>• Click the arrow icon to view detailed information</li>
+              <li>• Click the eye icon to view detailed information</li>
               <li>• Color-coded priorities help identify urgent items</li>
             </ul>
           </div>

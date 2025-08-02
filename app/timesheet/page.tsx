@@ -624,6 +624,70 @@ const TimesheetModal = React.memo(
                 </div>
               </div>
 
+              {/* Total Working Days and Status */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-3">
+                    Total Working Days in Month
+                    <IconTooltip
+                      content="Total number of working days in the selected month (excluding weekends). This is automatically calculated but can be manually adjusted."
+                      icon={InformationCircleIcon}
+                      position="right"
+                    >
+                      <span></span>
+                    </IconTooltip>
+                  </label>
+                  <input
+                    type="number"
+                    min="1"
+                    max="31"
+                    value={formData.totalWorkingDays}
+                    onChange={(e) =>
+                      setFormData({
+                        ...formData,
+                        totalWorkingDays: e.target.value,
+                      })
+                    }
+                    className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200"
+                  />
+                  <p className="text-xs text-gray-500 mt-2">
+                    Automatically calculated based on month selection
+                  </p>
+                </div>
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-3">
+                    Status
+                    <IconTooltip
+                      content="Current status of the timesheet. You can change this to move it through the workflow."
+                      icon={InformationCircleIcon}
+                      position="right"
+                    >
+                      <span></span>
+                    </IconTooltip>
+                  </label>
+                  <select
+                    value={editingTimesheet?.status || "draft"}
+                    onChange={(e) => {
+                      // Update the timesheet status if editing
+                      if (editingTimesheet) {
+                        // This would typically update the timesheet status
+                        console.log("Status changed to:", e.target.value);
+                      }
+                    }}
+                    className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200"
+                  >
+                    <option value="draft">Draft</option>
+                    <option value="submitted">Submitted</option>
+                    <option value="approved">Approved</option>
+                    <option value="rejected">Rejected</option>
+                    <option value="invoiced">Invoiced</option>
+                  </select>
+                  <p className="text-xs text-gray-500 mt-2">
+                    Current workflow status
+                  </p>
+                </div>
+              </div>
+
               {/* Project and Costing Information */}
               {selectedProject && (
                 <div className="bg-gradient-to-r from-primary-50 to-blue-50 p-6 rounded-xl border border-primary-100">

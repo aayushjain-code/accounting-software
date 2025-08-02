@@ -8,8 +8,8 @@ import { ErrorBoundary } from "@/components/ErrorBoundary";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "Accounting AI - Financial Management System",
-  description: "Comprehensive accounting software for service-based companies",
+  title: "Brandsmashers Tech - Accounting Management System",
+  description: "Comprehensive accounting software for Brandsmashers Tech",
 };
 
 export default function RootLayout({

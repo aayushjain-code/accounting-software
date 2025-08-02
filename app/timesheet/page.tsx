@@ -355,12 +355,58 @@ const TimesheetModal = React.memo(
     onClose,
     editingTimesheet,
     onSubmit,
+    onApprove,
+    onReject,
+    onMarkInvoiced,
   }: {
     isOpen: boolean;
     onClose: () => void;
     editingTimesheet: Timesheet | null;
     onSubmit: (data: any) => void;
+    onApprove: (id: string) => void;
+    onReject: (id: string) => void;
+    onMarkInvoiced: (id: string) => void;
   }) => {
+    const getStatusConfig = (status: string) => {
+      switch (status) {
+        case "draft":
+          return {
+            color: "bg-gray-100 text-gray-800 border-gray-200",
+            icon: DocumentTextIcon,
+            bg: "bg-gray-50",
+          };
+        case "submitted":
+          return {
+            color: "bg-blue-100 text-blue-800 border-blue-200",
+            icon: ClockIcon,
+            bg: "bg-blue-50",
+          };
+        case "approved":
+          return {
+            color: "bg-green-100 text-green-800 border-green-200",
+            icon: CheckIcon,
+            bg: "bg-green-50",
+          };
+        case "rejected":
+          return {
+            color: "bg-red-100 text-red-800 border-red-200",
+            icon: XMarkIcon,
+            bg: "bg-red-50",
+          };
+        case "invoiced":
+          return {
+            color: "bg-purple-100 text-purple-800 border-purple-200",
+            icon: CurrencyRupeeIcon,
+            bg: "bg-purple-50",
+          };
+        default:
+          return {
+            color: "bg-gray-100 text-gray-800 border-gray-200",
+            icon: DocumentTextIcon,
+            bg: "bg-gray-50",
+          };
+      }
+    };
     const { projects } = useAccountingStore();
     const [formData, setFormData] = useState({
       projectId: "",
@@ -665,26 +711,74 @@ const TimesheetModal = React.memo(
                       <span></span>
                     </IconTooltip>
                   </label>
-                  <select
-                    value={editingTimesheet?.status || "draft"}
-                    onChange={(e) => {
-                      // Update the timesheet status if editing
-                      if (editingTimesheet) {
-                        // This would typically update the timesheet status
-                        console.log("Status changed to:", e.target.value);
-                      }
-                    }}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200"
-                  >
-                    <option value="draft">Draft</option>
-                    <option value="submitted">Submitted</option>
-                    <option value="approved">Approved</option>
-                    <option value="rejected">Rejected</option>
-                    <option value="invoiced">Invoiced</option>
-                  </select>
-                  <p className="text-xs text-gray-500 mt-2">
-                    Current workflow status
-                  </p>
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                      <span className="text-sm font-medium text-gray-700">
+                        Current: {editingTimesheet?.status || "draft"}
+                      </span>
+                      <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusConfig(editingTimesheet?.status || "draft").color}`}>
+                        {editingTimesheet?.status || "draft"}
+                      </span>
+                    </div>
+                    
+                    {editingTimesheet && (
+                      <div className="flex flex-wrap gap-2">
+                        {editingTimesheet.status === "draft" && (
+                          <button
+                            type="button"
+                            onClick={() => onApprove(editingTimesheet.id)}
+                            className="px-3 py-2 bg-success-600 text-white text-sm rounded-lg hover:bg-success-700 transition-colors duration-200 flex items-center"
+                          >
+                            <CheckIcon className="h-4 w-4 mr-1" />
+                            Submit for Approval
+                          </button>
+                        )}
+                        
+                        {editingTimesheet.status === "submitted" && (
+                          <>
+                            <button
+                              type="button"
+                              onClick={() => onApprove(editingTimesheet.id)}
+                              className="px-3 py-2 bg-success-600 text-white text-sm rounded-lg hover:bg-success-700 transition-colors duration-200 flex items-center"
+                            >
+                              <CheckIcon className="h-4 w-4 mr-1" />
+                              Approve
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => onReject(editingTimesheet.id)}
+                              className="px-3 py-2 bg-danger-600 text-white text-sm rounded-lg hover:bg-danger-700 transition-colors duration-200 flex items-center"
+                            >
+                              <XMarkIcon className="h-4 w-4 mr-1" />
+                              Reject
+                            </button>
+                          </>
+                        )}
+                        
+                        {editingTimesheet.status === "approved" && (
+                          <button
+                            type="button"
+                            onClick={() => onMarkInvoiced(editingTimesheet.id)}
+                            className="px-3 py-2 bg-purple-600 text-white text-sm rounded-lg hover:bg-purple-700 transition-colors duration-200 flex items-center"
+                          >
+                            <CurrencyRupeeIcon className="h-4 w-4 mr-1" />
+                            Mark as Invoiced
+                          </button>
+                        )}
+                        
+                        {editingTimesheet.status === "rejected" && (
+                          <button
+                            type="button"
+                            onClick={() => onApprove(editingTimesheet.id)}
+                            className="px-3 py-2 bg-success-600 text-white text-sm rounded-lg hover:bg-success-700 transition-colors duration-200 flex items-center"
+                          >
+                            <CheckIcon className="h-4 w-4 mr-1" />
+                            Resubmit
+                          </button>
+                        )}
+                      </div>
+                    )}
+                  </div>
                 </div>
               </div>
 
@@ -1169,6 +1263,9 @@ export default function TimesheetPage() {
         }}
         editingTimesheet={editingTimesheet}
         onSubmit={handleSubmit}
+        onApprove={handleApprove}
+        onReject={handleReject}
+        onMarkInvoiced={handleMarkInvoiced}
       />
 
       {/* Confirmation Dialog */}

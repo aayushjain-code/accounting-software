@@ -12,6 +12,7 @@ import {
   ClockIcon,
   XMarkIcon,
   Bars3Icon,
+  ViewColumnsIcon,
 } from "@heroicons/react/24/outline";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -26,6 +27,7 @@ const navigation = [
   { name: "Timesheets", href: "/timesheet", icon: ClockIcon },
   { name: "Invoices", href: "/invoices", icon: DocumentTextIcon },
   { name: "Expenses", href: "/expenses", icon: ReceiptRefundIcon },
+  { name: "Kanban", href: "/kanban", icon: ViewColumnsIcon },
   { name: "Reports", href: "/reports", icon: ChartBarIcon },
 ];
 

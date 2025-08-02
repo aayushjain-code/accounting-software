@@ -37,6 +37,19 @@ export interface Project {
   status: "active" | "completed" | "on-hold" | "archived";
   budget: number;
   billingTerms: number;
+  
+  // Costing and GST fields
+  billingRate: number; // Per hour rate
+  estimatedHours: number; // Estimated total hours for the project
+  gstRate: number; // GST percentage (default 18%)
+  gstInclusive: boolean; // Whether GST is included in billing rate
+  totalCost: number; // Total project cost including GST
+  costBreakdown: {
+    subtotal: number;
+    gstAmount: number;
+    total: number;
+  };
+  
   createdAt: Date;
   updatedAt: Date;
 }

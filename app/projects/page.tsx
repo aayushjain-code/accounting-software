@@ -26,16 +26,40 @@ export default function ProjectsPage() {
     startDate: "",
     status: "active",
     billingTerms: "30",
+    billingRate: "",
+    estimatedHours: "",
+    gstRate: "18",
+    gstInclusive: false,
   });
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
+    const budget = parseFloat(formData.budget);
+    const billingRate = parseFloat(formData.billingRate);
+    const estimatedHours = parseFloat(formData.estimatedHours);
+    const gstRate = parseFloat(formData.gstRate);
+    
+    // Calculate cost breakdown
+    const subtotal = budget;
+    const gstAmount = (subtotal * gstRate) / 100;
+    const total = subtotal + gstAmount;
+
     const projectData = {
       ...formData,
       startDate: new Date(formData.startDate),
-      budget: parseFloat(formData.budget),
+      budget,
       billingTerms: parseInt(formData.billingTerms),
+      billingRate,
+      estimatedHours,
+      gstRate,
+      gstInclusive: formData.gstInclusive,
+      totalCost: total,
+      costBreakdown: {
+        subtotal,
+        gstAmount,
+        total,
+      },
       status: formData.status as
         | "active"
         | "completed"
@@ -62,6 +86,10 @@ export default function ProjectsPage() {
       startDate: "",
       status: "active",
       billingTerms: "30",
+      billingRate: "",
+      estimatedHours: "",
+      gstRate: "18",
+      gstInclusive: false,
     });
   };
 
@@ -76,6 +104,10 @@ export default function ProjectsPage() {
       startDate: format(new Date(project.startDate), "yyyy-MM-dd"),
       status: project.status,
       billingTerms: project.billingTerms.toString(),
+      billingRate: project.billingRate.toString(),
+      estimatedHours: project.estimatedHours.toString(),
+      gstRate: project.gstRate.toString(),
+      gstInclusive: project.gstInclusive,
     });
     setIsModalOpen(true);
   };
@@ -135,8 +167,9 @@ export default function ProjectsPage() {
                 <th>Code</th>
                 <th>Name</th>
                 <th>Client</th>
-                <th>Budget</th>
-                <th>Billing Terms</th>
+                <th>Costing</th>
+                <th>GST</th>
+                <th>Total</th>
                 <th>Status</th>
                 <th>Start Date</th>
                 <th>Actions</th>
@@ -163,11 +196,28 @@ export default function ProjectsPage() {
                       </div>
                     </td>
                     <td>{client?.name || "Unknown Client"}</td>
-                    <td className="font-medium text-gray-900">
-                      ₹{project.budget.toLocaleString()}
+                    <td>
+                      <div className="space-y-1">
+                        <div className="font-medium text-gray-900">
+                          ₹{project.budget.toLocaleString()}
+                        </div>
+                        <div className="text-xs text-gray-500">
+                          ₹{project.billingRate}/hr × {project.estimatedHours}h
+                        </div>
+                      </div>
                     </td>
-                    <td className="font-medium text-gray-900">
-                      {project.billingTerms} days
+                    <td>
+                      <div className="space-y-1">
+                        <div className="font-medium text-gray-900">
+                          ₹{project.costBreakdown.gstAmount.toLocaleString()}
+                        </div>
+                        <div className="text-xs text-gray-500">
+                          {project.gstRate}% {project.gstInclusive ? "(Inclusive)" : "(Exclusive)"}
+                        </div>
+                      </div>
+                    </td>
+                    <td className="font-medium text-green-600">
+                      ₹{project.totalCost.toLocaleString()}
                     </td>
                     <td>
                       <span
@@ -352,6 +402,106 @@ export default function ProjectsPage() {
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Billing Rate (₹/hr)
+                    </label>
+                    <input
+                      type="number"
+                      required
+                      min="0"
+                      step="0.01"
+                      value={formData.billingRate}
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          billingRate: e.target.value,
+                        })
+                      }
+                      className="input"
+                      placeholder="e.g., 1200"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Estimated Hours
+                    </label>
+                    <input
+                      type="number"
+                      required
+                      min="0"
+                      step="0.01"
+                      value={formData.estimatedHours}
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          estimatedHours: e.target.value,
+                        })
+                      }
+                      className="input"
+                      placeholder="e.g., 400"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      GST Rate (%)
+                    </label>
+                    <input
+                      type="number"
+                      required
+                      min="0"
+                      max="100"
+                      step="0.01"
+                      value={formData.gstRate}
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          gstRate: e.target.value,
+                        })
+                      }
+                      className="input"
+                      placeholder="e.g., 18"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      GST Inclusive
+                    </label>
+                    <div className="flex items-center space-x-4">
+                      <label className="flex items-center">
+                        <input
+                          type="radio"
+                          name="gstInclusive"
+                          value="false"
+                          checked={!formData.gstInclusive}
+                          onChange={() =>
+                            setFormData({
+                              ...formData,
+                              gstInclusive: false,
+                            })
+                          }
+                          className="mr-2"
+                        />
+                        <span className="text-sm text-gray-700">Exclusive</span>
+                      </label>
+                      <label className="flex items-center">
+                        <input
+                          type="radio"
+                          name="gstInclusive"
+                          value="true"
+                          checked={formData.gstInclusive}
+                          onChange={() =>
+                            setFormData({
+                              ...formData,
+                              gstInclusive: true,
+                            })
+                          }
+                          className="mr-2"
+                        />
+                        <span className="text-sm text-gray-700">Inclusive</span>
+                      </label>
+                    </div>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
                       Start Date
                     </label>
                     <input
@@ -396,6 +546,10 @@ export default function ProjectsPage() {
                         startDate: "",
                         status: "active",
                         billingTerms: "30",
+                        billingRate: "",
+                        estimatedHours: "",
+                        gstRate: "18",
+                        gstInclusive: false,
                       });
                     }}
                     className="btn-secondary"

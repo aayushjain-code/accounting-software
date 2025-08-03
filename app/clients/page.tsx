@@ -352,7 +352,7 @@ export default function ClientsPage() {
     performanceMonitor.recordRenderTime("ClientsPage", renderTime);
   }, [renderStart]);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     const clientData = {
@@ -366,7 +366,7 @@ export default function ClientsPage() {
     };
 
     if (editingClient) {
-      updateClient(editingClient.id, clientData);
+      await updateClient(editingClient.id, clientData);
       toast.success("Client updated successfully");
     } else {
       addClient(clientData);

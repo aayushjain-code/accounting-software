@@ -522,6 +522,26 @@ ipcMain.handle("delete-expense", (event, id) => {
   return dbManager.deleteExpense(id);
 });
 
+ipcMain.handle("get-daily-logs", () => {
+  return dbManager.getDailyLogs();
+});
+
+ipcMain.handle("get-daily-log", (event, id) => {
+  return dbManager.getDailyLog(id);
+});
+
+ipcMain.handle("create-daily-log", (event, log) => {
+  return dbManager.createDailyLog(log);
+});
+
+ipcMain.handle("update-daily-log", (event, id, log) => {
+  return dbManager.updateDailyLog(id, log);
+});
+
+ipcMain.handle("delete-daily-log", (event, id) => {
+  return dbManager.deleteDailyLog(id);
+});
+
 ipcMain.handle("get-company-profile", () => {
   return dbManager.getCompanyProfile();
 });

@@ -351,7 +351,7 @@ export default function KanbanPage() {
     e.dataTransfer.dropEffect = "move";
   };
 
-  const handleDrop = (e: React.DragEvent, targetStatus: string) => {
+  const handleDrop = async (e: React.DragEvent, targetStatus: string) => {
     e.preventDefault();
     const itemId = e.dataTransfer.getData("text/plain");
 
@@ -383,7 +383,7 @@ export default function KanbanPage() {
             break;
         }
 
-        updateTimesheet(itemId, { status: newStatus });
+        await updateTimesheet(itemId, { status: newStatus });
         toast.success(`Timesheet moved to ${targetStatus.replace("-", " ")}`);
       }
     } else if (item.type === "invoice") {
@@ -403,7 +403,7 @@ export default function KanbanPage() {
             break;
         }
 
-        updateInvoice(itemId, { status: newStatus });
+        await updateInvoice(itemId, { status: newStatus });
         toast.success(`Invoice moved to ${targetStatus.replace("-", " ")}`);
       }
     }

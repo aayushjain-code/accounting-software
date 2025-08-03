@@ -33,6 +33,7 @@ export default function ExpensesPage() {
     amount: "",
     date: "",
     projectId: "",
+    status: "pending" as "pending" | "approved" | "rejected",
   });
 
   const expenseCategories = [
@@ -48,7 +49,7 @@ export default function ExpensesPage() {
     "Other",
   ];
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     const expenseData = {
@@ -57,11 +58,11 @@ export default function ExpensesPage() {
       amount: parseFloat(formData.amount),
       date: new Date(formData.date),
       projectId: formData.projectId || undefined,
-      status: "pending" as const,
+      status: formData.status,
     };
 
     if (editingExpense) {
-      updateExpense(editingExpense.id, expenseData);
+      await updateExpense(editingExpense.id, expenseData);
       toast.success("Expense updated successfully");
     } else {
       addExpense(expenseData);
@@ -74,8 +75,9 @@ export default function ExpensesPage() {
       category: "",
       description: "",
       amount: "",
-      date: "",
+      date: format(new Date(), "yyyy-MM-dd"),
       projectId: "",
+      status: "pending" as "pending" | "approved" | "rejected",
     });
   };
 
@@ -87,6 +89,7 @@ export default function ExpensesPage() {
       amount: expense.amount.toString(),
       date: format(new Date(expense.date), "yyyy-MM-dd"),
       projectId: expense.projectId || "",
+      status: expense.status,
     });
     setIsModalOpen(true);
   };
@@ -136,8 +139,22 @@ export default function ExpensesPage() {
   const handleFileDelete = (fileId: string) => {
     if (editingExpense) {
       removeExpenseFile(editingExpense.id, fileId);
-      toast.success("File deleted successfully!");
+      toast.success("File deleted successfully");
     }
+  };
+
+  const handleModalClose = () => {
+    setIsModalOpen(false);
+    setEditingExpense(null);
+    setFormData({
+      category: "",
+      description: "",
+      amount: "",
+      date: "",
+      projectId: "",
+      status: "pending" as "pending" | "approved" | "rejected",
+    });
+    setUploadedFiles([]);
   };
 
   const formatCurrency = (amount: number) => {
@@ -354,35 +371,13 @@ export default function ExpensesPage() {
       {/* Modal */}
       <Modal
         isOpen={isModalOpen}
-        onClose={() => {
-          setIsModalOpen(false);
-          setEditingExpense(null);
-          setFormData({
-            category: "",
-            description: "",
-            amount: "",
-            date: "",
-            projectId: "",
-          });
-          setUploadedFiles([]);
-        }}
+        onClose={handleModalClose}
         title={editingExpense ? "Edit Expense" : "Add New Expense"}
         footer={
           <>
             <button
               type="button"
-              onClick={() => {
-                setIsModalOpen(false);
-                setEditingExpense(null);
-                setFormData({
-                  category: "",
-                  description: "",
-                  amount: "",
-                  date: "",
-                  projectId: "",
-                });
-                setUploadedFiles([]);
-              }}
+              onClick={handleModalClose}
               className="btn-secondary mr-2"
             >
               Cancel

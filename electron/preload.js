@@ -39,6 +39,13 @@ contextBridge.exposeInMainWorld("electronAPI", {
     ipcRenderer.invoke("update-expense", id, expense),
   deleteExpense: (id) => ipcRenderer.invoke("delete-expense", id),
 
+  getDailyLogs: () => ipcRenderer.invoke("get-daily-logs"),
+  getDailyLog: (id) => ipcRenderer.invoke("get-daily-log", id),
+  createDailyLog: (log) => ipcRenderer.invoke("create-daily-log", log),
+  updateDailyLog: (id, log) =>
+    ipcRenderer.invoke("update-daily-log", id, log),
+  deleteDailyLog: (id) => ipcRenderer.invoke("delete-daily-log", id),
+
   getCompanyProfile: () => ipcRenderer.invoke("get-company-profile"),
   updateCompanyProfile: (profile) =>
     ipcRenderer.invoke("update-company-profile", profile),

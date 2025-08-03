@@ -88,19 +88,13 @@ export default function InvoicesPage() {
     }
   }, [selectedTimesheet, selectedProject, selectedClient, formData.taxRate]);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-
-    if (!selectedTimesheet || !selectedProject || !selectedClient) {
-      toast.error("Please select a valid timesheet");
-      return;
-    }
 
     const invoiceData = {
       timesheetId: formData.timesheetId,
       clientId: formData.clientId,
       projectId: formData.projectId,
-      invoiceNumber: generateInvoiceNumber(),
       issueDate: new Date(formData.issueDate),
       dueDate: new Date(formData.dueDate),
       status: formData.status,
@@ -112,21 +106,21 @@ export default function InvoicesPage() {
     };
 
     if (editingInvoice) {
-      updateInvoice(editingInvoice.id, invoiceData);
+      await updateInvoice(editingInvoice.id, invoiceData);
       toast.success("Invoice updated successfully");
     } else {
       addInvoice(invoiceData);
-      toast.success("Invoice created successfully");
+      toast.success("Invoice added successfully");
     }
 
     setIsModalOpen(false);
     setEditingInvoice(null);
     setFormData({
       timesheetId: "",
-      projectId: "",
       clientId: "",
-      issueDate: "",
-      dueDate: "",
+      projectId: "",
+      issueDate: format(new Date(), "yyyy-MM-dd"),
+      dueDate: format(new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), "yyyy-MM-dd"),
       status: "draft" as const,
       subtotal: "",
       taxRate: "18",
@@ -134,7 +128,6 @@ export default function InvoicesPage() {
       total: "",
       notes: "",
     });
-    setUploadedFiles([]);
   };
 
   const handleEdit = (invoice: Invoice) => {

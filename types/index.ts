@@ -350,6 +350,17 @@ declare global {
       ) => Promise<Expense>;
       deleteExpense: (id: string) => Promise<void>;
 
+      getDailyLogs: () => Promise<DailyLog[]>;
+      getDailyLog: (id: string) => Promise<DailyLog>;
+      createDailyLog: (
+        log: Omit<DailyLog, "id" | "createdAt" | "updatedAt">
+      ) => Promise<DailyLog>;
+      updateDailyLog: (
+        id: string,
+        log: Partial<DailyLog>
+      ) => Promise<DailyLog>;
+      deleteDailyLog: (id: string) => Promise<void>;
+
       getCompanyProfile: () => Promise<CompanyProfile>;
       updateCompanyProfile: (
         profile: Partial<CompanyProfile>

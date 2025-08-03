@@ -21,6 +21,7 @@ import { format } from "date-fns";
 import { useSearch } from "@/hooks/useSearch";
 import { ActionTooltip, IconTooltip } from "@/components/Tooltip";
 import Modal from "@/components/Modal";
+import toast from "react-hot-toast";
 
 interface LogCardProps {
   log: DailyLog;
@@ -477,14 +478,16 @@ export default function DailyLogsPage() {
     };
   }, [dailyLogs]);
 
-  const handleSubmit = (
-    data: Omit<DailyLog, "id" | "createdAt" | "updatedAt">
-  ) => {
+  const handleSubmit = async (data: Omit<DailyLog, "id" | "createdAt" | "updatedAt">) => {
     if (editingLog) {
-      updateDailyLog(editingLog.id, data);
+      await updateDailyLog(editingLog.id, data);
+      toast.success("Log updated successfully");
     } else {
       addDailyLog(data);
+      toast.success("Log added successfully");
     }
+    setIsModalOpen(false);
+    setEditingLog(null);
   };
 
   const handleEdit = (log: DailyLog) => {

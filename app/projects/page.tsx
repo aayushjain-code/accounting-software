@@ -42,15 +42,8 @@ export default function ProjectsPage() {
     gstInclusive: false,
   });
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-
-    const budget = parseFloat(formData.budget);
-    const gstRate = parseFloat(formData.gstRate);
-
-    // Calculate cost breakdown
-    const subtotal = budget;
-    const gstAmount = (subtotal * gstRate) / 100;
 
     const projectData = {
       projectCode: formData.projectCode,
@@ -80,7 +73,7 @@ export default function ProjectsPage() {
     };
 
     if (editingProject) {
-      updateProject(editingProject.id, projectData);
+      await updateProject(editingProject.id, projectData);
       toast.success("Project updated successfully");
     } else {
       addProject(projectData);
@@ -94,14 +87,14 @@ export default function ProjectsPage() {
       name: "",
       clientId: "",
       description: "",
-      startDate: "",
+      startDate: format(new Date(), "yyyy-MM-dd"),
       status: "active" as const,
       budget: "",
-      billingTerms: "",
+      billingTerms: "30",
       billingRate: "",
       estimatedHours: "",
       gstRate: "18",
-      gstInclusive: false,
+      gstInclusive: true,
     });
   };
 

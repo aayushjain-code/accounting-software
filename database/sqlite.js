@@ -127,6 +127,21 @@ class SQLiteManager {
       )
     `);
 
+    // Daily Logs table
+    this.db.exec(`
+      CREATE TABLE IF NOT EXISTS daily_logs (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        date DATE NOT NULL,
+        title TEXT NOT NULL,
+        description TEXT,
+        category TEXT,
+        priority TEXT,
+        tags TEXT,
+        createdAt DATETIME DEFAULT CURRENT_TIMESTAMP,
+        updatedAt DATETIME DEFAULT CURRENT_TIMESTAMP
+      )
+    `);
+
     // Company Profile table
     this.db.exec(`
       CREATE TABLE IF NOT EXISTS company_profile (
@@ -156,6 +171,7 @@ class SQLiteManager {
       CREATE INDEX IF NOT EXISTS idx_timesheets_client ON timesheets (clientId);
       CREATE INDEX IF NOT EXISTS idx_invoices_client ON invoices (clientId);
       CREATE INDEX IF NOT EXISTS idx_invoices_project ON invoices (projectId);
+      CREATE INDEX IF NOT EXISTS idx_daily_logs_date ON daily_logs (date);
     `);
   }
 
@@ -437,6 +453,50 @@ class SQLiteManager {
     return this.db.prepare("DELETE FROM expenses WHERE id = ?").run(id);
   }
 
+  // Daily Log operations
+  getDailyLogs() {
+    return this.db.prepare("SELECT * FROM daily_logs ORDER BY date DESC").all();
+  }
+
+  getDailyLog(id) {
+    return this.db.prepare("SELECT * FROM daily_logs WHERE id = ?").get(id);
+  }
+
+  createDailyLog(log) {
+    const stmt = this.db.prepare(`
+      INSERT INTO daily_logs (date, title, description, category, priority, tags)
+      VALUES (?, ?, ?, ?, ?, ?)
+    `);
+    return stmt.run(
+      log.date,
+      log.title,
+      log.description,
+      log.category,
+      log.priority,
+      JSON.stringify(log.tags)
+    );
+  }
+
+  updateDailyLog(id, log) {
+    const fields = Object.keys(log).filter((key) => key !== "id");
+    const setClause = fields.map((field) => `${field} = ?`).join(", ");
+    const values = fields.map((field) => {
+      if (field === "tags") {
+        return JSON.stringify(log[field]);
+      }
+      return log[field];
+    });
+
+    const stmt = this.db.prepare(`
+      UPDATE daily_logs SET ${setClause}, updatedAt = CURRENT_TIMESTAMP WHERE id = ?
+    `);
+    return stmt.run(...values, id);
+  }
+
+  deleteDailyLog(id) {
+    return this.db.prepare("DELETE FROM daily_logs WHERE id = ?").run(id);
+  }
+
   // Company Profile operations
   getCompanyProfile() {
     return this.db.prepare("SELECT * FROM company_profile LIMIT 1").get();
@@ -480,6 +540,7 @@ class SQLiteManager {
       timesheets: this.getTimesheets(),
       invoices: this.getInvoices(),
       expenses: this.getExpenses(),
+      dailyLogs: this.getDailyLogs(),
       companyProfile: this.getCompanyProfile(),
       exportDate: new Date().toISOString(),
       version: "1.0.0",
@@ -499,6 +560,7 @@ class SQLiteManager {
         DELETE FROM projects;
         DELETE FROM clients;
         DELETE FROM company_profile;
+        DELETE FROM daily_logs;
       `);
 
       // Import clients
@@ -629,6 +691,27 @@ class SQLiteManager {
         });
       }
 
+      // Import daily logs
+      if (data.dailyLogs) {
+        const logStmt = this.db.prepare(`
+          INSERT INTO daily_logs (id, date, title, description, category, priority, tags, createdAt, updatedAt)
+          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+        `);
+        data.dailyLogs.forEach((log) => {
+          logStmt.run(
+            log.id,
+            log.date,
+            log.title,
+            log.description,
+            log.category,
+            log.priority,
+            JSON.stringify(log.tags),
+            log.createdAt,
+            log.updatedAt
+          );
+        });
+      }
+
       // Import company profile
       if (data.companyProfile) {
         const profileStmt = this.db.prepare(`
@@ -685,6 +768,9 @@ class SQLiteManager {
         .get().count,
       totalExpensesCount: this.db
         .prepare("SELECT COUNT(*) as count FROM expenses")
+        .get().count,
+      totalDailyLogsCount: this.db
+        .prepare("SELECT COUNT(*) as count FROM daily_logs")
         .get().count,
       totalRevenue:
         this.db

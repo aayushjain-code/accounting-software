@@ -32,18 +32,18 @@ interface AccountingStore {
   dailyLogs: DailyLog[];
 
   // Actions
-  updateCompanyProfile: (profile: Partial<CompanyProfile>) => void;
+  updateCompanyProfile: (profile: Partial<CompanyProfile>) => Promise<void>;
   addClient: (
     client: Omit<Client, "id" | "clientCode" | "createdAt" | "updatedAt">
   ) => void;
-  updateClient: (id: string, client: Partial<Client>) => void;
-  deleteClient: (id: string) => void;
+  updateClient: (id: string, client: Partial<Client>) => Promise<void>;
+  deleteClient: (id: string) => Promise<void>;
 
   addProject: (
     project: Omit<Project, "id" | "projectCode" | "createdAt" | "updatedAt">
   ) => void;
-  updateProject: (id: string, project: Partial<Project>) => void;
-  deleteProject: (id: string) => void;
+  updateProject: (id: string, project: Partial<Project>) => Promise<void>;
+  deleteProject: (id: string) => Promise<void>;
 
   addTimesheet: (
     timesheet: Omit<
@@ -63,8 +63,8 @@ interface AccountingStore {
   addInvoice: (
     invoice: Omit<Invoice, "id" | "invoiceNumber" | "createdAt" | "updatedAt">
   ) => void;
-  updateInvoice: (id: string, invoice: Partial<Invoice>) => void;
-  deleteInvoice: (id: string) => void;
+  updateInvoice: (id: string, invoice: Partial<Invoice>) => Promise<void>;
+  deleteInvoice: (id: string) => Promise<void>;
 
   addInvoiceItem: (item: Omit<InvoiceItem, "id">) => void;
   updateInvoiceItem: (id: string, item: Partial<InvoiceItem>) => void;
@@ -76,12 +76,12 @@ interface AccountingStore {
   addExpense: (
     expense: Omit<Expense, "id" | "expenseCode" | "createdAt" | "updatedAt">
   ) => void;
-  updateExpense: (id: string, expense: Partial<Expense>) => void;
-  deleteExpense: (id: string) => void;
+  updateExpense: (id: string, expense: Partial<Expense>) => Promise<void>;
+  deleteExpense: (id: string) => Promise<void>;
 
   addDailyLog: (log: Omit<DailyLog, "id" | "createdAt" | "updatedAt">) => void;
-  updateDailyLog: (id: string, log: Partial<DailyLog>) => void;
-  deleteDailyLog: (id: string) => void;
+  updateDailyLog: (id: string, log: Partial<DailyLog>) => Promise<void>;
+  deleteDailyLog: (id: string) => Promise<void>;
 
   // File management functions
   addTimesheetFile: (timesheetId: string, file: TimesheetFile) => void;
@@ -190,21 +190,42 @@ export const useAccountingStore = create<AccountingStore>()(
         set((state) => ({ clients: [...state.clients, newClient] }));
       },
 
-      updateClient: (id, client) => {
+      updateClient: async (id, client) => {
+        // Update frontend state immediately for responsive UI
         set((state) => ({
           clients: state.clients.map((c) =>
             c.id === id ? { ...c, ...client, updatedAt: new Date() } : c
           ),
         }));
+
+        // Persist to database via Electron API
+        try {
+          if (typeof window !== "undefined" && window.electronAPI?.updateClient) {
+            await window.electronAPI.updateClient(id, client);
+          }
+        } catch (error) {
+          console.error("Failed to update client in database:", error);
+        }
       },
 
-      deleteClient: (id) => {
+      deleteClient: async (id) => {
+        // Update frontend state immediately for responsive UI
         set((state) => ({
           clients: state.clients.filter((c) => c.id !== id),
         }));
+
+        // Persist to database via Electron API
+        try {
+          if (typeof window !== "undefined" && window.electronAPI?.deleteClient) {
+            await window.electronAPI.deleteClient(id);
+          }
+        } catch (error) {
+          console.error("Failed to delete client in database:", error);
+        }
       },
 
-      updateCompanyProfile: (profile) => {
+      updateCompanyProfile: async (profile) => {
+        // Update frontend state immediately for responsive UI
         set((state) => ({
           companyProfile: {
             ...state.companyProfile,
@@ -212,6 +233,15 @@ export const useAccountingStore = create<AccountingStore>()(
             updatedAt: new Date(),
           },
         }));
+
+        // Persist to database via Electron API
+        try {
+          if (typeof window !== "undefined" && window.electronAPI?.updateCompanyProfile) {
+            await window.electronAPI.updateCompanyProfile(profile);
+          }
+        } catch (error) {
+          console.error("Failed to update company profile in database:", error);
+        }
       },
 
       addProject: (project) => {
@@ -225,18 +255,38 @@ export const useAccountingStore = create<AccountingStore>()(
         set((state) => ({ projects: [...state.projects, newProject] }));
       },
 
-      updateProject: (id, project) => {
+      updateProject: async (id, project) => {
+        // Update frontend state immediately for responsive UI
         set((state) => ({
           projects: state.projects.map((p) =>
             p.id === id ? { ...p, ...project, updatedAt: new Date() } : p
           ),
         }));
+
+        // Persist to database via Electron API
+        try {
+          if (typeof window !== "undefined" && window.electronAPI?.updateProject) {
+            await window.electronAPI.updateProject(id, project);
+          }
+        } catch (error) {
+          console.error("Failed to update project in database:", error);
+        }
       },
 
-      deleteProject: (id) => {
+      deleteProject: async (id) => {
+        // Update frontend state immediately for responsive UI
         set((state) => ({
           projects: state.projects.filter((p) => p.id !== id),
         }));
+
+        // Persist to database via Electron API
+        try {
+          if (typeof window !== "undefined" && window.electronAPI?.deleteProject) {
+            await window.electronAPI.deleteProject(id);
+          }
+        } catch (error) {
+          console.error("Failed to delete project in database:", error);
+        }
       },
 
       addTimesheet: (timesheet) => {
@@ -316,18 +366,38 @@ export const useAccountingStore = create<AccountingStore>()(
         set((state) => ({ invoices: [...state.invoices, newInvoice] }));
       },
 
-      updateInvoice: (id, invoice) => {
+      updateInvoice: async (id, invoice) => {
+        // Update frontend state immediately for responsive UI
         set((state) => ({
           invoices: state.invoices.map((i) =>
             i.id === id ? { ...i, ...invoice, updatedAt: new Date() } : i
           ),
         }));
+
+        // Persist to database via Electron API
+        try {
+          if (typeof window !== "undefined" && window.electronAPI?.updateInvoice) {
+            await window.electronAPI.updateInvoice(id, invoice);
+          }
+        } catch (error) {
+          console.error("Failed to update invoice in database:", error);
+        }
       },
 
-      deleteInvoice: (id) => {
+      deleteInvoice: async (id) => {
+        // Update frontend state immediately for responsive UI
         set((state) => ({
           invoices: state.invoices.filter((i) => i.id !== id),
         }));
+
+        // Persist to database via Electron API
+        try {
+          if (typeof window !== "undefined" && window.electronAPI?.deleteInvoice) {
+            await window.electronAPI.deleteInvoice(id);
+          }
+        } catch (error) {
+          console.error("Failed to delete invoice in database:", error);
+        }
       },
 
       addInvoiceItem: (item) => {
@@ -379,18 +449,38 @@ export const useAccountingStore = create<AccountingStore>()(
         set((state) => ({ expenses: [...state.expenses, newExpense] }));
       },
 
-      updateExpense: (id, expense) => {
+      updateExpense: async (id, expense) => {
+        // Update frontend state immediately for responsive UI
         set((state) => ({
           expenses: state.expenses.map((e) =>
             e.id === id ? { ...e, ...expense, updatedAt: new Date() } : e
           ),
         }));
+
+        // Persist to database via Electron API
+        try {
+          if (typeof window !== "undefined" && window.electronAPI?.updateExpense) {
+            await window.electronAPI.updateExpense(id, expense);
+          }
+        } catch (error) {
+          console.error("Failed to update expense in database:", error);
+        }
       },
 
-      deleteExpense: (id) => {
+      deleteExpense: async (id) => {
+        // Update frontend state immediately for responsive UI
         set((state) => ({
           expenses: state.expenses.filter((e) => e.id !== id),
         }));
+
+        // Persist to database via Electron API
+        try {
+          if (typeof window !== "undefined" && window.electronAPI?.deleteExpense) {
+            await window.electronAPI.deleteExpense(id);
+          }
+        } catch (error) {
+          console.error("Failed to delete expense in database:", error);
+        }
       },
 
       addDailyLog: (log) => {
@@ -403,18 +493,38 @@ export const useAccountingStore = create<AccountingStore>()(
         set((state) => ({ dailyLogs: [...state.dailyLogs, newLog] }));
       },
 
-      updateDailyLog: (id, log) => {
+      updateDailyLog: async (id, log) => {
+        // Update frontend state immediately for responsive UI
         set((state) => ({
           dailyLogs: state.dailyLogs.map((l) =>
             l.id === id ? { ...l, ...log, updatedAt: new Date() } : l
           ),
         }));
+
+        // Persist to database via Electron API
+        try {
+          if (typeof window !== "undefined" && window.electronAPI?.updateDailyLog) {
+            await window.electronAPI.updateDailyLog(id, log);
+          }
+        } catch (error) {
+          console.error("Failed to update daily log in database:", error);
+        }
       },
 
-      deleteDailyLog: (id) => {
+      deleteDailyLog: async (id) => {
+        // Update frontend state immediately for responsive UI
         set((state) => ({
           dailyLogs: state.dailyLogs.filter((l) => l.id !== id),
         }));
+
+        // Persist to database via Electron API
+        try {
+          if (typeof window !== "undefined" && window.electronAPI?.deleteDailyLog) {
+            await window.electronAPI.deleteDailyLog(id);
+          }
+        } catch (error) {
+          console.error("Failed to delete daily log in database:", error);
+        }
       },
 
       addTimesheetFile: (timesheetId, file) => {

@@ -67,20 +67,24 @@ export const Form: React.FC<FormProps> = ({
         const value = formData[name];
         let result: boolean | string;
         
-        // Safe validation wrapper
+        // Safe validation wrapper with proper type handling
         try {
           if (field.type === "number") {
             // For number fields, convert to number first
             const numValue = typeof value === "string" ? parseFloat(value) : value;
-            result = validation(numValue as any);
+            // Cast validation function to accept any type
+            const validationFn = validation as (value: any) => boolean | string;
+            result = validationFn(numValue);
           } else if (field.type === "checkbox") {
             // For checkbox fields, ensure boolean
             const boolValue = typeof value === "boolean" ? value : Boolean(value);
-            result = validation(boolValue as any);
+            const validationFn = validation as (value: any) => boolean | string;
+            result = validationFn(boolValue);
           } else {
             // For text fields, ensure string
             const strValue = typeof value === "string" ? value : String(value);
-            result = validation(strValue as any);
+            const validationFn = validation as (value: any) => boolean | string;
+            result = validationFn(strValue);
           }
         } catch (error) {
           result = "Invalid value";

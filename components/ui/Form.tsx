@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { validateForm, validationRules } from "@/utils/validators";
+import { validateForm, validationRules, validateRequired } from "@/utils/validators";
 
 interface FormField {
   name: string;
@@ -64,7 +64,8 @@ export const Form: React.FC<FormProps> = ({
     if (field) {
       const validation = field.validation || validationRules[field.type as keyof typeof validationRules];
       if (validation) {
-        const result = validation(formData[name] as string | number | boolean);
+        const value = formData[name];
+        const result = validation(value as string);
         if (result !== true) {
           setErrors(prev => ({ ...prev, [name]: typeof result === "string" ? result : "Invalid value" }));
         } else {
@@ -83,7 +84,7 @@ export const Form: React.FC<FormProps> = ({
       if (field.validation) {
         validationRulesMap[field.name] = field.validation;
       } else if (field.required) {
-        validationRulesMap[field.name] = validationRules.required;
+        validationRulesMap[field.name] = (value: string | number | boolean) => validateRequired(value as string) || "This field is required";
       }
     });
 

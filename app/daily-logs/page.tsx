@@ -518,10 +518,10 @@ export default function DailyLogsPage() {
               </div>
             </div>
             <div className="ml-4">
-              <p className="text-sm font-medium text-gray-600 dark:text-gray-400 dark:text-gray-400">
+              <p className="text-sm font-medium text-gray-600 dark:text-gray-400">
                 Total Logs
               </p>
-              <p className="text-2xl font-bold text-gray-900 dark:text-white dark:text-white">
+              <p className="text-2xl font-bold text-gray-900 dark:text-white">
                 {stats.totalLogs}
               </p>
             </div>

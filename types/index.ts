@@ -276,3 +276,62 @@ export interface DashboardStats {
   approvedTimesheets: number;
   invoicedTimesheets: number;
 }
+
+// Global window interface for Electron API
+declare global {
+  interface Window {
+    electronAPI?: {
+      // Database operations
+      getClients: () => Promise<any[]>;
+      getClient: (id: number) => Promise<any>;
+      createClient: (client: any) => Promise<any>;
+      updateClient: (id: number, client: any) => Promise<any>;
+      deleteClient: (id: number) => Promise<any>;
+
+      getProjects: () => Promise<any[]>;
+      getProject: (id: number) => Promise<any>;
+      createProject: (project: any) => Promise<any>;
+      updateProject: (id: number, project: any) => Promise<any>;
+      deleteProject: (id: number) => Promise<any>;
+
+      getTimesheets: () => Promise<any[]>;
+      getTimesheet: (id: number) => Promise<any>;
+      createTimesheet: (timesheet: any) => Promise<any>;
+      updateTimesheet: (id: number, timesheet: any) => Promise<any>;
+      deleteTimesheet: (id: number) => Promise<any>;
+
+      getInvoices: () => Promise<any[]>;
+      getInvoice: (id: number) => Promise<any>;
+      createInvoice: (invoice: any) => Promise<any>;
+      updateInvoice: (id: number, invoice: any) => Promise<any>;
+      deleteInvoice: (id: number) => Promise<any>;
+
+      getExpenses: () => Promise<any[]>;
+      getExpense: (id: number) => Promise<any>;
+      createExpense: (expense: any) => Promise<any>;
+      updateExpense: (id: number, expense: any) => Promise<any>;
+      deleteExpense: (id: number) => Promise<any>;
+
+      getCompanyProfile: () => Promise<any>;
+      updateCompanyProfile: (profile: any) => Promise<any>;
+
+      getStatistics: () => Promise<any>;
+      getAllData: () => Promise<any>;
+      exportData: () => Promise<void>;
+      importData: () => Promise<void>;
+      backupDatabase: () => Promise<void>;
+
+      // Database location management
+      getDatabaseLocation: () => Promise<string>;
+      changeDatabaseLocation: () => Promise<void>;
+
+      // Data management
+      clearAllData: () => Promise<void>;
+
+      // App information
+      getAppVersion: () => string;
+      getPlatform: () => string;
+      isElectron: boolean;
+    };
+  }
+}

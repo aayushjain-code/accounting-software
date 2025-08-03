@@ -16,6 +16,7 @@ import {
   ExpenseFile,
 } from "@/types";
 import { CodeGenerator } from "@/utils/codeGenerator";
+import { electronStore, isElectron } from "./electronStore";
 
 interface AccountingStore {
   // Data
@@ -112,6 +113,12 @@ interface AccountingStore {
   getClientByProject: (projectId: string) => Client | undefined;
   getProjectByTimesheet: (timesheetId: string) => Project | undefined;
   getTimesheetByInvoice: (invoiceId: string) => Timesheet | undefined;
+
+  // Clear all data (for reset functionality)
+  clearAllData: () => void;
+
+  // Replace all data (for import functionality)
+  replaceAllData: (data: Partial<AccountingStore>) => void;
 }
 
 const generateId = () => Math.random().toString(36).substr(2, 9);
@@ -120,528 +127,57 @@ export const useAccountingStore = create<AccountingStore>()(
   persist(
     (set, get) => ({
       companyProfile: {
-        id: "1",
-        name: "BST",
-        legalName: "BST Private Limited",
-        email: "info@bst.com",
-        phone: "+91-98765-43210",
-        website: "https://bst.com",
-        address: "123 Business Park, Whitefield",
-        city: "Bangalore",
-        state: "Karnataka",
-        pincode: "560066",
-        country: "India",
-        gstNumber: "GST123456789",
-        panNumber: "ABCDE1234F",
-        cinNumber: "U12345KA2023PTC123456",
-        logo: "https://businesssolutionstech.com/logo.png",
-        description:
-          "Leading technology solutions provider specializing in custom software development, web applications, and digital transformation services.",
-        foundedYear: 2023,
-        industry: "Technology",
-        companySize: "medium",
-        annualRevenue: 25000000,
-        employeeCount: 25,
+        id: "",
+        name: "",
+        legalName: "",
+        email: "",
+        phone: "",
+        website: "",
+        address: "",
+        city: "",
+        state: "",
+        pincode: "",
+        country: "",
+        gstNumber: "",
+        panNumber: "",
+        cinNumber: "",
+        logo: "",
+        description: "",
+        foundedYear: 0,
+        industry: "",
+        companySize: "startup" as const,
+        annualRevenue: 0,
+        employeeCount: 0,
         bankDetails: {
-          accountNumber: "1234567890",
-          ifscCode: "SBIN0001234",
-          bankName: "State Bank of India",
-          branch: "Whitefield Branch",
+          accountNumber: "",
+          ifscCode: "",
+          bankName: "",
+          branch: "",
         },
         contactPerson: {
-          name: "Rajesh Kumar",
-          email: "rajesh@businesssolutionstech.com",
-          phone: "+91-98765-43211",
-          designation: "Founder & CEO",
+          name: "",
+          email: "",
+          phone: "",
+          designation: "",
         },
         socialMedia: {
-          linkedin: "https://linkedin.com/company/business-solutions-tech",
-          twitter: "https://twitter.com/bst_tech",
-          facebook: "https://facebook.com/businesssolutionstech",
+          linkedin: "",
+          twitter: "",
+          facebook: "",
+          instagram: "",
         },
-        createdAt: new Date("2023-01-01"),
-        updatedAt: new Date("2023-01-01"),
+        createdAt: new Date(),
+        updatedAt: new Date(),
       },
-      clients: [
-        {
-          id: "client1",
-          clientCode: "CLT-2024-0001",
-          name: "TechCorp Solutions",
-          email: "accounts@techcorp.com",
-          phone: "+91-98765-43210",
-          company: "TechCorp Solutions Pvt Ltd",
-          address: "123 Tech Park, Bangalore, Karnataka 560001",
-          gstId: "GST123456789",
-          companyAddress:
-            "123 Tech Park, Whitefield, Bangalore, Karnataka 560066",
-          companyWebsite: "https://techcorp.com",
-          companyLinkedin: "https://linkedin.com/company/techcorp-solutions",
-          companyOwner: "Rajesh Kumar",
-          pocName: "Priya Sharma",
-          pocEmail: "priya.sharma@techcorp.com",
-          pocContact: "+91-98765-43211",
-          companyLogo: "https://techcorp.com/logo.png",
-          industry: "Technology",
-          companySize: "medium",
-          status: "active",
-          source: "Referral",
-          notes: "High-value client with multiple ongoing projects",
-          tags: ["technology", "e-commerce", "premium"],
-          annualRevenue: 50000000,
-          employeeCount: 150,
-          createdAt: new Date("2024-01-01"),
-          updatedAt: new Date("2024-01-01"),
-        },
-        {
-          id: "client2",
-          clientCode: "CLT-2024-0002",
-          name: "Digital Innovations",
-          email: "finance@digitalinnovations.com",
-          phone: "+91-87654-32109",
-          company: "Digital Innovations Ltd",
-          address: "456 Innovation Hub, Mumbai, Maharashtra 400001",
-          gstId: "GST987654321",
-          companyAddress:
-            "456 Innovation Hub, Andheri West, Mumbai, Maharashtra 400058",
-          companyWebsite: "https://digitalinnovations.com",
-          companyLinkedin: "https://linkedin.com/company/digital-innovations",
-          companyOwner: "Amit Patel",
-          pocName: "Neha Singh",
-          pocEmail: "neha.singh@digitalinnovations.com",
-          pocContact: "+91-87654-32110",
-          companyLogo: "https://digitalinnovations.com/logo.png",
-          industry: "Digital Marketing",
-          companySize: "small",
-          status: "active",
-          source: "Website",
-          notes: "Startup client with potential for growth",
-          tags: ["startup", "mobile", "marketing"],
-          annualRevenue: 15000000,
-          employeeCount: 25,
-          createdAt: new Date("2024-01-01"),
-          updatedAt: new Date("2024-01-01"),
-        },
-        {
-          id: "client3",
-          clientCode: "CLT-2024-0003",
-          name: "Global Systems",
-          email: "accounts@globalsystems.com",
-          phone: "+91-76543-21098",
-          company: "Global Systems Pvt Ltd",
-          address: "789 Business Park, Delhi, Delhi 110001",
-          gstId: "GST456789123",
-          companyAddress:
-            "789 Business Park, Connaught Place, Delhi, Delhi 110001",
-          companyWebsite: "https://globalsystems.com",
-          companyLinkedin: "https://linkedin.com/company/global-systems",
-          companyOwner: "Vikram Malhotra",
-          pocName: "Rahul Verma",
-          pocEmail: "rahul.verma@globalsystems.com",
-          pocContact: "+91-76543-21099",
-          companyLogo: "https://globalsystems.com/logo.png",
-          industry: "Enterprise Software",
-          companySize: "large",
-          status: "active",
-          source: "Cold Outreach",
-          notes: "Enterprise client with complex requirements",
-          tags: ["enterprise", "cloud", "legacy"],
-          annualRevenue: 200000000,
-          employeeCount: 500,
-          createdAt: new Date("2024-01-01"),
-          updatedAt: new Date("2024-01-01"),
-        },
-      ],
-
-      projects: [
-        {
-          id: "project1",
-          projectCode: "PRJ-2024-0001",
-          name: "E-commerce Platform Development",
-          clientId: "client1", // Derived from client1
-          description:
-            "Full-stack e-commerce platform with payment integration",
-          startDate: new Date("2024-01-15"),
-          status: "active",
-          budget: 2500000,
-          billingTerms: 30,
-          billingRate: 1200, // Standard rate for TechCorp Solutions
-          estimatedHours: 400,
-          gstRate: 18,
-          gstInclusive: false,
-          totalCost: 2950000,
-          costBreakdown: {
-            subtotal: 2500000,
-            gstAmount: 450000,
-            total: 2950000,
-          },
-          createdAt: new Date("2024-01-01"),
-          updatedAt: new Date("2024-01-01"),
-        },
-        {
-          id: "project2",
-          projectCode: "PRJ-2024-0002",
-          name: "Mobile App Development",
-          clientId: "client2", // Derived from client2
-          description: "Cross-platform mobile application for iOS and Android",
-          startDate: new Date("2024-02-01"),
-          status: "active",
-          budget: 1800000,
-          billingTerms: 45,
-          billingRate: 1000, // Standard rate for Digital Innovations
-          estimatedHours: 300,
-          gstRate: 18,
-          gstInclusive: false,
-          totalCost: 2124000,
-          costBreakdown: {
-            subtotal: 1800000,
-            gstAmount: 324000,
-            total: 2124000,
-          },
-          createdAt: new Date("2024-01-01"),
-          updatedAt: new Date("2024-01-01"),
-        },
-        {
-          id: "project3",
-          projectCode: "PRJ-2024-0003",
-          name: "Cloud Migration Project",
-          clientId: "client3", // Derived from client3
-          description: "Legacy system migration to cloud infrastructure",
-          startDate: new Date("2024-03-01"),
-          status: "active",
-          budget: 3200000,
-          billingTerms: 60,
-          billingRate: 1500, // Premium rate for Global Systems (enterprise client)
-          gstRate: 18,
-          gstInclusive: false,
-          totalCost: 3776000,
-          costBreakdown: {
-            subtotal: 3200000,
-            gstAmount: 576000,
-            total: 3776000,
-          },
-          createdAt: new Date("2024-01-01"),
-          updatedAt: new Date("2024-01-01"),
-        },
-      ],
-      invoices: [
-        {
-          id: "invoice1",
-          timesheetId: "timesheet1", // Derived from timesheet1
-          clientId: "client1", // Derived from timesheet1 -> project1 -> client1
-          projectId: "project1", // Derived from timesheet1 -> project1
-          invoiceNumber: "INV-2024-001",
-          issueDate: new Date("2024-01-31"),
-          dueDate: new Date("2024-02-15"),
-          status: "paid",
-          subtotal: 160000, // Derived from timesheet1.totalAmount
-          taxRate: 18,
-          taxAmount: 28800,
-          total: 188800,
-          notes: "January 2024 development services",
-          createdAt: new Date("2024-01-31"),
-          updatedAt: new Date("2024-01-31"),
-        },
-        {
-          id: "invoice2",
-          timesheetId: "timesheet2", // Derived from timesheet2
-          clientId: "client2", // Derived from timesheet2 -> project2 -> client2
-          projectId: "project2", // Derived from timesheet2 -> project2
-          invoiceNumber: "INV-2024-002",
-          issueDate: new Date("2024-02-29"),
-          dueDate: new Date("2024-03-15"),
-          status: "sent",
-          subtotal: 172800, // Derived from timesheet2.totalAmount
-          taxRate: 18,
-          taxAmount: 31104,
-          total: 203904,
-          notes: "February 2024 development services",
-          createdAt: new Date("2024-02-29"),
-          updatedAt: new Date("2024-02-29"),
-        },
-      ],
+      clients: [],
+      projects: [],
+      invoices: [],
       invoiceItems: [],
       invoiceFiles: [],
-      expenses: [
-        {
-          id: "expense1",
-          expenseCode: "EXP-2024-01-0001",
-          category: "Office Rent",
-          description: "Monthly office rent - Bangalore",
-          amount: 50000,
-          date: new Date("2024-01-15"),
-          projectId: "project1",
-          status: "approved",
-          approvedBy: "Admin User",
-          approvedAt: new Date("2024-01-16"),
-          createdAt: new Date("2024-01-01"),
-          updatedAt: new Date("2024-01-01"),
-        },
-        {
-          id: "expense2",
-          expenseCode: "EXP-2024-01-0002",
-          category: "Software Licenses",
-          description: "Annual software licenses - Development tools",
-          amount: 25000,
-          date: new Date("2024-01-20"),
-          projectId: "project2",
-          status: "approved",
-          approvedBy: "Admin User",
-          approvedAt: new Date("2024-01-21"),
-          createdAt: new Date("2024-01-01"),
-          updatedAt: new Date("2024-01-01"),
-        },
-        {
-          id: "expense3",
-          expenseCode: "EXP-2024-01-0003",
-          category: "Travel",
-          description: "Client meeting travel expenses",
-          amount: 15000,
-          date: new Date("2024-01-25"),
-          projectId: "project3",
-          status: "pending",
-          createdAt: new Date("2024-01-01"),
-          updatedAt: new Date("2024-01-01"),
-        },
-        {
-          id: "expense4",
-          expenseCode: "EXP-2024-02-0001",
-          category: "Marketing",
-          description: "Digital marketing campaign",
-          amount: 75000,
-          date: new Date("2024-02-15"),
-          projectId: "project1",
-          status: "approved",
-          approvedBy: "Admin User",
-          approvedAt: new Date("2024-02-16"),
-          createdAt: new Date("2024-01-01"),
-          updatedAt: new Date("2024-01-01"),
-        },
-        {
-          id: "expense5",
-          expenseCode: "EXP-2024-02-0002",
-          category: "Travel",
-          description: "Client meeting travel expenses",
-          amount: 12000,
-          date: new Date("2024-02-28"),
-          projectId: "project2",
-          status: "pending",
-          createdAt: new Date("2024-02-28"),
-          updatedAt: new Date("2024-02-28"),
-        },
-        {
-          id: "expense6",
-          expenseCode: "EXP-2024-03-0001",
-          category: "Equipment",
-          description: "New development laptops",
-          amount: 180000,
-          date: new Date("2024-03-10"),
-          projectId: "project3",
-          status: "approved",
-          approvedBy: "Admin User",
-          approvedAt: new Date("2024-03-11"),
-          createdAt: new Date("2024-03-10"),
-          updatedAt: new Date("2024-03-10"),
-        },
-      ],
-      timesheets: [
-        {
-          id: "timesheet1",
-          timesheetCode: "TMS-2024-01-0001",
-          projectId: "project1", // Derived from project1
-          month: "2024-01",
-          year: 2024,
-          status: "invoiced", // Updated to invoiced since invoice exists
-          totalWorkingDays: 22,
-          daysWorked: 20,
-          daysLeave: 2,
-          hoursPerDay: 8,
-          billingRate: 1000, // Derived from project1.billingRate
-          totalHours: 160,
-          totalAmount: 160000,
-          submittedAt: new Date("2024-01-31"),
-          approvedAt: new Date("2024-02-01"),
-          approvedBy: "admin",
-          invoiceId: "invoice1", // Links to generated invoice
-          invoicedAt: new Date("2024-02-01"),
-          createdAt: new Date("2024-01-01"),
-          updatedAt: new Date("2024-02-01"),
-        },
-        {
-          id: "timesheet2",
-          timesheetCode: "TMS-2024-02-0001",
-          projectId: "project2", // Derived from project2
-          month: "2024-02",
-          year: 2024,
-          status: "invoiced", // Updated to invoiced since invoice exists
-          totalWorkingDays: 20,
-          daysWorked: 18,
-          daysLeave: 2,
-          hoursPerDay: 8,
-          billingRate: 1200, // Derived from project2.billingRate
-          totalHours: 144,
-          totalAmount: 172800,
-          submittedAt: new Date("2024-02-29"),
-          approvedAt: new Date("2024-03-01"),
-          approvedBy: "admin",
-          invoiceId: "invoice2", // Links to generated invoice
-          invoicedAt: new Date("2024-03-01"),
-          createdAt: new Date("2024-02-01"),
-          updatedAt: new Date("2024-03-01"),
-        },
-        {
-          id: "timesheet3",
-          timesheetCode: "TMS-2024-03-0001",
-          projectId: "project3", // Derived from project3
-          month: "2024-03",
-          year: 2024,
-          status: "draft", // Still draft - no invoice generated yet
-          totalWorkingDays: 21,
-          daysWorked: 15,
-          daysLeave: 6,
-          hoursPerDay: 8,
-          billingRate: 1500, // Derived from project3.billingRate
-          totalHours: 120,
-          totalAmount: 180000, // Updated based on project3.billingRate
-          createdAt: new Date("2024-03-01"),
-          updatedAt: new Date("2024-03-15"),
-        },
-      ],
-      timesheetEntries: [
-        {
-          id: "entry1",
-          timesheetId: "timesheet1",
-          date: new Date("2024-01-01"),
-          day: "Monday",
-          task: "Development work on e-commerce platform - API integration",
-          hours: 8,
-          isApproved: true,
-          approvedBy: "admin",
-          approvedAt: new Date("2024-01-02"),
-          createdAt: new Date("2024-01-01"),
-          updatedAt: new Date("2024-01-02"),
-        },
-        {
-          id: "entry2",
-          timesheetId: "timesheet1",
-          date: new Date("2024-01-02"),
-          day: "Tuesday",
-          task: "Testing and bug fixing - Payment module",
-          hours: 8,
-          isApproved: true,
-          approvedBy: "admin",
-          approvedAt: new Date("2024-01-03"),
-          createdAt: new Date("2024-01-02"),
-          updatedAt: new Date("2024-01-03"),
-        },
-        {
-          id: "entry3",
-          timesheetId: "timesheet1",
-          date: new Date("2024-01-03"),
-          day: "Wednesday",
-          task: "Database optimization and performance tuning",
-          hours: 8,
-          isApproved: true,
-          approvedBy: "admin",
-          approvedAt: new Date("2024-01-04"),
-          createdAt: new Date("2024-01-03"),
-          updatedAt: new Date("2024-01-04"),
-        },
-        {
-          id: "entry4",
-          timesheetId: "timesheet2",
-          date: new Date("2024-02-01"),
-          day: "Thursday",
-          task: "UI/UX design work for mobile app - Wireframing",
-          hours: 8,
-          isApproved: false,
-          createdAt: new Date("2024-02-01"),
-          updatedAt: new Date("2024-02-01"),
-        },
-        {
-          id: "entry5",
-          timesheetId: "timesheet2",
-          date: new Date("2024-02-02"),
-          day: "Friday",
-          task: "Research and competitor analysis",
-          hours: 8,
-          isApproved: false,
-          createdAt: new Date("2024-02-02"),
-          updatedAt: new Date("2024-02-02"),
-        },
-        {
-          id: "entry6",
-          timesheetId: "timesheet3",
-          date: new Date("2024-03-01"),
-          day: "Monday",
-          task: "Cloud infrastructure setup and configuration",
-          hours: 8,
-          isApproved: false,
-          createdAt: new Date("2024-03-01"),
-          updatedAt: new Date("2024-03-01"),
-        },
-      ],
-      dailyLogs: [
-        {
-          id: "log1",
-          date: new Date("2024-03-15"),
-          title: "Monthly GST Filing Completed",
-          description:
-            "Successfully filed GST returns for February 2024. All invoices processed and tax calculations verified. Payment of ₹45,000 submitted to government portal.",
-          category: "accounting",
-          priority: "high",
-          tags: ["GST", "tax-filing", "compliance"],
-          createdAt: new Date("2024-03-15"),
-          updatedAt: new Date("2024-03-15"),
-        },
-        {
-          id: "log2",
-          date: new Date("2024-03-14"),
-          title: "New Client Onboarding - TechCorp Solutions",
-          description:
-            "Signed new client contract worth ₹2.5L for 6-month project. Initial payment of ₹50,000 received. Project kickoff scheduled for next week.",
-          category: "important",
-          priority: "high",
-          tags: ["new-client", "contract", "payment"],
-          createdAt: new Date("2024-03-14"),
-          updatedAt: new Date("2024-03-14"),
-        },
-        {
-          id: "log3",
-          date: new Date("2024-03-13"),
-          title: "Office Rent Payment Due",
-          description:
-            "Monthly office rent payment of ₹25,000 due on 20th March. Need to process payment and update expense records.",
-          category: "reminder",
-          priority: "medium",
-          tags: ["rent", "expense", "payment"],
-          createdAt: new Date("2024-03-13"),
-          updatedAt: new Date("2024-03-13"),
-        },
-        {
-          id: "log4",
-          date: new Date("2024-03-12"),
-          title: "Project Milestone - E-commerce Platform",
-          description:
-            "Completed Phase 1 of e-commerce platform development. Client approved deliverables. Invoice for ₹1.2L to be generated this week.",
-          category: "milestone",
-          priority: "high",
-          tags: ["milestone", "project-completion", "invoice"],
-          createdAt: new Date("2024-03-12"),
-          updatedAt: new Date("2024-03-12"),
-        },
-        {
-          id: "log5",
-          date: new Date("2024-03-11"),
-          title: "Bank Reconciliation Completed",
-          description:
-            "March bank statement reconciled. All transactions matched. Outstanding checks cleared. No discrepancies found.",
-          category: "accounting",
-          priority: "medium",
-          tags: ["bank-reconciliation", "reconciliation"],
-          createdAt: new Date("2024-03-11"),
-          updatedAt: new Date("2024-03-11"),
-        },
-      ],
+      expenses: [],
+      timesheets: [],
+      timesheetEntries: [],
+      dailyLogs: [],
 
       addClient: (client) => {
         const newClient: Client = {
@@ -746,7 +282,7 @@ export const useAccountingStore = create<AccountingStore>()(
       updateTimesheetEntry: (id, entry) => {
         set((state) => ({
           timesheetEntries: state.timesheetEntries.map((e) =>
-            e.id === id ? { ...e, ...entry } : e
+            e.id === id ? { ...e, ...entry, updatedAt: new Date() } : e
           ),
         }));
       },
@@ -787,7 +323,9 @@ export const useAccountingStore = create<AccountingStore>()(
           ...item,
           id: generateId(),
         };
-        set((state) => ({ invoiceItems: [...state.invoiceItems, newItem] }));
+        set((state) => ({
+          invoiceItems: [...state.invoiceItems, newItem],
+        }));
       },
 
       updateInvoiceItem: (id, item) => {
@@ -804,24 +342,19 @@ export const useAccountingStore = create<AccountingStore>()(
         }));
       },
 
-      updateInvoiceFile: (id, file) =>
+      updateInvoiceFile: (id, file) => {
         set((state) => ({
-          invoices: state.invoices.map((invoice) =>
-            invoice.id === id
-              ? {
-                  ...invoice,
-                  files: (invoice.files || []).map((f) =>
-                    f.id === id ? { ...f, ...file } : f
-                  ),
-                }
-              : invoice
+          invoiceFiles: state.invoiceFiles.map((f) =>
+            f.id === id ? { ...f, ...file } : f
           ),
-        })),
+        }));
+      },
 
-      deleteInvoiceFile: (id: string) =>
+      deleteInvoiceFile: (id) => {
         set((state) => ({
           invoiceFiles: state.invoiceFiles.filter((f) => f.id !== id),
-        })),
+        }));
+      },
 
       addExpense: (expense) => {
         const newExpense: Expense = {
@@ -872,84 +405,83 @@ export const useAccountingStore = create<AccountingStore>()(
         }));
       },
 
-      // File management functions
-      addTimesheetFile: (timesheetId: string, file: TimesheetFile) =>
+      addTimesheetFile: (timesheetId, file) => {
         set((state) => ({
-          timesheets: state.timesheets.map((timesheet) =>
-            timesheet.id === timesheetId
+          timesheets: state.timesheets.map((t) =>
+            t.id === timesheetId
               ? {
-                  ...timesheet,
-                  files: [...(timesheet.files || []), file],
+                  ...t,
+                  files: [...(t.files || []), file],
                 }
-              : timesheet
+              : t
           ),
-        })),
+        }));
+      },
 
-      removeTimesheetFile: (timesheetId: string, fileId: string) =>
+      removeTimesheetFile: (timesheetId, fileId) => {
         set((state) => ({
-          timesheets: state.timesheets.map((timesheet) =>
-            timesheet.id === timesheetId
+          timesheets: state.timesheets.map((t) =>
+            t.id === timesheetId
               ? {
-                  ...timesheet,
-                  files: (timesheet.files || []).filter(
-                    (file) => file.id !== fileId
-                  ),
+                  ...t,
+                  files: (t.files || []).filter((file) => file.id !== fileId),
                 }
-              : timesheet
+              : t
           ),
-        })),
+        }));
+      },
 
-      addInvoiceFile: (invoiceId: string, file: InvoiceFile) =>
+      addInvoiceFile: (invoiceId, file) => {
         set((state) => ({
-          invoices: state.invoices.map((invoice) =>
-            invoice.id === invoiceId
+          invoices: state.invoices.map((i) =>
+            i.id === invoiceId
               ? {
-                  ...invoice,
-                  files: [...(invoice.files || []), file],
+                  ...i,
+                  files: [...(i.files || []), file],
                 }
-              : invoice
+              : i
           ),
-        })),
+        }));
+      },
 
-      removeInvoiceFile: (invoiceId: string, fileId: string) =>
+      removeInvoiceFile: (invoiceId, fileId) => {
         set((state) => ({
-          invoices: state.invoices.map((invoice) =>
-            invoice.id === invoiceId
+          invoices: state.invoices.map((i) =>
+            i.id === invoiceId
               ? {
-                  ...invoice,
-                  files: (invoice.files || []).filter(
-                    (file) => file.id !== fileId
-                  ),
+                  ...i,
+                  files: (i.files || []).filter((file) => file.id !== fileId),
                 }
-              : invoice
+              : i
           ),
-        })),
+        }));
+      },
 
-      addExpenseFile: (expenseId: string, file: ExpenseFile) =>
+      addExpenseFile: (expenseId, file) => {
         set((state) => ({
-          expenses: state.expenses.map((expense) =>
-            expense.id === expenseId
+          expenses: state.expenses.map((e) =>
+            e.id === expenseId
               ? {
-                  ...expense,
-                  files: [...(expense.files || []), file],
+                  ...e,
+                  files: [...(e.files || []), file],
                 }
-              : expense
+              : e
           ),
-        })),
+        }));
+      },
 
-      removeExpenseFile: (expenseId: string, fileId: string) =>
+      removeExpenseFile: (expenseId, fileId) => {
         set((state) => ({
-          expenses: state.expenses.map((expense) =>
-            expense.id === expenseId
+          expenses: state.expenses.map((e) =>
+            e.id === expenseId
               ? {
-                  ...expense,
-                  files: (expense.files || []).filter(
-                    (file) => file.id !== fileId
-                  ),
+                  ...e,
+                  files: (e.files || []).filter((file) => file.id !== fileId),
                 }
-              : expense
+              : e
           ),
-        })),
+        }));
+      },
 
       getDashboardStats: () => {
         const totalRevenue = get().invoices.reduce((sum, invoice) => {
@@ -1045,57 +577,41 @@ export const useAccountingStore = create<AccountingStore>()(
           throw new Error("Project not found for timesheet.");
         }
 
-        // Use timesheet's calculated amount and billing rate
-        const subtotal = timesheet.totalAmount || 0;
-        const taxRate = 18; // 18% GST
-        const taxAmount = subtotal * (taxRate / 100);
-        const total = subtotal + taxAmount;
+        const client = get().clients.find((c) => c.id === project.clientId);
 
-        const newInvoice: Invoice = {
+        if (!client) {
+          throw new Error("Client not found for project.");
+        }
+
+        const invoice: Invoice = {
           id: generateId(),
-          clientId: project.clientId,
-          projectId: timesheet.projectId,
-          timesheetId: timesheetId,
-          invoiceNumber: `INV-${new Date().getFullYear()}-${String(
-            get().invoices.length + 1
-          ).padStart(3, "0")}`,
+          timesheetId,
+          clientId: client.id,
+          projectId: project.id,
+          invoiceNumber: CodeGenerator.generateInvoiceCode(get().invoices),
           issueDate: new Date(),
-          dueDate: new Date(new Date().setDate(new Date().getDate() + 30)), // 30 days from issue date
-          status: "draft",
-          subtotal,
-          taxRate,
-          taxAmount,
-          total,
-          notes: `Work timesheet for ${project.name} (${timesheet.month}) - ${
-            timesheet.daysWorked
-          } days${timesheet.hoursPerDay ? ` × ${timesheet.hoursPerDay}h` : ""}${
-            timesheet.billingRate ? ` × ₹${timesheet.billingRate}/hr` : ""
-          }`,
+          dueDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // 30 days from now
+          status: "draft" as const,
+          subtotal: timesheet.totalAmount || 0,
+          taxRate: 18,
+          taxAmount: Math.round((timesheet.totalAmount || 0) * 0.18),
+          total: Math.round((timesheet.totalAmount || 0) * 1.18),
+          notes: `Invoice for ${timesheet.month} timesheet`,
           createdAt: new Date(),
           updatedAt: new Date(),
         };
 
-        set((state) => ({
-          invoices: [...state.invoices, newInvoice],
-          // Update timesheet to link to the invoice
-          timesheets: state.timesheets.map((t) =>
-            t.id === timesheetId ? { ...t, invoiceId: newInvoice.id } : t
-          ),
-        }));
-
-        return newInvoice;
+        return invoice;
       },
 
       getDailyLogsByDate: (date) => {
-        const targetDate = new Date(date);
-        targetDate.setHours(0, 0, 0, 0);
-        const nextDate = new Date(targetDate);
-        nextDate.setDate(nextDate.getDate() + 1);
-
         return get().dailyLogs.filter((log) => {
           const logDate = new Date(log.date);
-          logDate.setHours(0, 0, 0, 0);
-          return logDate >= targetDate && logDate < nextDate;
+          return (
+            logDate.getDate() === date.getDate() &&
+            logDate.getMonth() === date.getMonth() &&
+            logDate.getFullYear() === date.getFullYear()
+          );
         });
       },
 
@@ -1133,9 +649,80 @@ export const useAccountingStore = create<AccountingStore>()(
         if (!invoice) return undefined;
         return get().timesheets.find((t) => t.id === invoice.timesheetId);
       },
+
+      // Clear all data (for reset functionality)
+      clearAllData: () =>
+        set(() => ({
+          clients: [],
+          projects: [],
+          timesheets: [],
+          invoices: [],
+          expenses: [],
+          dailyLogs: [],
+          companyProfile: {
+            id: "",
+            name: "",
+            legalName: "",
+            email: "",
+            phone: "",
+            website: "",
+            address: "",
+            city: "",
+            state: "",
+            pincode: "",
+            country: "",
+            gstNumber: "",
+            panNumber: "",
+            cinNumber: "",
+            logo: "",
+            description: "",
+            foundedYear: 0,
+            industry: "",
+            companySize: "startup" as const,
+            annualRevenue: 0,
+            employeeCount: 0,
+            bankDetails: {
+              accountNumber: "",
+              ifscCode: "",
+              bankName: "",
+              branch: "",
+            },
+            contactPerson: {
+              name: "",
+              email: "",
+              phone: "",
+              designation: "",
+            },
+            socialMedia: {
+              linkedin: "",
+              twitter: "",
+              facebook: "",
+              instagram: "",
+            },
+            createdAt: new Date(),
+            updatedAt: new Date(),
+          },
+        })),
+
+      // Replace all data (for import functionality)
+      replaceAllData: (data: Partial<AccountingStore>) => {
+        set((state) => ({
+          ...state,
+          ...data,
+        }));
+      },
     }),
     {
-      name: "accounting-store",
+      name: "bst-accounting-store",
+      partialize: (state) => ({
+        clients: state.clients,
+        projects: state.projects,
+        timesheets: state.timesheets,
+        invoices: state.invoices,
+        expenses: state.expenses,
+        dailyLogs: state.dailyLogs,
+        companyProfile: state.companyProfile,
+      }),
     }
   )
 );

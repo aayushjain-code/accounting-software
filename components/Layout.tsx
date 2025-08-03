@@ -17,6 +17,7 @@ import {
   ArrowRightOnRectangleIcon,
   SunIcon,
   MoonIcon,
+  ArchiveBoxIcon,
 } from "@heroicons/react/24/outline";
 import { useTheme } from "@/hooks/useTheme";
 import Link from "next/link";
@@ -33,7 +34,11 @@ const navigation = [
   { name: "Expenses", href: "/expenses", icon: ReceiptRefundIcon },
   { name: "Daily Logs", href: "/daily-logs", icon: DocumentTextIcon },
   { name: "Kanban", href: "/kanban", icon: ViewColumnsIcon },
-  { name: "Reports", href: "/reports", icon: ChartBarIcon },
+  {
+    name: "Storage Management",
+    href: "/storage-management",
+    icon: ArchiveBoxIcon,
+  },
 ];
 
 export default function Layout({ children }: { children: React.ReactNode }) {
@@ -65,7 +70,9 @@ export default function Layout({ children }: { children: React.ReactNode }) {
               <h1 className="text-xl font-bold text-gray-900 dark:text-white">
                 BST
               </h1>
-              <p className="text-xs text-gray-500 dark:text-gray-400">Accounting Management</p>
+              <p className="text-xs text-gray-500 dark:text-gray-400">
+                Accounting Management
+              </p>
             </div>
           </div>
 
@@ -79,8 +86,12 @@ export default function Layout({ children }: { children: React.ReactNode }) {
                 <UserIcon className="h-5 w-5 text-primary-600 dark:text-primary-400" />
               </div>
               <div className="hidden sm:block text-left">
-                <p className="text-sm font-medium text-gray-900 dark:text-white">Admin User</p>
-                <p className="text-xs text-gray-500 dark:text-gray-400">admin@bst.com</p>
+                <p className="text-sm font-medium text-gray-900 dark:text-white">
+                  Admin User
+                </p>
+                <p className="text-xs text-gray-500 dark:text-gray-400">
+                  admin@bst.com
+                </p>
               </div>
             </button>
 
@@ -102,12 +113,12 @@ export default function Layout({ children }: { children: React.ReactNode }) {
                   }}
                   className="flex items-center w-full px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700"
                 >
-                  {theme === 'light' ? (
+                  {theme === "light" ? (
                     <MoonIcon className="h-4 w-4 mr-3" />
                   ) : (
                     <SunIcon className="h-4 w-4 mr-3" />
                   )}
-                  {theme === 'light' ? 'Dark Mode' : 'Light Mode'}
+                  {theme === "light" ? "Dark Mode" : "Light Mode"}
                 </button>
                 <button
                   onClick={() => {
@@ -142,7 +153,9 @@ export default function Layout({ children }: { children: React.ReactNode }) {
               <h1 className="text-xl font-semibold text-gray-900 dark:text-white">
                 BST
               </h1>
-              <p className="text-xs text-gray-500 dark:text-gray-400">Accounting Management</p>
+              <p className="text-xs text-gray-500 dark:text-gray-400">
+                Accounting Management
+              </p>
             </div>
             <button
               onClick={() => setSidebarOpen(false)}
@@ -190,7 +203,9 @@ export default function Layout({ children }: { children: React.ReactNode }) {
               <h1 className="text-xl font-semibold text-gray-900 dark:text-white">
                 BST
               </h1>
-              <p className="text-xs text-gray-500 dark:text-gray-400">Accounting Management</p>
+              <p className="text-xs text-gray-500 dark:text-gray-400">
+                Accounting Management
+              </p>
             </div>
           </div>
           <nav className="flex-1 space-y-1 px-2 py-4">

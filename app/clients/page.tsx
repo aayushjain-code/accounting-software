@@ -3,6 +3,7 @@
 import { useState, useMemo, useCallback, useEffect } from "react";
 import { useAccountingStore } from "@/store";
 import { Client } from "@/types";
+import { ReceiptRefundIcon } from "@heroicons/react/24/outline";
 import {
   PlusIcon,
   PencilIcon,
@@ -279,7 +280,7 @@ const ClientCard = React.memo(
 ClientCard.displayName = "ClientCard";
 
 export default function ClientsPage() {
-  const { clients, addClient, updateClient, deleteClient } =
+  const { clients, addClient, updateClient, deleteClient, invoices } =
     useAccountingStore();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingClient, setEditingClient] = useState<Client | null>(null);
@@ -311,20 +312,6 @@ export default function ClientsPage() {
     initialPageSize: 12,
     enableVirtualScroll: false,
   });
-
-  // Cache client statistics
-  const clientStats = useCache(
-    "client-stats",
-    async () => {
-      return {
-        total: clients.length,
-        active: clients.filter((c) => c.status === "active").length,
-        prospect: clients.filter((c) => c.status === "prospect").length,
-        lead: clients.filter((c) => c.status === "lead").length,
-      };
-    },
-    { ttl: 2 * 60 * 1000 }
-  ); // 2 minutes cache
 
   // Memoized filtered clients by status
   const clientsByStatus = useMemo(() => {
@@ -471,6 +458,17 @@ export default function ClientsPage() {
             <p className="text-gray-600 dark:text-gray-400 mt-2">
               Manage your client relationships and business partnerships
             </p>
+            <div className="flex items-center space-x-4 mt-3">
+              <div className="flex items-center space-x-2 text-sm text-gray-600 dark:text-gray-400">
+                <ReceiptRefundIcon className="h-4 w-4 text-primary-600" />
+                <span>
+                  <span className="font-semibold text-primary-600">
+                    {invoices.length}
+                  </span>{" "}
+                  Invoices
+                </span>
+              </div>
+            </div>
           </div>
           <ActionTooltip
             content="Add New Client"
@@ -484,89 +482,6 @@ export default function ClientsPage() {
               Add Client
             </button>
           </ActionTooltip>
-        </div>
-      </div>
-
-      {/* Stats Cards with Caching */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm font-medium text-gray-600 dark:text-gray-400">
-                Total Clients
-              </p>
-              <p className="text-2xl font-bold text-primary-600 dark:text-primary-400 mt-1">
-                {clientStats.loading ? (
-                  <div className="animate-pulse bg-gray-200 dark:bg-gray-700 h-8 w-16 rounded"></div>
-                ) : (
-                  clientStats.data?.total || clients.length
-                )}
-              </p>
-            </div>
-            <div className="p-3 bg-primary-100 dark:bg-primary-900 rounded-lg">
-              <BuildingOfficeIcon className="h-6 w-6 text-primary-600 dark:text-primary-400" />
-            </div>
-          </div>
-        </div>
-        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm font-medium text-gray-600 dark:text-gray-400">
-                Active Clients
-              </p>
-              <p className="text-2xl font-bold text-green-600 dark:text-green-400 mt-1">
-                {clientStats.loading ? (
-                  <div className="animate-pulse bg-gray-200 dark:bg-gray-700 h-8 w-16 rounded"></div>
-                ) : (
-                  clientStats.data?.active ||
-                  clients.filter((c) => c.status === "active").length
-                )}
-              </p>
-            </div>
-            <div className="p-3 bg-green-100 dark:bg-green-900 rounded-lg">
-              <UserIcon className="h-6 w-6 text-green-600 dark:text-green-400" />
-            </div>
-          </div>
-        </div>
-        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm font-medium text-gray-600 dark:text-gray-400">
-                Prospects
-              </p>
-              <p className="text-2xl font-bold text-blue-600 dark:text-blue-400 mt-1">
-                {clientStats.loading ? (
-                  <div className="animate-pulse bg-gray-200 dark:bg-gray-700 h-8 w-16 rounded"></div>
-                ) : (
-                  clientStats.data?.prospect ||
-                  clients.filter((c) => c.status === "prospect").length
-                )}
-              </p>
-            </div>
-            <div className="p-3 bg-blue-100 dark:bg-blue-900 rounded-lg">
-              <EyeIcon className="h-6 w-6 text-blue-600 dark:text-blue-400" />
-            </div>
-          </div>
-        </div>
-        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm font-medium text-gray-600 dark:text-gray-400">
-                Leads
-              </p>
-              <p className="text-2xl font-bold text-yellow-600 dark:text-yellow-400 mt-1">
-                {clientStats.loading ? (
-                  <div className="animate-pulse bg-gray-200 dark:bg-gray-700 h-8 w-16 rounded"></div>
-                ) : (
-                  clientStats.data?.lead ||
-                  clients.filter((c) => c.status === "lead").length
-                )}
-              </p>
-            </div>
-            <div className="p-3 bg-yellow-100 dark:bg-yellow-900 rounded-lg">
-              <TagIcon className="h-6 w-6 text-yellow-600 dark:text-yellow-400" />
-            </div>
-          </div>
         </div>
       </div>
 

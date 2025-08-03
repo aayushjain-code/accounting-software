@@ -1,51 +1,99 @@
 {
   "name": "accounting-software",
   "version": "1.0.0",
-  "description": "Complete accounting software for Indian staff augmentation company",
-  "private": true,
+  "description": "BST Accounting Management System - Desktop App",
+  "main": "electron/main.js",
+  "homepage": "./",
   "scripts": {
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "export": "next export",
-    "type-check": "tsc --noEmit"
+    "electron": "electron .",
+    "electron-dev": "concurrently \"npm run dev\" \"wait-on http://localhost:3000 && NODE_ENV=development electron .\"",
+    "electron-pack": "npm run build && electron-builder",
+    "electron-dist": "npm run build && electron-builder --publish=never",
+    "postinstall": "electron-builder install-app-deps && @electron/rebuild"
   },
   "dependencies": {
-    "@heroicons/react": "^2.1.1",
-    "clsx": "^2.1.1",
-    "date-fns": "^3.3.1",
-    "lucide-react": "^0.344.0",
-    "next": "14.2.30",
-    "react": "^18",
-    "react-dom": "^18",
-    "react-hot-toast": "^2.4.1",
-    "zustand": "^4.5.0"
-  },
-  "devDependencies": {
+    "@heroicons/react": "^2.0.18",
+    "@types/better-sqlite3": "^7.6.13",
     "@types/node": "^20",
     "@types/react": "^18",
     "@types/react-dom": "^18",
-    "autoprefixer": "^10.0.1",
-    "eslint": "^8",
-    "eslint-config-next": "14.2.30",
-    "postcss": "^8",
-    "tailwindcss": "^3.3.0",
-    "typescript": "^5.9.2"
+    "autoprefixer": "^10.4.21",
+    "better-sqlite3": "^12.2.0",
+    "clsx": "^2.1.1",
+    "date-fns": "^2.30.0",
+    "electron-store": "^8.2.0",
+    "lucide-react": "^0.536.0",
+    "next": "14.2.30",
+    "postcss": "^8.5.6",
+    "react": "^18",
+    "react-dom": "^18",
+    "react-hot-toast": "^2.4.1",
+    "tailwindcss": "^3.4.17",
+    "typescript": "^5",
+    "zustand": "^4.4.7"
   },
-  "engines": {
-    "node": ">=18.0.0",
-    "npm": ">=8.0.0"
+  "devDependencies": {
+    "@electron/rebuild": "^3.7.2",
+    "@types/electron": "^1.6.12",
+    "concurrently": "^8.2.2",
+    "electron": "^28.3.3",
+    "electron-builder": "^24.13.3",
+    "electron-rebuild": "^3.2.9",
+    "wait-on": "^7.2.0"
+  },
+  "build": {
+    "appId": "com.bst.accounting",
+    "productName": "BST Accounting System",
+    "directories": {
+      "output": "dist"
+    },
+    "files": [
+      "electron/**/*",
+      "out/**/*",
+      "package.json"
+    ],
+    "mac": {
+      "category": "public.app-category.business",
+      "icon": "assets/icon.icns"
+    },
+    "win": {
+      "icon": "assets/icon.ico",
+      "target": [
+        {
+          "target": "nsis",
+          "arch": [
+            "x64"
+          ]
+        }
+      ]
+    },
+    "linux": {
+      "icon": "assets/icon.png",
+      "target": [
+        {
+          "target": "AppImage",
+          "arch": [
+            "x64"
+          ]
+        }
+      ]
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true
+    }
   },
   "keywords": [
     "accounting",
+    "business",
     "finance",
-    "nextjs",
-    "react",
-    "typescript",
-    "india",
-    "business"
+    "desktop",
+    "electron"
   ],
-  "author": "Aayush Jain",
+  "author": "BST Accounting",
   "license": "MIT"
 }

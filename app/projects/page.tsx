@@ -51,7 +51,6 @@ export default function ProjectsPage() {
     // Calculate cost breakdown
     const subtotal = budget;
     const gstAmount = (subtotal * gstRate) / 100;
-    const total = subtotal + gstAmount;
 
     const projectData = {
       projectCode: formData.projectCode,

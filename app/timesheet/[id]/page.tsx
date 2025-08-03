@@ -19,12 +19,7 @@ import { format } from "date-fns";
 import toast from "react-hot-toast";
 import { Timesheet, Project, TimesheetFile } from "@/types";
 import { formatCurrency } from "@/utils/helpers";
-import { ConfirmationDialog } from "@/components/ConfirmationDialog";
 import { ActionTooltip, IconTooltip } from "@/components/Tooltip";
-import {
-  InformationCircleIcon,
-  QuestionMarkCircleIcon,
-} from "@heroicons/react/24/outline";
 import Link from "next/link";
 import FileUpload from "@/components/FileUpload";
 import FileList from "@/components/FileList";

@@ -9,14 +9,10 @@ import {
   CheckIcon,
   XMarkIcon,
   DocumentTextIcon,
-  CalendarIcon,
   ClockIcon,
-  UserIcon,
-  FolderIcon,
   CurrencyRupeeIcon,
   CalculatorIcon,
   MagnifyingGlassIcon,
-  FunnelIcon,
 } from "@heroicons/react/24/outline";
 import {
   format,
@@ -28,13 +24,9 @@ import {
 import toast from "react-hot-toast";
 import { Timesheet, Project } from "@/types";
 import { useSearch } from "@/hooks/useSearch";
-import { formatCurrency, getStatusColor } from "@/utils/helpers";
+import { formatCurrency } from "@/utils/helpers";
 import { ConfirmationDialog } from "@/components/ConfirmationDialog";
-import { ActionTooltip, IconTooltip } from "@/components/Tooltip";
-import {
-  InformationCircleIcon,
-  QuestionMarkCircleIcon,
-} from "@heroicons/react/24/outline";
+import { ActionTooltip, IconTooltip, Tooltip } from "@/components/Tooltip";
 import Modal from "@/components/Modal";
 import FileUpload from "@/components/FileUpload";
 import FileList from "@/components/FileList";
@@ -885,10 +877,16 @@ export default function TimesheetPage() {
   }, [timesheets]);
 
   const handleSubmit = React.useCallback(
-    (formData: any) => {
+    (formData: Record<string, unknown>) => {
       const timesheetData = {
-        ...formData,
-        status: formData.status || "draft",
+        projectId: formData.projectId as string,
+        month: formData.month as string,
+        daysWorked: formData.daysWorked as number,
+        hoursPerDay: formData.hoursPerDay as number,
+        billingRate: formData.billingRate as number,
+        totalWorkingDays: formData.totalWorkingDays as number,
+        totalAmount: formData.totalAmount as number,
+        status: "draft" as const,
       };
 
       if (editingTimesheet) {

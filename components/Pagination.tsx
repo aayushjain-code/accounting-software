@@ -198,7 +198,6 @@ export const InfiniteScrollPagination: React.FC<
 // Virtual scroll container component
 interface VirtualScrollContainerProps {
   totalHeight: number;
-  itemHeight: number;
   onScroll: (e: React.UIEvent<HTMLDivElement>) => void;
   children: React.ReactNode;
   className?: string;
@@ -206,7 +205,6 @@ interface VirtualScrollContainerProps {
 
 export const VirtualScrollContainer: React.FC<VirtualScrollContainerProps> = ({
   totalHeight,
-  itemHeight,
   onScroll,
   children,
   className = "",

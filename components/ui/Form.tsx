@@ -73,20 +73,20 @@ export const Form: React.FC<FormProps> = ({
             // For number fields, convert to number first
             const numValue = typeof value === "string" ? parseFloat(value) : value;
             // Cast validation function to accept any type
-            const validationFn = validation as (value: any) => boolean | string;
+            const validationFn = validation as (value: unknown) => boolean | string;
             result = validationFn(numValue);
           } else if (field.type === "checkbox") {
             // For checkbox fields, ensure boolean
             const boolValue = typeof value === "boolean" ? value : Boolean(value);
-            const validationFn = validation as (value: any) => boolean | string;
+            const validationFn = validation as (value: unknown) => boolean | string;
             result = validationFn(boolValue);
           } else {
             // For text fields, ensure string
             const strValue = typeof value === "string" ? value : String(value);
-            const validationFn = validation as (value: any) => boolean | string;
+            const validationFn = validation as (value: unknown) => boolean | string;
             result = validationFn(strValue);
           }
-        } catch (error) {
+        } catch {
           result = "Invalid value";
         }
         
@@ -103,12 +103,12 @@ export const Form: React.FC<FormProps> = ({
     e.preventDefault();
     
     // Validate all fields
-    const validationRulesMap: Record<string, (value: any) => boolean | string> = {};
+    const validationRulesMap: Record<string, (value: unknown) => boolean | string> = {};
     fields.forEach(field => {
       if (field.validation) {
         validationRulesMap[field.name] = field.validation;
       } else if (field.required) {
-        validationRulesMap[field.name] = (value: any) => {
+        validationRulesMap[field.name] = (value: unknown) => {
           try {
             if (field.type === "checkbox") {
               const boolValue = typeof value === "boolean" ? value : Boolean(value);
@@ -120,7 +120,7 @@ export const Form: React.FC<FormProps> = ({
               const strValue = typeof value === "string" ? value : String(value);
               return validateRequired(strValue) || "This field is required";
             }
-          } catch (error) {
+          } catch {
             return "This field is required";
           }
         };

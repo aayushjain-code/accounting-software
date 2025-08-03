@@ -227,7 +227,6 @@ export default function KanbanPage() {
     updateTimesheet,
     updateInvoice,
   } = useAccountingStore();
-  const [draggedItem, setDraggedItem] = useState<string | null>(null);
 
   const kanbanItems = useMemo(() => {
     const items: KanbanItem[] = [];

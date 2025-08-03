@@ -80,7 +80,7 @@ const FileUpload: React.FC<FileUploadProps> = ({
 
       onFilesChange([...files, ...validFiles]);
     },
-    [files, onFilesChange, maxFiles, maxSize, acceptedTypes, validateFile]
+    [files, onFilesChange, maxFiles, validateFile]
   );
 
   const handleDragOver = useCallback((e: React.DragEvent) => {

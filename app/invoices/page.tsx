@@ -164,32 +164,27 @@ export default function InvoicesPage() {
   };
 
   const handleFileUpload = async () => {
-    if (uploadedFiles.length === 0 || !editingInvoice) return;
+    if (uploadedFiles.length === 0) {
+      toast.error("Please select files to upload");
+      return;
+    }
 
     setIsUploading(true);
     try {
-      // Simulate file upload
       for (const file of uploadedFiles) {
-        const fileData: InvoiceFile = {
-          id: `file_${Date.now()}_${Math.random()}`,
-          invoiceId: editingInvoice.id,
-          fileName: `invoice_${editingInvoice.id}_${file.name}`,
-          originalName: file.name,
-          fileSize: file.size,
-          fileType: file.type || `.${file.name.split(".").pop()}`,
-          uploadDate: new Date(),
-          uploadedBy: "Admin User",
-          filePath: `/uploads/invoices/${file.name}`,
-          createdAt: new Date(),
-          updatedAt: new Date(),
+        const fileData = {
+          name: file.name,
+          size: file.size,
+          type: file.type,
+          lastModified: file.lastModified,
         };
 
-        addInvoiceFile(editingInvoice.id, fileData);
+        addInvoiceFile(editingInvoice?.id || "temp", fileData);
       }
 
+      toast.success("Files uploaded successfully");
       setUploadedFiles([]);
-      toast.success("Files uploaded successfully!");
-    } catch (error) {
+    } catch {
       toast.error("Failed to upload files");
     } finally {
       setIsUploading(false);

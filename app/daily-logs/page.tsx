@@ -156,8 +156,15 @@ const LogCard = React.memo(({ log, onEdit, onDelete }: LogCardProps) => {
 LogCard.displayName = "LogCard";
 
 // Log Modal Component
+interface LogModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  editingLog: DailyLog | null;
+  onSubmit: (data: Omit<DailyLog, "id" | "createdAt" | "updatedAt">) => void;
+}
+
 const LogModal = React.memo(
-  ({ isOpen, onClose, editingLog, onSubmit }: any) => {
+  ({ isOpen, onClose, editingLog, onSubmit }: LogModalProps) => {
     const [formData, setFormData] = useState({
       title: "",
       description: "",
@@ -466,7 +473,7 @@ export default function DailyLogsPage() {
     };
   }, [dailyLogs]);
 
-  const handleSubmit = (data: any) => {
+  const handleSubmit = (data: Omit<DailyLog, "id" | "createdAt" | "updatedAt">) => {
     if (editingLog) {
       updateDailyLog(editingLog.id, data);
     } else {

@@ -141,15 +141,18 @@ export const Tooltip: React.FC<TooltipProps> = ({
   useEffect(() => {
     if (isVisible) {
       updatePosition();
-      window.addEventListener("scroll", updatePosition);
-      window.addEventListener("resize", updatePosition);
-
+      const handleScroll = () => updatePosition();
+      const handleResize = () => updatePosition();
+      
+      window.addEventListener("scroll", handleScroll, true);
+      window.addEventListener("resize", handleResize);
+      
       return () => {
-        window.removeEventListener("scroll", updatePosition);
-        window.removeEventListener("resize", updatePosition);
+        window.removeEventListener("scroll", handleScroll, true);
+        window.removeEventListener("resize", handleResize);
       };
     }
-  }, [isVisible]);
+  }, [isVisible, updatePosition]);
 
   useEffect(() => {
     return () => {
@@ -214,7 +217,6 @@ interface IconTooltipProps {
   content: string;
   icon?: React.ComponentType<{ className?: string }>;
   position?: "top" | "bottom" | "left" | "right";
-  variant?: "info" | "warning" | "success" | "danger";
   className?: string;
 }
 
@@ -223,7 +225,6 @@ export const IconTooltip: React.FC<IconTooltipProps> = ({
   content,
   icon: Icon,
   position = "top",
-  variant = "info",
   className = "",
 }) => {
   return (

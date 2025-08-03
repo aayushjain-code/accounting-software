@@ -1,6 +1,5 @@
 import React from "react";
 import { TrashIcon, EyeIcon } from "@heroicons/react/24/outline";
-import { formatFileSize } from "@/utils/helpers";
 import { TimesheetFile, InvoiceFile, ExpenseFile } from "@/types";
 
 interface FileListProps {

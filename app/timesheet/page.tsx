@@ -180,13 +180,13 @@ const TimesheetRow = React.memo(
         className="hover:bg-gray-50 transition-colors duration-200 border-b border-gray-100"
       >
         <td className="px-6 py-4">
-          <div className="space-y-1">
-            <span className="font-mono font-semibold text-primary-700 bg-primary-50 dark:bg-primary-900 px-4 py-2 rounded-md border border-primary-200 dark:border-primary-800">
+          <div className="flex items-center space-x-2">
+            <span className="font-mono font-semibold text-primary-700 bg-primary-50 dark:bg-primary-900 px-2.5 py-1 rounded-md border border-primary-200 dark:border-primary-800 text-xs">
               {project?.projectCode || "N/A"}
             </span>
-            <div className="text-xs text-gray-500 dark:text-gray-400">
+            <span className="font-mono text-xs text-gray-500 dark:text-gray-400 bg-gray-100 dark:bg-gray-800 px-2 py-0.5 rounded border border-gray-200 dark:border-gray-700">
               {timesheet.timesheetCode}
-            </div>
+            </span>
           </div>
         </td>
         <td className="px-6 py-4">
@@ -523,7 +523,11 @@ const TimesheetModal = React.memo(
               <option value="">Select project</option>
               {projects.map((project) => (
                 <option key={project.id} value={project.id}>
-                  {project.name} - ₹{project.budget.toLocaleString()}
+                  {project.name} - ₹
+                  {project.budget.toLocaleString("en-IN", {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2,
+                  })}
                 </option>
               ))}
             </select>
@@ -708,7 +712,11 @@ const TimesheetModal = React.memo(
                   Project Budget
                 </p>
                 <p className="text-sm font-semibold text-gray-900 mt-1">
-                  ₹{selectedProject.budget.toLocaleString()}
+                  ₹
+                  {selectedProject.budget.toLocaleString("en-IN", {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2,
+                  })}
                 </p>
               </div>
               <div className="bg-white p-3 rounded-lg">
@@ -721,7 +729,10 @@ const TimesheetModal = React.memo(
                     ? (
                         selectedProject.budget /
                         parseInt(formData.totalWorkingDays)
-                      ).toLocaleString()
+                      ).toLocaleString("en-IN", {
+                        minimumFractionDigits: 2,
+                        maximumFractionDigits: 2,
+                      })
                     : 0}
                   /day
                 </p>
@@ -739,7 +750,11 @@ const TimesheetModal = React.memo(
                   Calculated Amount
                 </p>
                 <p className="text-sm font-semibold text-primary-600 mt-1">
-                  ₹{calculatedAmount.toLocaleString()}
+                  ₹
+                  {calculatedAmount.toLocaleString("en-IN", {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2,
+                  })}
                 </p>
               </div>
             </div>
@@ -974,7 +989,7 @@ export default function TimesheetPage() {
             <thead className="bg-gray-50 dark:bg-gray-800">
               <tr>
                 <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
-                  Project Code
+                  Codes
                 </th>
                 <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
                   Project

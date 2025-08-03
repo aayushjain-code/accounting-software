@@ -128,7 +128,13 @@ const KanbanCard = ({
         {item.amount && (
           <div className="flex items-center space-x-1 text-xs font-medium text-gray-900 dark:text-white">
             <CurrencyRupeeIcon className="h-3 w-3 text-green-600" />
-            <span>₹{item.amount.toLocaleString()}</span>
+            <span>
+              ₹
+              {item.amount.toLocaleString("en-IN", {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2,
+              })}
+            </span>
           </div>
         )}
       </div>
@@ -261,7 +267,11 @@ export default function KanbanPage() {
         title: `Timesheet - ${project?.name || "Unknown Project"}`,
         description: `${timesheet.daysWorked} days${
           timesheet.hoursPerDay ? ` × ${timesheet.hoursPerDay}h` : ""
-        }${timesheet.billingRate ? ` × ₹${timesheet.billingRate}/hr` : ""}`,
+        }${
+          timesheet.billingRate
+            ? ` × ₹${timesheet.billingRate.toFixed(2)}/hr`
+            : ""
+        }`,
         status,
         amount: timesheet.totalAmount,
         date: new Date(timesheet.month),

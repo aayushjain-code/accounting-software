@@ -224,7 +224,11 @@ const ClientCard = React.memo(
                 </span>
               </div>
               <div className="text-sm font-semibold text-green-800 mt-1">
-                ₹{client.annualRevenue.toLocaleString()}
+                ₹
+                {client.annualRevenue.toLocaleString("en-IN", {
+                  minimumFractionDigits: 2,
+                  maximumFractionDigits: 2,
+                })}
               </div>
             </div>
           )}

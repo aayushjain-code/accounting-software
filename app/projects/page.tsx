@@ -253,11 +253,15 @@ export default function ProjectsPage() {
                     <td>
                       <div className="space-y-1">
                         <div className="font-medium text-gray-900 dark:text-white">
-                          ₹{project.budget.toLocaleString()}
+                          ₹
+                          {project.budget.toLocaleString("en-IN", {
+                            minimumFractionDigits: 2,
+                            maximumFractionDigits: 2,
+                          })}
                         </div>
                         <div className="text-xs text-gray-500 dark:text-gray-400">
                           {project.billingRate
-                            ? `₹${project.billingRate}/hr × `
+                            ? `₹${project.billingRate.toFixed(2)}/hr × `
                             : ""}
                           {project.estimatedHours
                             ? `${project.estimatedHours} hrs`
@@ -268,7 +272,14 @@ export default function ProjectsPage() {
                     <td>
                       <div className="space-y-1">
                         <div className="font-medium text-gray-900 dark:text-white">
-                          ₹{project.costBreakdown.gstAmount.toLocaleString()}
+                          ₹
+                          {project.costBreakdown.gstAmount.toLocaleString(
+                            "en-IN",
+                            {
+                              minimumFractionDigits: 2,
+                              maximumFractionDigits: 2,
+                            }
+                          )}
                         </div>
                         <div className="text-xs text-gray-500 dark:text-gray-400">
                           {project.gstRate}%{" "}
@@ -277,7 +288,11 @@ export default function ProjectsPage() {
                       </div>
                     </td>
                     <td className="font-medium text-green-600 dark:text-green-400">
-                      ₹{project.totalCost.toLocaleString()}
+                      ₹
+                      {project.totalCost.toLocaleString("en-IN", {
+                        minimumFractionDigits: 2,
+                        maximumFractionDigits: 2,
+                      })}
                     </td>
                     <td>
                       <span

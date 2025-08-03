@@ -168,7 +168,7 @@ const WorkCalculationCard = React.memo(
                   <div className="flex items-center justify-between">
                     <span className="text-sm text-gray-600">Billing Rate:</span>
                     <span className="font-semibold text-gray-900">
-                      ₹{timesheet.billingRate}/hr
+                      ₹{timesheet.billingRate.toFixed(2)}/hr
                     </span>
                   </div>
                 )}
@@ -191,7 +191,8 @@ const WorkCalculationCard = React.memo(
               <div className="text-sm opacity-80 mt-2">
                 {timesheet.daysWorked} days
                 {timesheet.hoursPerDay && ` × ${timesheet.hoursPerDay}h`}
-                {timesheet.billingRate && ` × ₹${timesheet.billingRate}/hr`}
+                {timesheet.billingRate &&
+                  ` × ₹${timesheet.billingRate.toFixed(2)}/hr`}
               </div>
             </div>
             <div className="p-4 bg-white bg-opacity-20 rounded-xl">
@@ -428,7 +429,7 @@ export default function TimesheetDetailPage({
           fileName: `timesheet_${timesheet!.id}_${file.name}`,
           originalName: file.name,
           fileSize: file.size,
-          fileType: file.type || `.${file.name.split('.').pop()}`,
+          fileType: file.type || `.${file.name.split(".").pop()}`,
           uploadDate: new Date(),
           uploadedBy: "Admin User",
           filePath: `/uploads/timesheets/${file.name}`,
@@ -546,9 +547,10 @@ export default function TimesheetDetailPage({
               <div className="flex items-center justify-between p-4 bg-green-50 rounded-lg">
                 <span className="text-sm text-gray-600">Utilization:</span>
                 <span className="font-semibold text-gray-900">
-                  {Math.round(
-                    (timesheet.daysWorked / timesheet.totalWorkingDays) * 100
-                  )}
+                  {(
+                    (timesheet.daysWorked / timesheet.totalWorkingDays) *
+                    100
+                  ).toFixed(2)}
                   %
                 </span>
               </div>
@@ -613,9 +615,18 @@ export default function TimesheetDetailPage({
           maxSize={10}
           title="Upload Timesheet Files"
           description="Upload supporting documents, receipts, or other files related to this timesheet"
-          acceptedTypes={[".pdf", ".doc", ".docx", ".xls", ".xlsx", ".jpg", ".jpeg", ".png"]}
+          acceptedTypes={[
+            ".pdf",
+            ".doc",
+            ".docx",
+            ".xls",
+            ".xlsx",
+            ".jpg",
+            ".jpeg",
+            ".png",
+          ]}
         />
-        
+
         {uploadedFiles.length > 0 && (
           <div className="mt-4 flex justify-end">
             <button

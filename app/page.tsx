@@ -36,8 +36,12 @@ const StatCard = React.memo(
           <Icon className={`h-8 w-8 ${color}`} />
         </div>
         <div className="ml-4">
-          <p className="text-sm font-medium text-gray-600 dark:text-gray-400">{title}</p>
-          <p className="text-2xl font-semibold text-gray-900 dark:text-white">{value}</p>
+          <p className="text-sm font-medium text-gray-600 dark:text-gray-400">
+            {title}
+          </p>
+          <p className="text-2xl font-semibold text-gray-900 dark:text-white">
+            {value}
+          </p>
         </div>
       </div>
     </div>
@@ -108,7 +112,7 @@ const ProjectItem = React.memo(
       </div>
       <div className="text-right">
         <p className="text-sm font-medium text-gray-900">
-          {formatCurrency(project.billingTerms)}/hr
+          ₹{project.billingTerms.toFixed(2)}/hr
         </p>
         <CheckCircleIcon className="h-4 w-4 text-success-600" />
       </div>
@@ -175,8 +179,12 @@ export default function Dashboard() {
     <div className="space-y-6">
       {/* Header */}
       <div>
-        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Dashboard</h1>
-        <p className="text-gray-600 dark:text-gray-400">Overview of BST accounting system</p>
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
+          Dashboard
+        </h1>
+        <p className="text-gray-600 dark:text-gray-400">
+          Overview of BST accounting system
+        </p>
       </div>
 
       {/* Stats Cards */}

@@ -7,7 +7,6 @@ export default function ReportsPage() {
   const stats = useAccountingStore((state) => state.getDashboardStats());
   const invoices = useAccountingStore((state) => state.invoices);
   const expenses = useAccountingStore((state) => state.expenses);
-  const projects = useAccountingStore((state) => state.projects);
 
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat("en-IN", {

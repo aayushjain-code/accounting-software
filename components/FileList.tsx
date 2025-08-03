@@ -1,9 +1,6 @@
 import React from "react";
-import {
-  DocumentIcon,
-  TrashIcon,
-  ArrowDownTrayIcon,
-} from "@heroicons/react/24/outline";
+import { TrashIcon, EyeIcon } from "@heroicons/react/24/outline";
+import { formatFileSize } from "@/utils/helpers";
 import { TimesheetFile, InvoiceFile, ExpenseFile } from "@/types";
 
 interface FileListProps {
@@ -93,7 +90,7 @@ const FileList: React.FC<FileListProps> = ({
                   className="p-2 text-gray-400 hover:text-primary-600 hover:bg-primary-50 dark:hover:bg-primary-900/20 rounded-lg transition-colors"
                   title="Download file"
                 >
-                  <ArrowDownTrayIcon className="h-4 w-4" />
+                  <EyeIcon className="h-4 w-4" />
                 </button>
                 {onDelete && (
                   <button

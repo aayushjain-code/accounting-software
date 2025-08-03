@@ -1,25 +1,21 @@
 "use client";
 
-import { useState, useMemo, useCallback } from "react";
+import { useState, useMemo } from "react";
 import { useAccountingStore } from "@/store";
-import { Timesheet, Invoice } from "@/types";
 import {
-  PlusIcon,
   CheckIcon,
-  XMarkIcon,
   ClockIcon,
   DocumentTextIcon,
   CurrencyRupeeIcon,
   ExclamationTriangleIcon,
   CheckCircleIcon,
   ArrowRightIcon,
-  UserIcon,
   CalendarIcon,
   BuildingOfficeIcon,
   EyeIcon,
 } from "@heroicons/react/24/outline";
 import { format } from "date-fns";
-import { Tooltip, ActionTooltip } from "@/components/Tooltip";
+import { ActionTooltip } from "@/components/Tooltip";
 import toast from "react-hot-toast";
 
 interface KanbanItem {
@@ -174,10 +170,10 @@ const KanbanColumn = ({
     }
   };
 
-  const handleDragStart = useCallback((e: React.DragEvent, itemId: string) => {
+  const handleDragStart = (e: React.DragEvent, itemId: string) => {
     e.dataTransfer.setData("text/plain", itemId);
     e.dataTransfer.effectAllowed = "move";
-  }, []);
+  };
 
   return (
     <div className="flex-1 min-w-0">
@@ -351,71 +347,68 @@ export default function KanbanPage() {
     },
   ];
 
-  const handleDragOver = useCallback((e: React.DragEvent) => {
+  const handleDragOver = (e: React.DragEvent) => {
     e.preventDefault();
     e.dataTransfer.dropEffect = "move";
-  }, []);
+  };
 
-  const handleDrop = useCallback(
-    (e: React.DragEvent, targetStatus: string) => {
-      e.preventDefault();
-      const itemId = e.dataTransfer.getData("text/plain");
+  const handleDrop = (e: React.DragEvent, targetStatus: string) => {
+    e.preventDefault();
+    const itemId = e.dataTransfer.getData("text/plain");
 
-      // Find the item
-      const item = kanbanItems.find((i) => i.id === itemId);
-      if (!item) return;
+    // Find the item
+    const item = kanbanItems.find((i) => i.id === itemId);
+    if (!item) return;
 
-      // Update the item status based on target column
-      if (item.type === "timesheet") {
-        const timesheet = timesheets.find((t) => t.id === itemId);
-        if (timesheet) {
-          let newStatus = timesheet.status;
+    // Update the item status based on target column
+    if (item.type === "timesheet") {
+      const timesheet = timesheets.find((t) => t.id === itemId);
+      if (timesheet) {
+        let newStatus = timesheet.status;
 
-          switch (targetStatus) {
-            case "timesheet-created":
-              newStatus = "draft";
-              break;
-            case "timesheet-approved":
-              newStatus = "approved";
-              break;
-            case "invoice-raised":
-              newStatus = "submitted";
-              break;
-            case "payment-cleared":
-              newStatus = "invoiced";
-              break;
-            case "blocked":
-              newStatus = "rejected";
-              break;
-          }
-
-          updateTimesheet(itemId, { status: newStatus });
-          toast.success(`Timesheet moved to ${targetStatus.replace("-", " ")}`);
+        switch (targetStatus) {
+          case "timesheet-created":
+            newStatus = "draft";
+            break;
+          case "timesheet-approved":
+            newStatus = "approved";
+            break;
+          case "invoice-raised":
+            newStatus = "submitted";
+            break;
+          case "payment-cleared":
+            newStatus = "invoiced";
+            break;
+          case "blocked":
+            newStatus = "rejected";
+            break;
         }
-      } else if (item.type === "invoice") {
-        const invoice = invoices.find((i) => i.id === itemId);
-        if (invoice) {
-          let newStatus = invoice.status;
 
-          switch (targetStatus) {
-            case "invoice-raised":
-              newStatus = "draft";
-              break;
-            case "payment-cleared":
-              newStatus = "paid";
-              break;
-            case "blocked":
-              newStatus = "sent";
-              break;
-          }
-
-          updateInvoice(itemId, { status: newStatus });
-          toast.success(`Invoice moved to ${targetStatus.replace("-", " ")}`);
-        }
+        updateTimesheet(itemId, { status: newStatus });
+        toast.success(`Timesheet moved to ${targetStatus.replace("-", " ")}`);
       }
-    },
-    [kanbanItems, timesheets, invoices, updateTimesheet, updateInvoice]
-  );
+    } else if (item.type === "invoice") {
+      const invoice = invoices.find((i) => i.id === itemId);
+      if (invoice) {
+        let newStatus = invoice.status;
+
+        switch (targetStatus) {
+          case "invoice-raised":
+            newStatus = "draft";
+            break;
+          case "payment-cleared":
+            newStatus = "paid";
+            break;
+          case "blocked":
+            newStatus = "sent";
+            break;
+        }
+
+        updateInvoice(itemId, { status: newStatus });
+        toast.success(`Invoice moved to ${targetStatus.replace("-", " ")}`);
+      }
+    }
+  };
 
   const totalItems = kanbanItems.length;
   const criticalItems = kanbanItems.filter(

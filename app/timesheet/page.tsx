@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useMemo, useCallback } from "react";
+import React, { useState, useMemo } from "react";
 import { useAccountingStore } from "@/store";
 import {
   PlusIcon,
@@ -24,14 +24,13 @@ import {
   endOfMonth,
   eachDayOfInterval,
   isWeekend,
-  getDaysInMonth,
 } from "date-fns";
 import toast from "react-hot-toast";
-import { Timesheet, TimesheetEntry, Project } from "@/types";
+import { Timesheet, Project } from "@/types";
 import { useSearch } from "@/hooks/useSearch";
 import { formatCurrency, getStatusColor } from "@/utils/helpers";
 import { ConfirmationDialog } from "@/components/ConfirmationDialog";
-import { Tooltip, ActionTooltip, IconTooltip } from "@/components/Tooltip";
+import { ActionTooltip, IconTooltip } from "@/components/Tooltip";
 import {
   InformationCircleIcon,
   QuestionMarkCircleIcon,
@@ -170,7 +169,7 @@ const TimesheetRow = React.memo(
     onEdit: (timesheet: Timesheet) => void;
     onDelete: (id: string) => void;
   }) => {
-    const formatDate = useCallback((date: Date) => {
+    const formatDate = React.useCallback((date: Date) => {
       return format(new Date(date), "MMM dd, yyyy");
     }, []);
 
@@ -412,7 +411,7 @@ const TimesheetModal = React.memo(
       return 0;
     }, [selectedProject, formData.daysWorked, formData.totalWorkingDays]);
 
-    const validateForm = useCallback(() => {
+    const validateForm = React.useCallback(() => {
       const newErrors: Record<string, string> = {};
 
       if (!formData.projectId) newErrors.projectId = "Project is required";
@@ -430,7 +429,7 @@ const TimesheetModal = React.memo(
       return Object.keys(newErrors).length === 0;
     }, [formData]);
 
-    const handleSubmit = useCallback(
+    const handleSubmit = React.useCallback(
       (e: React.FormEvent) => {
         e.preventDefault();
         if (validateForm()) {
@@ -885,7 +884,7 @@ export default function TimesheetPage() {
     };
   }, [timesheets]);
 
-  const handleSubmit = useCallback(
+  const handleSubmit = React.useCallback(
     (formData: any) => {
       const timesheetData = {
         ...formData,
@@ -906,17 +905,17 @@ export default function TimesheetPage() {
     [editingTimesheet, addTimesheet, updateTimesheet]
   );
 
-  const handleEdit = useCallback((timesheet: Timesheet) => {
+  const handleEdit = React.useCallback((timesheet: Timesheet) => {
     setEditingTimesheet(timesheet);
     setIsModalOpen(true);
   }, []);
 
-  const handleDelete = useCallback((id: string) => {
+  const handleDelete = React.useCallback((id: string) => {
     setTimesheetToDelete(id);
     setShowDeleteDialog(true);
   }, []);
 
-  const confirmDelete = useCallback(() => {
+  const confirmDelete = React.useCallback(() => {
     if (timesheetToDelete) {
       deleteTimesheet(timesheetToDelete);
       toast.success("Timesheet deleted successfully");

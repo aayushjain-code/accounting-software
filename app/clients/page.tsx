@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo, useCallback, useEffect } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { useAccountingStore } from "@/store";
 import { Client } from "@/types";
 import { ReceiptRefundIcon } from "@heroicons/react/24/outline";
@@ -30,8 +30,7 @@ import React from "react";
 import Modal from "@/components/Modal";
 import { useSearch } from "@/hooks/useSearch";
 import { usePagination } from "@/hooks/usePagination";
-import { useCache } from "@/hooks/useCache";
-import { Pagination, LoadingSkeleton } from "@/components/Pagination";
+import { Pagination } from "@/components/Pagination";
 import { performanceMonitor } from "@/utils/performance";
 
 // Enhanced Client Card Component
@@ -305,8 +304,6 @@ export default function ClientsPage() {
     currentItems: paginatedClients,
     paginationState,
     goToPage,
-    goToNextPage,
-    goToPrevPage,
     changePageSize,
   } = usePagination(filteredClients, {
     initialPageSize: 12,

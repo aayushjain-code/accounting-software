@@ -2,6 +2,7 @@
 
 import React, { useState, useMemo } from "react";
 import { useAccountingStore } from "@/store";
+import { DailyLog } from "@/types";
 import {
   PlusIcon,
   MagnifyingGlassIcon,
@@ -18,11 +19,17 @@ import {
 } from "@heroicons/react/24/outline";
 import { format } from "date-fns";
 import { useSearch } from "@/hooks/useSearch";
-import { Tooltip, ActionTooltip, IconTooltip } from "@/components/Tooltip";
+import { ActionTooltip, IconTooltip } from "@/components/Tooltip";
 import Modal from "@/components/Modal";
 
+interface LogCardProps {
+  log: DailyLog;
+  onEdit: (log: DailyLog) => void;
+  onDelete: (id: string) => void;
+}
+
 // Log Card Component
-const LogCard = React.memo(({ log, onEdit, onDelete }: any) => {
+const LogCard = React.memo(({ log, onEdit, onDelete }: LogCardProps) => {
   const getPriorityColor = (priority: string) => {
     switch (priority) {
       case "critical":
@@ -414,7 +421,7 @@ export default function DailyLogsPage() {
   const { dailyLogs, addDailyLog, updateDailyLog, deleteDailyLog } =
     useAccountingStore();
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [editingLog, setEditingLog] = useState<any>(null);
+  const [editingLog, setEditingLog] = useState<DailyLog | null>(null);
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
   const [selectedPriority, setSelectedPriority] = useState<string>("all");
 
@@ -467,7 +474,7 @@ export default function DailyLogsPage() {
     }
   };
 
-  const handleEdit = (log: any) => {
+  const handleEdit = (log: DailyLog) => {
     setEditingLog(log);
     setIsModalOpen(true);
   };
@@ -649,7 +656,7 @@ export default function DailyLogsPage() {
 
       {/* Logs Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {filteredByFilters.map((log: any) => (
+        {filteredByFilters.map((log: DailyLog) => (
           <LogCard
             key={log.id}
             log={log}

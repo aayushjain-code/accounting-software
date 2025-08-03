@@ -1,7 +1,8 @@
 "use client";
 
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo } from "react";
 import { useAccountingStore } from "@/store";
+import { Invoice } from "@/types";
 import { PlusIcon, PencilIcon, TrashIcon } from "@heroicons/react/24/outline";
 import { format } from "date-fns";
 import toast from "react-hot-toast";
@@ -10,16 +11,11 @@ import FileUpload from "@/components/FileUpload";
 import FileList from "@/components/FileList";
 import { CloudArrowUpIcon } from "@heroicons/react/24/outline";
 import React from "react";
-import { InvoiceFile, Timesheet, Project, Client } from "@/types";
+import { InvoiceFile } from "@/types";
 
 export default function InvoicesPage() {
-  const [isClient, setIsClient] = useState(false);
   const [uploadedFiles, setUploadedFiles] = useState<File[]>([]);
   const [isUploading, setIsUploading] = useState(false);
-
-  React.useEffect(() => {
-    setIsClient(true);
-  }, []);
 
   const {
     invoices,
@@ -33,7 +29,7 @@ export default function InvoicesPage() {
     removeInvoiceFile,
   } = useAccountingStore();
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [editingInvoice, setEditingInvoice] = useState<any>(null);
+  const [editingInvoice, setEditingInvoice] = useState<Invoice | null>(null);
   const [formData, setFormData] = useState({
     timesheetId: "",
     projectId: "",
@@ -142,7 +138,7 @@ export default function InvoicesPage() {
     setUploadedFiles([]);
   };
 
-  const handleEdit = (invoice: any) => {
+  const handleEdit = (invoice: Invoice) => {
     setEditingInvoice(invoice);
     setFormData({
       timesheetId: invoice.timesheetId,

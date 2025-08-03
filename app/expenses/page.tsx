@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useAccountingStore } from "@/store";
+import { Expense } from "@/types";
 import { PlusIcon, PencilIcon, TrashIcon } from "@heroicons/react/24/outline";
 import { format } from "date-fns";
 import toast from "react-hot-toast";
@@ -13,13 +14,8 @@ import React from "react";
 import { ExpenseFile } from "@/types";
 
 export default function ExpensesPage() {
-  const [isClient, setIsClient] = useState(false);
   const [uploadedFiles, setUploadedFiles] = useState<File[]>([]);
   const [isUploading, setIsUploading] = useState(false);
-
-  React.useEffect(() => {
-    setIsClient(true);
-  }, []);
 
   const {
     expenses,
@@ -31,7 +27,7 @@ export default function ExpensesPage() {
     removeExpenseFile,
   } = useAccountingStore();
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [editingExpense, setEditingExpense] = useState<any>(null);
+  const [editingExpense, setEditingExpense] = useState<Expense | null>(null);
   const [formData, setFormData] = useState({
     category: "",
     description: "",
@@ -84,7 +80,7 @@ export default function ExpensesPage() {
     });
   };
 
-  const handleEdit = (expense: any) => {
+  const handleEdit = (expense: Expense) => {
     setEditingExpense(expense);
     setFormData({
       category: expense.category,

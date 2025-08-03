@@ -46,10 +46,6 @@ export default function ProjectsPage() {
     e.preventDefault();
 
     const budget = parseFloat(formData.budget);
-    const billingRate = formData.billingRate
-      ? parseFloat(formData.billingRate)
-      : undefined;
-    const estimatedHours = parseFloat(formData.estimatedHours);
     const gstRate = parseFloat(formData.gstRate);
 
     // Calculate cost breakdown
@@ -66,7 +62,9 @@ export default function ProjectsPage() {
       status: formData.status,
       budget: parseFloat(formData.budget),
       billingTerms: parseInt(formData.billingTerms),
-      billingRate: parseFloat(formData.billingRate),
+      billingRate: formData.billingRate
+        ? parseFloat(formData.billingRate)
+        : undefined,
       estimatedHours: formData.estimatedHours
         ? parseFloat(formData.estimatedHours)
         : undefined,

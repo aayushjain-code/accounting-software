@@ -1,7 +1,8 @@
 "use client";
 
-import React, { useState, useMemo } from "react";
+import React, { useMemo } from "react";
 import { useAccountingStore } from "@/store";
+import { Invoice, Project } from "@/types";
 import { Card } from "@/components/Card";
 import { StatusBadge } from "@/components/ui/StatusBadge";
 import { formatCurrency, formatDate } from "@/utils/formatters";
@@ -9,9 +10,7 @@ import {
   ChartBarIcon,
   CurrencyDollarIcon,
   UserGroupIcon,
-  ClockIcon,
   DocumentTextIcon,
-  ExclamationTriangleIcon,
 } from "@heroicons/react/24/outline";
 
 // Memoized components with display names
@@ -39,7 +38,7 @@ const StatCard = React.memo(({ title, value, icon: Icon, change, changeType }: {
 ));
 StatCard.displayName = "StatCard";
 
-const InvoiceItem = React.memo(({ invoice }: { invoice: any }) => (
+const InvoiceItem = React.memo(({ invoice }: { invoice: Invoice }) => (
   <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700 last:border-b-0">
     <div>
       <p className="font-medium text-gray-900 dark:text-white">{invoice.invoiceNumber}</p>
@@ -53,7 +52,7 @@ const InvoiceItem = React.memo(({ invoice }: { invoice: any }) => (
 ));
 InvoiceItem.displayName = "InvoiceItem";
 
-const ProjectItem = React.memo(({ project }: { project: any }) => (
+const ProjectItem = React.memo(({ project }: { project: Project }) => (
   <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700 last:border-b-0">
     <div>
       <p className="font-medium text-gray-900 dark:text-white">{project.name}</p>
@@ -76,9 +75,9 @@ export default function Dashboard() {
     const totalInvoices = invoices.length;
     const totalTimesheets = timesheets.length;
     
-    const totalRevenue = invoices.reduce((sum: number, invoice: any) => sum + (invoice.total || 0), 0);
-    const pendingInvoices = invoices.filter((invoice: any) => invoice.status === "sent").length;
-    const activeProjects = projects.filter((project: any) => project.status === "active").length;
+    const totalRevenue = invoices.reduce((sum: number, invoice: Invoice) => sum + (invoice.total || 0), 0);
+    const pendingInvoices = invoices.filter((invoice: Invoice) => invoice.status === "sent").length;
+    const activeProjects = projects.filter((project: Project) => project.status === "active").length;
     
     return {
       totalClients,
@@ -93,13 +92,13 @@ export default function Dashboard() {
 
   const recentInvoices = useMemo(() => {
     return invoices
-      .sort((a: any, b: any) => new Date(b.issueDate).getTime() - new Date(a.issueDate).getTime())
+      .sort((a: Invoice, b: Invoice) => new Date(b.issueDate).getTime() - new Date(a.issueDate).getTime())
       .slice(0, 5);
   }, [invoices]);
 
   const recentProjects = useMemo(() => {
     return projects
-      .sort((a: any, b: any) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+      .sort((a: Project, b: Project) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
       .slice(0, 5);
   }, [projects]);
 
@@ -137,7 +136,7 @@ export default function Dashboard() {
           <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Recent Invoices</h3>
           <div className="space-y-2">
             {recentInvoices.length > 0 ? (
-              recentInvoices.map((invoice: any) => (
+              recentInvoices.map((invoice: Invoice) => (
                 <InvoiceItem key={invoice.id} invoice={invoice} />
               ))
             ) : (
@@ -150,7 +149,7 @@ export default function Dashboard() {
           <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Recent Projects</h3>
           <div className="space-y-2">
             {recentProjects.length > 0 ? (
-              recentProjects.map((project: any) => (
+              recentProjects.map((project: Project) => (
                 <ProjectItem key={project.id} project={project} />
               ))
             ) : (

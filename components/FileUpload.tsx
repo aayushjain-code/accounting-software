@@ -56,25 +56,22 @@ const FileUpload: React.FC<FileUploadProps> = ({
   };
 
   const handleFiles = useCallback(
-    (newFiles: FileList | File[]) => {
-      setError("");
-      const fileArray = Array.from(newFiles);
+    (newFiles: FileList) => {
       const validFiles: File[] = [];
-      const errors: string[] = [];
+      let hasError = false;
 
-      fileArray.forEach((file) => {
+      for (let i = 0; i < newFiles.length; i++) {
+        const file = newFiles[i];
         const error = validateFile(file);
         if (error) {
-          errors.push(`${file.name}: ${error}`);
-        } else {
-          validFiles.push(file);
+          setError(error);
+          hasError = true;
+          break;
         }
-      });
-
-      if (errors.length > 0) {
-        setError(errors.join("\n"));
-        return;
+        validFiles.push(file);
       }
+
+      if (hasError) return;
 
       if (files.length + validFiles.length > maxFiles) {
         setError(`Maximum ${maxFiles} files allowed`);
@@ -83,7 +80,7 @@ const FileUpload: React.FC<FileUploadProps> = ({
 
       onFilesChange([...files, ...validFiles]);
     },
-    [files, onFilesChange, maxFiles, maxSize, acceptedTypes]
+    [files, onFilesChange, maxFiles, maxSize, acceptedTypes, validateFile]
   );
 
   const handleDragOver = useCallback((e: React.DragEvent) => {

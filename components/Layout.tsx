@@ -1,43 +1,37 @@
 "use client";
 
 import React from "react";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
 import {
   HomeIcon,
   UserGroupIcon,
-  BuildingOfficeIcon,
   FolderIcon,
+  ClockIcon,
   DocumentTextIcon,
   ReceiptRefundIcon,
   ChartBarIcon,
-  ClockIcon,
-  XMarkIcon,
-  Bars3Icon,
-  ViewColumnsIcon,
-  UserIcon,
-  ArrowRightOnRectangleIcon,
-  SunIcon,
-  MoonIcon,
-  ArchiveBoxIcon,
+  CogIcon,
+  CalendarIcon,
+  CloudArrowUpIcon,
 } from "@heroicons/react/24/outline";
 import { useTheme } from "@/hooks/useTheme";
-import Link from "next/link";
-import { usePathname } from "next/navigation";
 import clsx from "clsx";
 import { ErrorBoundary } from "./ErrorBoundary";
 
 const navigation = [
   { name: "Dashboard", href: "/", icon: HomeIcon },
-  { name: "Clients", href: "/clients", icon: BuildingOfficeIcon },
+  { name: "Clients", href: "/clients", icon: UserGroupIcon },
   { name: "Projects", href: "/projects", icon: FolderIcon },
   { name: "Timesheets", href: "/timesheet", icon: ClockIcon },
   { name: "Invoices", href: "/invoices", icon: DocumentTextIcon },
   { name: "Expenses", href: "/expenses", icon: ReceiptRefundIcon },
   { name: "Daily Logs", href: "/daily-logs", icon: DocumentTextIcon },
-  { name: "Kanban", href: "/kanban", icon: ViewColumnsIcon },
+  { name: "Kanban", href: "/kanban", icon: ChartBarIcon },
   {
     name: "Storage Management",
     href: "/storage-management",
-    icon: ArchiveBoxIcon,
+    icon: CloudArrowUpIcon,
   },
 ];
 

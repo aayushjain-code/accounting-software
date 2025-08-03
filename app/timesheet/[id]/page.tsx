@@ -1,18 +1,13 @@
 "use client";
 
-import React, { useState, useMemo, useCallback } from "react";
+import React, { useState, useMemo } from "react";
 import { useAccountingStore } from "@/store";
 import {
-  PlusIcon,
-  PencilIcon,
-  TrashIcon,
   CheckIcon,
   XMarkIcon,
   DocumentTextIcon,
   CalendarIcon,
   ClockIcon,
-  UserIcon,
-  FolderIcon,
   CurrencyRupeeIcon,
   CalculatorIcon,
   ArrowLeftIcon,
@@ -23,9 +18,9 @@ import {
 import { format } from "date-fns";
 import toast from "react-hot-toast";
 import { Timesheet, Project, TimesheetFile } from "@/types";
-import { formatCurrency, getStatusColor } from "@/utils/helpers";
+import { formatCurrency } from "@/utils/helpers";
 import { ConfirmationDialog } from "@/components/ConfirmationDialog";
-import { Tooltip, ActionTooltip, IconTooltip } from "@/components/Tooltip";
+import { ActionTooltip, IconTooltip } from "@/components/Tooltip";
 import {
   InformationCircleIcon,
   QuestionMarkCircleIcon,
@@ -285,7 +280,7 @@ const StatusActions = React.memo(
           )}
 
           {timesheet.status === "invoiced" && (
-            <Tooltip content="This timesheet has been invoiced and billed to the client">
+            <IconTooltip content="This timesheet has been invoiced and billed to the client">
               <div className="text-center p-8 bg-gradient-to-r from-green-50 to-emerald-50 rounded-xl border border-green-200">
                 <CurrencyRupeeIcon className="h-12 w-12 text-green-600 mx-auto mb-4" />
                 <p className="text-green-800 font-bold text-lg mb-2">
@@ -295,7 +290,7 @@ const StatusActions = React.memo(
                   Invoice ID: {timesheet.invoiceId || "N/A"}
                 </p>
               </div>
-            </Tooltip>
+            </IconTooltip>
           )}
         </div>
       </div>
@@ -376,7 +371,7 @@ export default function TimesheetDetailPage({
     return projects.find((p) => p.id === timesheet?.projectId);
   }, [projects, timesheet]);
 
-  const handleStatusChange = useCallback(
+  const handleStatusChange = React.useCallback(
     (newStatus: string) => {
       if (!timesheet) return;
 
@@ -517,7 +512,7 @@ export default function TimesheetDetailPage({
             Work Summary
           </h3>
           <div className="space-y-4">
-            <Tooltip content="Total working days in the month (excluding weekends)">
+            <IconTooltip content="Total working days in the month (excluding weekends)">
               <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
                 <span className="text-sm text-gray-600">
                   Total Working Days:
@@ -526,24 +521,24 @@ export default function TimesheetDetailPage({
                   {timesheet.totalWorkingDays} days
                 </span>
               </div>
-            </Tooltip>
-            <Tooltip content="Actual days you worked this month">
+            </IconTooltip>
+            <IconTooltip content="Actual days you worked this month">
               <div className="flex items-center justify-between p-4 bg-blue-50 rounded-lg">
                 <span className="text-sm text-gray-600">Days Worked:</span>
                 <span className="font-semibold text-gray-900">
                   {timesheet.daysWorked} days
                 </span>
               </div>
-            </Tooltip>
-            <Tooltip content="Days you were on leave or didn't work">
+            </IconTooltip>
+            <IconTooltip content="Days you were on leave or didn't work">
               <div className="flex items-center justify-between p-4 bg-yellow-50 rounded-lg">
                 <span className="text-sm text-gray-600">Leave Days:</span>
                 <span className="font-semibold text-gray-900">
                   {timesheet.daysLeave} days
                 </span>
               </div>
-            </Tooltip>
-            <Tooltip content="Percentage of working days you were available">
+            </IconTooltip>
+            <IconTooltip content="Percentage of working days you were available">
               <div className="flex items-center justify-between p-4 bg-green-50 rounded-lg">
                 <span className="text-sm text-gray-600">Utilization:</span>
                 <span className="font-semibold text-gray-900">
@@ -554,7 +549,7 @@ export default function TimesheetDetailPage({
                   %
                 </span>
               </div>
-            </Tooltip>
+            </IconTooltip>
           </div>
         </div>
 
@@ -564,43 +559,43 @@ export default function TimesheetDetailPage({
             Timeline
           </h3>
           <div className="space-y-4">
-            <Tooltip content="When this timesheet was first created">
+            <IconTooltip content="When this timesheet was first created">
               <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
                 <span className="text-sm text-gray-600">Created:</span>
                 <span className="font-semibold text-gray-900">
                   {format(new Date(timesheet.createdAt), "MMM dd, yyyy")}
                 </span>
               </div>
-            </Tooltip>
+            </IconTooltip>
             {timesheet.submittedAt && (
-              <Tooltip content="When this timesheet was submitted for approval">
+              <IconTooltip content="When this timesheet was submitted for approval">
                 <div className="flex items-center justify-between p-4 bg-blue-50 rounded-lg">
                   <span className="text-sm text-gray-600">Submitted:</span>
                   <span className="font-semibold text-gray-900">
                     {format(new Date(timesheet.submittedAt), "MMM dd, yyyy")}
                   </span>
                 </div>
-              </Tooltip>
+              </IconTooltip>
             )}
             {timesheet.approvedAt && (
-              <Tooltip content="When this timesheet was approved for invoicing">
+              <IconTooltip content="When this timesheet was approved for invoicing">
                 <div className="flex items-center justify-between p-4 bg-green-50 rounded-lg">
                   <span className="text-sm text-gray-600">Approved:</span>
                   <span className="font-semibold text-gray-900">
                     {format(new Date(timesheet.approvedAt), "MMM dd, yyyy")}
                   </span>
                 </div>
-              </Tooltip>
+              </IconTooltip>
             )}
             {timesheet.invoicedAt && (
-              <Tooltip content="When this timesheet was invoiced and billed">
+              <IconTooltip content="When this timesheet was invoiced and billed">
                 <div className="flex items-center justify-between p-4 bg-purple-50 rounded-lg">
                   <span className="text-sm text-gray-600">Invoiced:</span>
                   <span className="font-semibold text-gray-900">
                     {format(new Date(timesheet.invoicedAt), "MMM dd, yyyy")}
                   </span>
                 </div>
-              </Tooltip>
+              </IconTooltip>
             )}
           </div>
         </div>

@@ -226,21 +226,6 @@ export const IconTooltip: React.FC<IconTooltipProps> = ({
   variant = "info",
   className = "",
 }) => {
-  const getVariantClasses = () => {
-    switch (variant) {
-      case "info":
-        return "bg-blue-600 text-white";
-      case "warning":
-        return "bg-yellow-600 text-white";
-      case "success":
-        return "bg-green-600 text-white";
-      case "danger":
-        return "bg-red-600 text-white";
-      default:
-        return "bg-gray-900 text-white";
-    }
-  };
-
   return (
     <Tooltip content={content} position={position} className={className}>
       <div className="inline-flex items-center">

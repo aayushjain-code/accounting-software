@@ -8,7 +8,7 @@ export interface ClientSlice {
   updateClient: (id: string, client: Partial<Client>) => void;
   deleteClient: (id: string) => void;
   getClientById: (id: string) => Client | undefined;
-  getProjectsByClient: (clientId: string) => any[];
+  getProjectsByClient: (clientId: string) => Project[];
 }
 
 export const createClientSlice: StateCreator<ClientSlice> = (set, get) => ({

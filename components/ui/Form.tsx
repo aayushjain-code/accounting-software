@@ -67,13 +67,23 @@ export const Form: React.FC<FormProps> = ({
         const value = formData[name];
         let result: boolean | string;
         
-        // Handle different field types appropriately
-        if (field.type === "number") {
-          result = validation(value as number);
-        } else if (field.type === "checkbox") {
-          result = validation(value as boolean);
-        } else {
-          result = validation(value as string);
+        // Safe validation wrapper
+        try {
+          if (field.type === "number") {
+            // For number fields, convert to number first
+            const numValue = typeof value === "string" ? parseFloat(value) : value;
+            result = validation(numValue as any);
+          } else if (field.type === "checkbox") {
+            // For checkbox fields, ensure boolean
+            const boolValue = typeof value === "boolean" ? value : Boolean(value);
+            result = validation(boolValue as any);
+          } else {
+            // For text fields, ensure string
+            const strValue = typeof value === "string" ? value : String(value);
+            result = validation(strValue as any);
+          }
+        } catch (error) {
+          result = "Invalid value";
         }
         
         if (result !== true) {
@@ -95,12 +105,19 @@ export const Form: React.FC<FormProps> = ({
         validationRulesMap[field.name] = field.validation;
       } else if (field.required) {
         validationRulesMap[field.name] = (value: any) => {
-          if (field.type === "checkbox") {
-            return validateRequired(value as boolean) || "This field is required";
-          } else if (field.type === "number") {
-            return validateRequired(value as number) || "This field is required";
-          } else {
-            return validateRequired(value as string) || "This field is required";
+          try {
+            if (field.type === "checkbox") {
+              const boolValue = typeof value === "boolean" ? value : Boolean(value);
+              return validateRequired(boolValue) || "This field is required";
+            } else if (field.type === "number") {
+              const numValue = typeof value === "string" ? parseFloat(value) : value;
+              return validateRequired(numValue) || "This field is required";
+            } else {
+              const strValue = typeof value === "string" ? value : String(value);
+              return validateRequired(strValue) || "This field is required";
+            }
+          } catch (error) {
+            return "This field is required";
           }
         };
       }

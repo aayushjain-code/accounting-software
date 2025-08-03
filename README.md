@@ -60,7 +60,8 @@ accounting-ai/
 ├── utils/                 # Utility functions
 ├── hooks/                 # Custom React hooks
 ├── types/                 # TypeScript definitions
-├── docs/                  # 📚 All documentation
+├── docs/                  # �� All documentation
+├── data/                  # 📊 Sample data & test files
 └── assets/               # Application assets
 ```
 

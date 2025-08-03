@@ -65,7 +65,17 @@ export const Form: React.FC<FormProps> = ({
       const validation = field.validation || validationRules[field.type as keyof typeof validationRules];
       if (validation) {
         const value = formData[name];
-        const result = validation(value as string);
+        let result: boolean | string;
+        
+        // Handle different field types appropriately
+        if (field.type === "number") {
+          result = validation(value as number);
+        } else if (field.type === "checkbox") {
+          result = validation(value as boolean);
+        } else {
+          result = validation(value as string);
+        }
+        
         if (result !== true) {
           setErrors(prev => ({ ...prev, [name]: typeof result === "string" ? result : "Invalid value" }));
         } else {
@@ -79,12 +89,20 @@ export const Form: React.FC<FormProps> = ({
     e.preventDefault();
     
     // Validate all fields
-    const validationRulesMap: Record<string, (value: string | number | boolean) => boolean | string> = {};
+    const validationRulesMap: Record<string, (value: any) => boolean | string> = {};
     fields.forEach(field => {
       if (field.validation) {
         validationRulesMap[field.name] = field.validation;
       } else if (field.required) {
-        validationRulesMap[field.name] = (value: string | number | boolean) => validateRequired(value as string) || "This field is required";
+        validationRulesMap[field.name] = (value: any) => {
+          if (field.type === "checkbox") {
+            return validateRequired(value as boolean) || "This field is required";
+          } else if (field.type === "number") {
+            return validateRequired(value as number) || "This field is required";
+          } else {
+            return validateRequired(value as string) || "This field is required";
+          }
+        };
       }
     });
 

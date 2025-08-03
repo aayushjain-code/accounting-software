@@ -11,9 +11,12 @@ export const validatePhone = (phone: string): boolean => {
 };
 
 // Required field validation
-export const validateRequired = (value: string | number | undefined): boolean => {
+export const validateRequired = (value: string | number | boolean | undefined): boolean => {
   if (typeof value === "string") {
     return value.trim().length > 0;
+  }
+  if (typeof value === "boolean") {
+    return value === true;
   }
   return value !== undefined && value !== null;
 };

@@ -71,14 +71,23 @@ class SQLiteManager {
         projectId INTEGER,
         clientId INTEGER,
         date DATE NOT NULL,
+        month TEXT,
+        year INTEGER,
         daysWorked INTEGER DEFAULT 0,
+        daysLeave INTEGER DEFAULT 0,
         hoursPerDay REAL DEFAULT 8,
+        totalWorkingDays INTEGER DEFAULT 0,
         totalHours REAL DEFAULT 0,
         billingRate REAL DEFAULT 0,
         totalAmount REAL DEFAULT 0,
         description TEXT,
-        status TEXT DEFAULT 'pending',
+        status TEXT DEFAULT 'draft',
         attachments TEXT,
+        submittedAt DATETIME,
+        approvedAt DATETIME,
+        approvedBy TEXT,
+        invoiceId TEXT,
+        invoicedAt DATETIME,
         createdAt DATETIME DEFAULT CURRENT_TIMESTAMP,
         updatedAt DATETIME DEFAULT CURRENT_TIMESTAMP,
         FOREIGN KEY (projectId) REFERENCES projects (id) ON DELETE CASCADE,
@@ -313,16 +322,20 @@ class SQLiteManager {
 
   createTimesheet(timesheet) {
     const stmt = this.db.prepare(`
-      INSERT INTO timesheets (timesheetCode, projectId, clientId, date, daysWorked, hoursPerDay, totalHours, billingRate, totalAmount, description, status, attachments)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      INSERT INTO timesheets (timesheetCode, projectId, clientId, date, month, year, daysWorked, daysLeave, hoursPerDay, totalWorkingDays, totalHours, billingRate, totalAmount, description, status, attachments)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `);
     return stmt.run(
       timesheet.timesheetCode,
       timesheet.projectId,
       timesheet.clientId,
       timesheet.date,
+      timesheet.month,
+      timesheet.year,
       timesheet.daysWorked,
+      timesheet.daysLeave,
       timesheet.hoursPerDay,
+      timesheet.totalWorkingDays,
       timesheet.totalHours,
       timesheet.billingRate,
       timesheet.totalAmount,
@@ -497,6 +510,21 @@ class SQLiteManager {
     return this.db.prepare("DELETE FROM daily_logs WHERE id = ?").run(id);
   }
 
+  // Load all data from database
+  loadData() {
+    return {
+      clients: this.getClients(),
+      projects: this.getProjects(),
+      timesheets: this.getTimesheets(),
+      invoices: this.getInvoices(),
+      expenses: this.getExpenses(),
+      dailyLogs: this.getDailyLogs(),
+      companyProfile: this.getCompanyProfile(),
+      exportDate: new Date().toISOString(),
+      version: "1.0.0",
+    };
+  }
+
   // Company Profile operations
   getCompanyProfile() {
     return this.db.prepare("SELECT * FROM company_profile LIMIT 1").get();
@@ -617,24 +645,40 @@ class SQLiteManager {
       // Import timesheets
       if (data.timesheets) {
         const timesheetStmt = this.db.prepare(`
-          INSERT INTO timesheets (id, timesheetCode, projectId, clientId, date, daysWorked, hoursPerDay, totalHours, billingRate, totalAmount, description, status, attachments, createdAt, updatedAt)
-          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+          INSERT INTO timesheets (id, timesheetCode, projectId, clientId, date, month, year, daysWorked, daysLeave, hoursPerDay, totalWorkingDays, totalHours, billingRate, totalAmount, description, status, attachments, submittedAt, approvedAt, approvedBy, invoiceId, invoicedAt, createdAt, updatedAt)
+          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         `);
         data.timesheets.forEach((timesheet) => {
+          // Convert month to date if needed
+          let dateValue = timesheet.date;
+          if (timesheet.month && !timesheet.date) {
+            // Convert "2024-01" format to a proper date (first day of month)
+            dateValue = timesheet.month + "-01";
+          }
+          
           timesheetStmt.run(
             timesheet.id,
             timesheet.timesheetCode,
             timesheet.projectId,
             timesheet.clientId,
-            timesheet.date,
+            dateValue,
+            timesheet.month,
+            timesheet.year,
             timesheet.daysWorked,
+            timesheet.daysLeave,
             timesheet.hoursPerDay,
+            timesheet.totalWorkingDays,
             timesheet.totalHours,
             timesheet.billingRate,
             timesheet.totalAmount,
             timesheet.description,
             timesheet.status,
             timesheet.attachments,
+            timesheet.submittedAt,
+            timesheet.approvedAt,
+            timesheet.approvedBy,
+            timesheet.invoiceId,
+            timesheet.invoicedAt,
             timesheet.createdAt,
             timesheet.updatedAt
           );

@@ -878,7 +878,7 @@ export default function TimesheetPage() {
   }, [timesheets]);
 
   const handleSubmit = React.useCallback(
-    (formData: Record<string, unknown>) => {
+    async (formData: Record<string, unknown>) => {
       const timesheetData = {
         projectId: formData.projectId as string,
         month: formData.month as string,
@@ -893,7 +893,7 @@ export default function TimesheetPage() {
       };
 
       if (editingTimesheet) {
-        updateTimesheet(editingTimesheet.id, timesheetData);
+        await updateTimesheet(editingTimesheet.id, timesheetData);
         toast.success("Timesheet updated successfully");
       } else {
         addTimesheet(timesheetData);

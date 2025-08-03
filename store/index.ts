@@ -51,7 +51,7 @@ interface AccountingStore {
       "id" | "timesheetCode" | "createdAt" | "updatedAt"
     >
   ) => void;
-  updateTimesheet: (id: string, timesheet: Partial<Timesheet>) => void;
+  updateTimesheet: (id: string, timesheet: Partial<Timesheet>) => Promise<void>;
   deleteTimesheet: (id: string) => void;
 
   addTimesheetEntry: (
@@ -253,12 +253,24 @@ export const useAccountingStore = create<AccountingStore>()(
         set((state) => ({ timesheets: [...state.timesheets, newTimesheet] }));
       },
 
-      updateTimesheet: (id, timesheet) => {
+      updateTimesheet: async (id, timesheet) => {
+        // Update frontend state immediately for responsive UI
         set((state) => ({
           timesheets: state.timesheets.map((t) =>
             t.id === id ? { ...t, ...timesheet, updatedAt: new Date() } : t
           ),
         }));
+
+        // Persist to database via Electron API
+        try {
+          if (typeof window !== "undefined" && window.electronAPI?.updateTimesheet) {
+            await window.electronAPI.updateTimesheet(id, timesheet);
+          }
+        } catch (error) {
+          console.error("Failed to update timesheet in database:", error);
+          // Optionally revert the frontend state on error
+          // set((state) => ({ timesheets: state.timesheets }));
+        }
       },
 
       deleteTimesheet: (id) => {

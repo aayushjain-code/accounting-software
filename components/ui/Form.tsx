@@ -1,10 +1,25 @@
 import React, { useState, useEffect } from "react";
-import { validateForm, validationRules, validateRequired } from "@/utils/validators";
+import {
+  validateForm,
+  validationRules,
+  validateRequired,
+} from "@/utils/validators";
 
 interface FormField {
   name: string;
   label: string;
-  type: "text" | "email" | "password" | "number" | "tel" | "url" | "date" | "textarea" | "select" | "checkbox" | "radio";
+  type:
+    | "text"
+    | "email"
+    | "password"
+    | "number"
+    | "tel"
+    | "url"
+    | "date"
+    | "textarea"
+    | "select"
+    | "checkbox"
+    | "radio";
   placeholder?: string;
   required?: boolean;
   validation?: (value: unknown) => boolean | string;
@@ -39,7 +54,8 @@ export const Form: React.FC<FormProps> = ({
   onCancel,
   cancelText = "Cancel",
 }) => {
-  const [formData, setFormData] = useState<Record<string, string | number | boolean>>(initialData);
+  const [formData, setFormData] =
+    useState<Record<string, string | number | boolean>>(initialData);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [touched, setTouched] = useState<Record<string, boolean>>({});
 
@@ -48,52 +64,65 @@ export const Form: React.FC<FormProps> = ({
   }, [initialData]);
 
   const handleChange = (name: string, value: string | number | boolean) => {
-    setFormData(prev => ({ ...prev, [name]: value }));
-    
+    setFormData((prev) => ({ ...prev, [name]: value }));
+
     // Clear error when user starts typing
     if (errors[name]) {
-      setErrors(prev => ({ ...prev, [name]: "" }));
+      setErrors((prev) => ({ ...prev, [name]: "" }));
     }
   };
 
   const handleBlur = (name: string) => {
-    setTouched(prev => ({ ...prev, [name]: true }));
-    
+    setTouched((prev) => ({ ...prev, [name]: true }));
+
     // Validate field on blur
-    const field = fields.find(f => f.name === name);
+    const field = fields.find((f) => f.name === name);
     if (field) {
-      const validation = field.validation || validationRules[field.type as keyof typeof validationRules];
+      const validation =
+        field.validation ||
+        validationRules[field.type as keyof typeof validationRules];
       if (validation) {
         const value = formData[name];
         let result: boolean | string;
-        
+
         // Safe validation wrapper with proper type handling
         try {
           if (field.type === "number") {
             // For number fields, convert to number first
-            const numValue = typeof value === "string" ? parseFloat(value) : value;
+            const numValue =
+              typeof value === "string" ? parseFloat(value) : value;
             // Cast validation function to accept any type
-            const validationFn = validation as (value: unknown) => boolean | string;
+            const validationFn = validation as (
+              value: unknown
+            ) => boolean | string;
             result = validationFn(numValue);
           } else if (field.type === "checkbox") {
             // For checkbox fields, ensure boolean
-            const boolValue = typeof value === "boolean" ? value : Boolean(value);
-            const validationFn = validation as (value: unknown) => boolean | string;
+            const boolValue =
+              typeof value === "boolean" ? value : Boolean(value);
+            const validationFn = validation as (
+              value: unknown
+            ) => boolean | string;
             result = validationFn(boolValue);
           } else {
             // For text fields, ensure string
             const strValue = typeof value === "string" ? value : String(value);
-            const validationFn = validation as (value: unknown) => boolean | string;
+            const validationFn = validation as (
+              value: unknown
+            ) => boolean | string;
             result = validationFn(strValue);
           }
         } catch {
           result = "Invalid value";
         }
-        
+
         if (result !== true) {
-          setErrors(prev => ({ ...prev, [name]: typeof result === "string" ? result : "Invalid value" }));
+          setErrors((prev) => ({
+            ...prev,
+            [name]: typeof result === "string" ? result : "Invalid value",
+          }));
         } else {
-          setErrors(prev => ({ ...prev, [name]: "" }));
+          setErrors((prev) => ({ ...prev, [name]: "" }));
         }
       }
     }
@@ -101,24 +130,41 @@ export const Form: React.FC<FormProps> = ({
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     // Validate all fields
-    const validationRulesMap: Record<string, (value: unknown) => boolean | string> = {};
-    fields.forEach(field => {
+    const validationRulesMap: Record<
+      string,
+      (value: unknown) => boolean | string
+    > = {};
+    fields.forEach((field) => {
       if (field.validation) {
         validationRulesMap[field.name] = field.validation;
       } else if (field.required) {
         validationRulesMap[field.name] = (value: unknown) => {
           try {
             if (field.type === "checkbox") {
-              const boolValue = typeof value === "boolean" ? value : Boolean(value);
-              return validateRequired(boolValue as boolean) || "This field is required";
+              const boolValue =
+                typeof value === "boolean" ? value : Boolean(value);
+              return (
+                validateRequired(boolValue as boolean) ||
+                "This field is required"
+              );
             } else if (field.type === "number") {
-              const numValue = typeof value === "string" ? parseFloat(value) : value;
-              return validateRequired(numValue as string | number | boolean | undefined) || "This field is required";
+              const numValue =
+                typeof value === "string" ? parseFloat(value) : value;
+              return (
+                validateRequired(
+                  numValue as string | number | boolean | undefined
+                ) || "This field is required"
+              );
             } else {
-              const strValue = typeof value === "string" ? value : String(value);
-              return validateRequired(strValue as string | number | boolean | undefined) || "This field is required";
+              const strValue =
+                typeof value === "string" ? value : String(value);
+              return (
+                validateRequired(
+                  strValue as string | number | boolean | undefined
+                ) || "This field is required"
+              );
             }
           } catch {
             return "This field is required";
@@ -127,13 +173,18 @@ export const Form: React.FC<FormProps> = ({
       }
     });
 
-    const { isValid, errors: validationErrors } = validateForm(formData, validationRulesMap);
-    
+    const { isValid, errors: validationErrors } = validateForm(
+      formData,
+      validationRulesMap
+    );
+
     if (isValid) {
       onSubmit(formData);
     } else {
       setErrors(validationErrors);
-      setTouched(fields.reduce((acc, field) => ({ ...acc, [field.name]: true }), {}));
+      setTouched(
+        fields.reduce((acc, field) => ({ ...acc, [field.name]: true }), {})
+      );
     }
   };
 
@@ -142,7 +193,16 @@ export const Form: React.FC<FormProps> = ({
     if (field.type === "number" && typeof value !== "number") {
       value = value === undefined || value === null ? "" : String(value);
     } else if (
-      ["text", "email", "password", "tel", "url", "date", "textarea", "select"].includes(field.type)
+      [
+        "text",
+        "email",
+        "password",
+        "tel",
+        "url",
+        "date",
+        "textarea",
+        "select",
+      ].includes(field.type)
     ) {
       value = value === undefined || value === null ? "" : String(value);
     } else if (field.type === "checkbox") {
@@ -183,7 +243,7 @@ export const Form: React.FC<FormProps> = ({
             className={baseClasses}
           >
             <option value="">{field.placeholder || "Select..."}</option>
-            {field.options?.map(option => (
+            {field.options?.map((option) => (
               <option key={option.value} value={option.value}>
                 {option.label}
               </option>
@@ -211,7 +271,7 @@ export const Form: React.FC<FormProps> = ({
       case "radio":
         return (
           <div className="space-y-2">
-            {field.options?.map(option => (
+            {field.options?.map((option) => (
               <div key={option.value} className="flex items-center">
                 <input
                   type="radio"
@@ -258,9 +318,9 @@ export const Form: React.FC<FormProps> = ({
               {field.required && <span className="text-red-500 ml-1">*</span>}
             </label>
           )}
-          
+
           {renderField(field)}
-          
+
           {touched[field.name] && errors[field.name] && (
             <p className="mt-1 text-sm text-red-600 dark:text-red-400">
               {errors[field.name]}
@@ -277,7 +337,7 @@ export const Form: React.FC<FormProps> = ({
         >
           {loading ? "Loading..." : submitText}
         </button>
-        
+
         {showCancel && (
           <button
             type="button"
@@ -290,4 +350,4 @@ export const Form: React.FC<FormProps> = ({
       </div>
     </form>
   );
-}; 
+};

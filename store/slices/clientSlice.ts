@@ -4,7 +4,9 @@ import { CodeGenerator } from "@/utils/codeGenerator";
 
 export interface ClientSlice {
   clients: Client[];
-  addClient: (client: Omit<Client, "id" | "clientCode" | "createdAt" | "updatedAt">) => void;
+  addClient: (
+    client: Omit<Client, "id" | "clientCode" | "createdAt" | "updatedAt">
+  ) => void;
   updateClient: (id: string, client: Partial<Client>) => void;
   deleteClient: (id: string) => void;
   getClientById: (id: string) => Client | undefined;
@@ -13,7 +15,7 @@ export interface ClientSlice {
 
 export const createClientSlice: StateCreator<ClientSlice> = (set, get) => ({
   clients: [],
-  
+
   addClient: (client) => {
     const newClient: Client = {
       ...client,
@@ -47,4 +49,4 @@ export const createClientSlice: StateCreator<ClientSlice> = (set, get) => ({
     // This will be implemented when we have access to projects
     return [];
   },
-}); 
+});

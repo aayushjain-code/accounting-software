@@ -293,37 +293,67 @@ declare global {
     electronAPI?: {
       // Database operations
       getClients: () => Promise<Client[]>;
-      getClient: (id: number) => Promise<Client>;
-      createClient: (client: Omit<Client, "id" | "clientCode" | "createdAt" | "updatedAt">) => Promise<Client>;
-      updateClient: (id: number, client: Partial<Client>) => Promise<Client>;
-      deleteClient: (id: number) => Promise<void>;
+      getClient: (id: string) => Promise<Client>;
+      createClient: (
+        client: Omit<Client, "id" | "clientCode" | "createdAt" | "updatedAt">
+      ) => Promise<Client>;
+      updateClient: (id: string, client: Partial<Client>) => Promise<Client>;
+      deleteClient: (id: string) => Promise<void>;
 
       getProjects: () => Promise<Project[]>;
-      getProject: (id: number) => Promise<Project>;
-      createProject: (project: Omit<Project, "id" | "projectCode" | "createdAt" | "updatedAt">) => Promise<Project>;
-      updateProject: (id: number, project: Partial<Project>) => Promise<Project>;
-      deleteProject: (id: number) => Promise<void>;
+      getProject: (id: string) => Promise<Project>;
+      createProject: (
+        project: Omit<Project, "id" | "projectCode" | "createdAt" | "updatedAt">
+      ) => Promise<Project>;
+      updateProject: (
+        id: string,
+        project: Partial<Project>
+      ) => Promise<Project>;
+      deleteProject: (id: string) => Promise<void>;
 
       getTimesheets: () => Promise<Timesheet[]>;
-      getTimesheet: (id: number) => Promise<Timesheet>;
-      createTimesheet: (timesheet: Omit<Timesheet, "id" | "timesheetCode" | "createdAt" | "updatedAt">) => Promise<Timesheet>;
-      updateTimesheet: (id: number, timesheet: Partial<Timesheet>) => Promise<Timesheet>;
-      deleteTimesheet: (id: number) => Promise<void>;
+      getTimesheet: (id: string) => Promise<Timesheet>;
+      createTimesheet: (
+        timesheet: Omit<
+          Timesheet,
+          "id" | "timesheetCode" | "createdAt" | "updatedAt"
+        >
+      ) => Promise<Timesheet>;
+      updateTimesheet: (
+        id: string,
+        timesheet: Partial<Timesheet>
+      ) => Promise<Timesheet>;
+      deleteTimesheet: (id: string) => Promise<void>;
 
       getInvoices: () => Promise<Invoice[]>;
-      getInvoice: (id: number) => Promise<Invoice>;
-      createInvoice: (invoice: Omit<Invoice, "id" | "invoiceNumber" | "createdAt" | "updatedAt">) => Promise<Invoice>;
-      updateInvoice: (id: number, invoice: Partial<Invoice>) => Promise<Invoice>;
-      deleteInvoice: (id: number) => Promise<void>;
+      getInvoice: (id: string) => Promise<Invoice>;
+      createInvoice: (
+        invoice: Omit<
+          Invoice,
+          "id" | "invoiceNumber" | "createdAt" | "updatedAt"
+        >
+      ) => Promise<Invoice>;
+      updateInvoice: (
+        id: string,
+        invoice: Partial<Invoice>
+      ) => Promise<Invoice>;
+      deleteInvoice: (id: string) => Promise<void>;
 
       getExpenses: () => Promise<Expense[]>;
-      getExpense: (id: number) => Promise<Expense>;
-      createExpense: (expense: Omit<Expense, "id" | "expenseCode" | "createdAt" | "updatedAt">) => Promise<Expense>;
-      updateExpense: (id: number, expense: Partial<Expense>) => Promise<Expense>;
-      deleteExpense: (id: number) => Promise<void>;
+      getExpense: (id: string) => Promise<Expense>;
+      createExpense: (
+        expense: Omit<Expense, "id" | "expenseCode" | "createdAt" | "updatedAt">
+      ) => Promise<Expense>;
+      updateExpense: (
+        id: string,
+        expense: Partial<Expense>
+      ) => Promise<Expense>;
+      deleteExpense: (id: string) => Promise<void>;
 
       getCompanyProfile: () => Promise<CompanyProfile>;
-      updateCompanyProfile: (profile: Partial<CompanyProfile>) => Promise<CompanyProfile>;
+      updateCompanyProfile: (
+        profile: Partial<CompanyProfile>
+      ) => Promise<CompanyProfile>;
 
       getStatistics: () => Promise<DashboardStats>;
       getAllData: () => Promise<AccountingData>;

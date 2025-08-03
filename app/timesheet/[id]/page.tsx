@@ -76,14 +76,52 @@ const StatusBadge = React.memo(({ status }: { status: string }) => {
 
 StatusBadge.displayName = "StatusBadge";
 
+// Status Change Component
+const StatusChangeDropdown = React.memo(({ 
+  currentStatus, 
+  onStatusChange 
+}: { 
+  currentStatus: string; 
+  onStatusChange: (status: string) => void; 
+}) => {
+  const statusOptions = [
+    { value: "draft", label: "Draft" },
+    { value: "submitted", label: "Submitted" },
+    { value: "approved", label: "Approved" },
+    { value: "rejected", label: "Rejected" },
+    { value: "invoiced", label: "Invoiced" },
+  ];
+
+  return (
+    <div className="flex items-center space-x-3">
+      <StatusBadge status={currentStatus} />
+      <select
+        value={currentStatus}
+        onChange={(e) => onStatusChange(e.target.value)}
+        className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+      >
+        {statusOptions.map((option) => (
+          <option key={option.value} value={option.value}>
+            {option.label}
+          </option>
+        ))}
+      </select>
+    </div>
+  );
+});
+
+StatusChangeDropdown.displayName = "StatusChangeDropdown";
+
 // Enhanced Work Calculation Card Component
 const WorkCalculationCard = React.memo(
   ({
     timesheet,
     project,
+    onStatusChange,
   }: {
     timesheet: Timesheet;
     project: Project | undefined;
+    onStatusChange: (status: string) => void;
   }) => {
     return (
       <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-8">
@@ -92,7 +130,10 @@ const WorkCalculationCard = React.memo(
             <CalculatorIcon className="h-6 w-6 mr-3 text-primary-600" />
             Work Calculations
           </h3>
-          <StatusBadge status={timesheet.status} />
+          <StatusChangeDropdown 
+            currentStatus={timesheet.status} 
+            onStatusChange={onStatusChange}
+          />
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
@@ -366,46 +407,6 @@ export default function TimesheetDetailPage({
     return projects.find((p) => p.id === timesheet?.projectId);
   }, [projects, timesheet]);
 
-  const handleStatusChange = React.useCallback(
-    (newStatus: string) => {
-      if (!timesheet) return;
-
-      const updateData: Partial<Timesheet> = {
-        status: newStatus as any,
-      };
-
-      switch (newStatus) {
-        case "submitted":
-          updateData.submittedAt = new Date();
-          break;
-        case "approved":
-          updateData.approvedAt = new Date();
-          updateData.approvedBy = "admin";
-          break;
-        case "rejected":
-          updateData.rejectionReason = "Rejected by admin";
-          break;
-        case "invoiced":
-          updateData.invoicedAt = new Date();
-          // Generate invoice if not already linked
-          if (!timesheet.invoiceId) {
-            try {
-              const invoice = generateInvoiceFromTimesheet(timesheet.id);
-              updateData.invoiceId = invoice.id;
-              toast.success("Invoice generated successfully");
-            } catch (error) {
-              toast.error("Failed to generate invoice");
-            }
-          }
-          break;
-      }
-
-      updateTimesheet(timesheet.id, updateData);
-      toast.success(`Timesheet ${newStatus} successfully`);
-    },
-    [timesheet, updateTimesheet, generateInvoiceFromTimesheet]
-  );
-
   const handleFileUpload = async () => {
     if (uploadedFiles.length === 0) return;
 
@@ -442,9 +443,16 @@ export default function TimesheetDetailPage({
   const handleFileDelete = (fileId: string) => {
     if (timesheet) {
       removeTimesheetFile(timesheet.id, fileId);
-      toast.success("File deleted successfully!");
+      toast.success("File deleted successfully");
     }
   };
+
+  const handleStatusChange = React.useCallback(async (newStatus: string) => {
+    if (timesheet && newStatus !== timesheet.status) {
+      await updateTimesheet(timesheet.id, { status: newStatus as any });
+      toast.success(`Status updated to ${newStatus}`);
+    }
+  }, [timesheet, updateTimesheet]);
 
   if (!timesheet) {
     return (
@@ -491,7 +499,7 @@ export default function TimesheetDetailPage({
       </div>
 
       {/* Work Calculations */}
-      <WorkCalculationCard timesheet={timesheet} project={project} />
+      <WorkCalculationCard timesheet={timesheet} project={project} onStatusChange={handleStatusChange} />
 
       {/* Status Actions */}
       <StatusActions

@@ -26,7 +26,7 @@ class SQLiteManager {
     // Clients table
     this.db.exec(`
       CREATE TABLE IF NOT EXISTS clients (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        id TEXT PRIMARY KEY,
         clientCode TEXT UNIQUE NOT NULL,
         name TEXT NOT NULL,
         email TEXT,
@@ -44,14 +44,14 @@ class SQLiteManager {
     // Projects table
     this.db.exec(`
       CREATE TABLE IF NOT EXISTS projects (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        id TEXT PRIMARY KEY,
         projectCode TEXT UNIQUE NOT NULL,
-        clientId INTEGER,
+        clientId TEXT,
         name TEXT NOT NULL,
         description TEXT,
         budget REAL DEFAULT 0,
         billingRate REAL DEFAULT 0,
-        billingTerms TEXT,
+        billingTerms INTEGER DEFAULT 30,
         startDate DATE,
         endDate DATE,
         status TEXT DEFAULT 'active',
@@ -66,10 +66,10 @@ class SQLiteManager {
     // Timesheets table
     this.db.exec(`
       CREATE TABLE IF NOT EXISTS timesheets (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        id TEXT PRIMARY KEY,
         timesheetCode TEXT UNIQUE NOT NULL,
-        projectId INTEGER,
-        clientId INTEGER,
+        projectId TEXT,
+        clientId TEXT,
         date DATE NOT NULL,
         month TEXT,
         year INTEGER,
@@ -98,11 +98,11 @@ class SQLiteManager {
     // Invoices table
     this.db.exec(`
       CREATE TABLE IF NOT EXISTS invoices (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        id TEXT PRIMARY KEY,
         invoiceNumber TEXT UNIQUE NOT NULL,
-        clientId INTEGER,
-        projectId INTEGER,
-        timesheetId INTEGER,
+        clientId TEXT,
+        projectId TEXT,
+        timesheetId TEXT,
         issueDate DATE NOT NULL,
         dueDate DATE NOT NULL,
         subtotal REAL DEFAULT 0,
@@ -123,7 +123,7 @@ class SQLiteManager {
     // Expenses table
     this.db.exec(`
       CREATE TABLE IF NOT EXISTS expenses (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        id TEXT PRIMARY KEY,
         expenseCode TEXT UNIQUE NOT NULL,
         category TEXT NOT NULL,
         description TEXT,
@@ -139,7 +139,7 @@ class SQLiteManager {
     // Daily Logs table
     this.db.exec(`
       CREATE TABLE IF NOT EXISTS daily_logs (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        id TEXT PRIMARY KEY,
         date DATE NOT NULL,
         title TEXT NOT NULL,
         description TEXT,
@@ -154,7 +154,7 @@ class SQLiteManager {
     // Company Profile table
     this.db.exec(`
       CREATE TABLE IF NOT EXISTS company_profile (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        id TEXT PRIMARY KEY,
         name TEXT NOT NULL,
         email TEXT,
         phone TEXT,
@@ -197,10 +197,11 @@ class SQLiteManager {
 
   createClient(client) {
     const stmt = this.db.prepare(`
-      INSERT INTO clients (clientCode, name, email, phone, address, gstNumber, annualRevenue, industry, notes)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+      INSERT INTO clients (id, clientCode, name, email, phone, address, gstNumber, annualRevenue, industry, notes)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `);
     return stmt.run(
+      client.id,
       client.clientCode,
       client.name,
       client.email,
@@ -257,10 +258,11 @@ class SQLiteManager {
 
   createProject(project) {
     const stmt = this.db.prepare(`
-      INSERT INTO projects (projectCode, clientId, name, description, budget, billingRate, billingTerms, startDate, endDate, status, costBreakdown, totalCost)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      INSERT INTO projects (id, projectCode, clientId, name, description, budget, billingRate, billingTerms, startDate, endDate, status, costBreakdown, totalCost)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `);
     return stmt.run(
+      project.id,
       project.projectCode,
       project.clientId,
       project.name,
@@ -322,10 +324,11 @@ class SQLiteManager {
 
   createTimesheet(timesheet) {
     const stmt = this.db.prepare(`
-      INSERT INTO timesheets (timesheetCode, projectId, clientId, date, month, year, daysWorked, daysLeave, hoursPerDay, totalWorkingDays, totalHours, billingRate, totalAmount, description, status, attachments)
+      INSERT INTO timesheets (id, timesheetCode, projectId, clientId, date, month, year, daysWorked, daysLeave, hoursPerDay, totalWorkingDays, totalHours, billingRate, totalAmount, description, status, attachments)
       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `);
     return stmt.run(
+      timesheet.id,
       timesheet.timesheetCode,
       timesheet.projectId,
       timesheet.clientId,
@@ -391,10 +394,11 @@ class SQLiteManager {
 
   createInvoice(invoice) {
     const stmt = this.db.prepare(`
-      INSERT INTO invoices (invoiceNumber, clientId, projectId, timesheetId, issueDate, dueDate, subtotal, taxRate, taxAmount, total, status, paymentDate, notes)
+      INSERT INTO invoices (id, invoiceNumber, clientId, projectId, timesheetId, issueDate, dueDate, subtotal, taxRate, taxAmount, total, status, paymentDate, notes)
       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `);
     return stmt.run(
+      invoice.id,
       invoice.invoiceNumber,
       invoice.clientId,
       invoice.projectId,
@@ -437,10 +441,11 @@ class SQLiteManager {
 
   createExpense(expense) {
     const stmt = this.db.prepare(`
-      INSERT INTO expenses (expenseCode, category, description, amount, date, receipt, notes)
-      VALUES (?, ?, ?, ?, ?, ?, ?)
+      INSERT INTO expenses (id, expenseCode, category, description, amount, date, receipt, notes)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?)
     `);
     return stmt.run(
+      expense.id,
       expense.expenseCode,
       expense.category,
       expense.description,
@@ -477,10 +482,11 @@ class SQLiteManager {
 
   createDailyLog(log) {
     const stmt = this.db.prepare(`
-      INSERT INTO daily_logs (date, title, description, category, priority, tags)
-      VALUES (?, ?, ?, ?, ?, ?)
+      INSERT INTO daily_logs (id, date, title, description, category, priority, tags)
+      VALUES (?, ?, ?, ?, ?, ?, ?)
     `);
     return stmt.run(
+      log.id,
       log.date,
       log.title,
       log.description,
@@ -543,10 +549,11 @@ class SQLiteManager {
       return stmt.run(...values, existing.id);
     } else {
       const stmt = this.db.prepare(`
-        INSERT INTO company_profile (name, email, phone, address, gstNumber, panNumber, bankDetails, logo, annualRevenue)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+        INSERT INTO company_profile (id, name, email, phone, address, gstNumber, panNumber, bankDetails, logo, annualRevenue)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
       `);
       return stmt.run(
+        profile.id,
         profile.name,
         profile.email,
         profile.phone,

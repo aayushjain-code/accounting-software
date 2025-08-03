@@ -64,7 +64,7 @@ export const Form: React.FC<FormProps> = ({
     if (field) {
       const validation = field.validation || validationRules[field.type as keyof typeof validationRules];
       if (validation) {
-        const result = validation(formData[name]);
+        const result = validation(formData[name] as any);
         if (result !== true) {
           setErrors(prev => ({ ...prev, [name]: typeof result === "string" ? result : "Invalid value" }));
         } else {

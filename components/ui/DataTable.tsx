@@ -3,15 +3,13 @@ import { StatusBadge } from "./StatusBadge";
 import { formatCurrency, formatDate, formatNumber } from "@/utils/formatters";
 
 interface Column<T> {
-  key: keyof T | string;
-  header: string;
-  render?: (value: any, item: T) => React.ReactNode;
+  key: keyof T;
+  label: string;
   sortable?: boolean;
-  width?: string;
-  className?: string;
+  render?: (value: T[keyof T], item: T) => React.ReactNode;
 }
 
-interface DataTableProps<T> {
+interface DataTableProps<T extends Record<string, unknown>> {
   data: T[];
   columns: Column<T>[];
   sortable?: boolean;

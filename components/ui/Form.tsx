@@ -7,7 +7,7 @@ interface FormField {
   type: "text" | "email" | "password" | "number" | "tel" | "url" | "date" | "textarea" | "select" | "checkbox" | "radio";
   placeholder?: string;
   required?: boolean;
-  validation?: (value: any) => boolean | string;
+  validation?: (value: string | number | boolean) => boolean | string;
   options?: { value: string; label: string }[];
   rows?: number;
   min?: number;
@@ -18,8 +18,8 @@ interface FormField {
 
 interface FormProps {
   fields: FormField[];
-  onSubmit: (data: Record<string, any>) => void;
-  initialData?: Record<string, any>;
+  onSubmit: (data: Record<string, string | number | boolean>) => void;
+  initialData?: Record<string, string | number | boolean>;
   submitText?: string;
   loading?: boolean;
   className?: string;
@@ -39,7 +39,7 @@ export const Form: React.FC<FormProps> = ({
   onCancel,
   cancelText = "Cancel",
 }) => {
-  const [formData, setFormData] = useState<Record<string, any>>(initialData);
+  const [formData, setFormData] = useState<Record<string, string | number | boolean>>(initialData);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [touched, setTouched] = useState<Record<string, boolean>>({});
 
@@ -47,7 +47,7 @@ export const Form: React.FC<FormProps> = ({
     setFormData(initialData);
   }, [initialData]);
 
-  const handleChange = (name: string, value: any) => {
+  const handleChange = (name: string, value: string | number | boolean) => {
     setFormData(prev => ({ ...prev, [name]: value }));
     
     // Clear error when user starts typing
@@ -64,7 +64,7 @@ export const Form: React.FC<FormProps> = ({
     if (field) {
       const validation = field.validation || validationRules[field.type as keyof typeof validationRules];
       if (validation) {
-        const result = validation(formData[name] as any);
+        const result = validation(formData[name] as string | number | boolean);
         if (result !== true) {
           setErrors(prev => ({ ...prev, [name]: typeof result === "string" ? result : "Invalid value" }));
         } else {
@@ -78,7 +78,7 @@ export const Form: React.FC<FormProps> = ({
     e.preventDefault();
     
     // Validate all fields
-    const validationRulesMap: Record<string, (value: any) => boolean | string> = {};
+    const validationRulesMap: Record<string, (value: string | number | boolean) => boolean | string> = {};
     fields.forEach(field => {
       if (field.validation) {
         validationRulesMap[field.name] = field.validation;

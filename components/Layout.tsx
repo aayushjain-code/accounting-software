@@ -17,6 +17,7 @@ import {
   SunIcon,
   MoonIcon,
   ArrowRightOnRectangleIcon,
+  CloudArrowUpIcon,
 } from "@heroicons/react/24/outline";
 import { useTheme } from "@/hooks/useTheme";
 import clsx from "clsx";

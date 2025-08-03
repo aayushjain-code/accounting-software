@@ -277,6 +277,16 @@ export interface DashboardStats {
   invoicedTimesheets: number;
 }
 
+export interface AccountingData {
+  clients: Client[];
+  projects: Project[];
+  timesheets: Timesheet[];
+  invoices: Invoice[];
+  expenses: Expense[];
+  dailyLogs: DailyLog[];
+  companyProfile: CompanyProfile;
+}
+
 // Global window interface for Electron API
 declare global {
   interface Window {

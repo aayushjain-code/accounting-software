@@ -13,6 +13,7 @@ import {
   CurrencyRupeeIcon,
   CalculatorIcon,
   MagnifyingGlassIcon,
+  InformationCircleIcon,
 } from "@heroicons/react/24/outline";
 import {
   format,
@@ -881,7 +882,9 @@ export default function TimesheetPage() {
       const timesheetData = {
         projectId: formData.projectId as string,
         month: formData.month as string,
+        year: new Date(formData.month as string).getFullYear(),
         daysWorked: formData.daysWorked as number,
+        daysLeave: 0,
         hoursPerDay: formData.hoursPerDay as number,
         billingRate: formData.billingRate as number,
         totalWorkingDays: formData.totalWorkingDays as number,
@@ -974,7 +977,7 @@ export default function TimesheetPage() {
             </div>
             <Tooltip content="Search across project names, months, and status. Try 'draft', 'approved', or project names.">
               <div className="p-2 text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors">
-                <QuestionMarkCircleIcon className="h-5 w-5" />
+                <InformationCircleIcon className="h-5 w-5" />
               </div>
             </Tooltip>
           </div>

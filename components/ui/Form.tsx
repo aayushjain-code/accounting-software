@@ -7,7 +7,7 @@ interface FormField {
   type: "text" | "email" | "password" | "number" | "tel" | "url" | "date" | "textarea" | "select" | "checkbox" | "radio";
   placeholder?: string;
   required?: boolean;
-  validation?: (value: string | number | boolean) => boolean | string;
+  validation?: (value: unknown) => boolean | string;
   options?: { value: string; label: string }[];
   rows?: number;
   min?: number;
@@ -112,13 +112,13 @@ export const Form: React.FC<FormProps> = ({
           try {
             if (field.type === "checkbox") {
               const boolValue = typeof value === "boolean" ? value : Boolean(value);
-              return validateRequired(boolValue) || "This field is required";
+              return validateRequired(boolValue as boolean) || "This field is required";
             } else if (field.type === "number") {
               const numValue = typeof value === "string" ? parseFloat(value) : value;
-              return validateRequired(numValue) || "This field is required";
+              return validateRequired(numValue as string | number | boolean | undefined) || "This field is required";
             } else {
               const strValue = typeof value === "string" ? value : String(value);
-              return validateRequired(strValue) || "This field is required";
+              return validateRequired(strValue as string | number | boolean | undefined) || "This field is required";
             }
           } catch {
             return "This field is required";
@@ -138,7 +138,16 @@ export const Form: React.FC<FormProps> = ({
   };
 
   const renderField = (field: FormField) => {
-    const value = formData[field.name] || "";
+    let value = formData[field.name];
+    if (field.type === "number" && typeof value !== "number") {
+      value = value === undefined || value === null ? "" : String(value);
+    } else if (
+      ["text", "email", "password", "tel", "url", "date", "textarea", "select"].includes(field.type)
+    ) {
+      value = value === undefined || value === null ? "" : String(value);
+    } else if (field.type === "checkbox") {
+      value = Boolean(value);
+    }
     const error = errors[field.name];
     const isTouched = touched[field.name];
     const showError = isTouched && error;
@@ -155,7 +164,7 @@ export const Form: React.FC<FormProps> = ({
         return (
           <textarea
             name={field.name}
-            value={value}
+            value={value as string}
             onChange={(e) => handleChange(field.name, e.target.value)}
             onBlur={() => handleBlur(field.name)}
             placeholder={field.placeholder}
@@ -168,7 +177,7 @@ export const Form: React.FC<FormProps> = ({
         return (
           <select
             name={field.name}
-            value={value}
+            value={value as string}
             onChange={(e) => handleChange(field.name, e.target.value)}
             onBlur={() => handleBlur(field.name)}
             className={baseClasses}
@@ -226,7 +235,7 @@ export const Form: React.FC<FormProps> = ({
           <input
             type={field.type}
             name={field.name}
-            value={value}
+            value={value as string}
             onChange={(e) => handleChange(field.name, e.target.value)}
             onBlur={() => handleBlur(field.name)}
             placeholder={field.placeholder}

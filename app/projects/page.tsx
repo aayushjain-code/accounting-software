@@ -61,9 +61,7 @@ export default function ProjectsPage() {
       status: formData.status,
       budget: parseFloat(formData.budget),
       billingTerms: parseInt(formData.billingTerms),
-      billingRate: formData.billingRate
-        ? parseFloat(formData.billingRate)
-        : undefined,
+      billingRate: formData.billingRate ? parseFloat(formData.billingRate) : 0,
       estimatedHours: formData.estimatedHours
         ? parseFloat(formData.estimatedHours)
         : undefined,

@@ -2,7 +2,7 @@
 
 import { useState, useMemo } from "react";
 import { useAccountingStore } from "@/store";
-import { Invoice } from "@/types";
+import { Invoice, InvoiceFile } from "@/types";
 import { PlusIcon, PencilIcon, TrashIcon } from "@heroicons/react/24/outline";
 import { format } from "date-fns";
 import toast from "react-hot-toast";
@@ -11,7 +11,6 @@ import FileUpload from "@/components/FileUpload";
 import FileList from "@/components/FileList";
 import { CloudArrowUpIcon } from "@heroicons/react/24/outline";
 import React from "react";
-import { InvoiceFile } from "@/types";
 
 export default function InvoicesPage() {
   const [uploadedFiles, setUploadedFiles] = useState<File[]>([]);
@@ -172,11 +171,18 @@ export default function InvoicesPage() {
     setIsUploading(true);
     try {
       for (const file of uploadedFiles) {
-        const fileData = {
-          name: file.name,
-          size: file.size,
-          type: file.type,
-          lastModified: file.lastModified,
+        const fileData: InvoiceFile = {
+          id: `file_${Date.now()}_${Math.random()}`,
+          invoiceId: editingInvoice?.id || "temp",
+          fileName: `invoice_${editingInvoice?.id || "temp"}_${file.name}`,
+          originalName: file.name,
+          fileSize: file.size,
+          fileType: file.type || `.${file.name.split(".").pop()}`,
+          uploadDate: new Date(),
+          uploadedBy: "Admin User",
+          filePath: `/uploads/invoices/${file.name}`,
+          createdAt: new Date(),
+          updatedAt: new Date(),
         };
 
         addInvoiceFile(editingInvoice?.id || "temp", fileData);

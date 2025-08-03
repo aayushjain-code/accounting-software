@@ -169,8 +169,12 @@ const LogModal = React.memo(
       title: "",
       description: "",
       date: format(new Date(), "yyyy-MM-dd"),
-      category: "accounting" as const,
-      priority: "medium" as const,
+      category: "accounting" as
+        | "accounting"
+        | "important"
+        | "reminder"
+        | "milestone",
+      priority: "medium" as "low" | "medium" | "high" | "critical",
       tags: "",
     });
 
@@ -473,7 +477,9 @@ export default function DailyLogsPage() {
     };
   }, [dailyLogs]);
 
-  const handleSubmit = (data: Omit<DailyLog, "id" | "createdAt" | "updatedAt">) => {
+  const handleSubmit = (
+    data: Omit<DailyLog, "id" | "createdAt" | "updatedAt">
+  ) => {
     if (editingLog) {
       updateDailyLog(editingLog.id, data);
     } else {

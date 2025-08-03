@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useAccountingStore } from "@/store";
-import { Expense } from "@/types";
+import { Expense, ExpenseFile } from "@/types";
 import { PlusIcon, PencilIcon, TrashIcon } from "@heroicons/react/24/outline";
 import { format } from "date-fns";
 import toast from "react-hot-toast";
@@ -11,7 +11,6 @@ import FileUpload from "@/components/FileUpload";
 import FileList from "@/components/FileList";
 import { CloudArrowUpIcon } from "@heroicons/react/24/outline";
 import React from "react";
-import { ExpenseFile } from "@/types";
 
 export default function ExpensesPage() {
   const [uploadedFiles, setUploadedFiles] = useState<File[]>([]);
@@ -87,7 +86,7 @@ export default function ExpensesPage() {
       description: expense.description,
       amount: expense.amount.toString(),
       date: format(new Date(expense.date), "yyyy-MM-dd"),
-      projectId: expense.projectId,
+      projectId: expense.projectId || "",
     });
     setIsModalOpen(true);
   };
@@ -108,11 +107,18 @@ export default function ExpensesPage() {
     setIsUploading(true);
     try {
       for (const file of uploadedFiles) {
-        const fileData = {
-          name: file.name,
-          size: file.size,
-          type: file.type,
-          lastModified: file.lastModified,
+        const fileData: ExpenseFile = {
+          id: `file_${Date.now()}_${Math.random()}`,
+          expenseId: editingExpense?.id || "temp",
+          fileName: `expense_${editingExpense?.id || "temp"}_${file.name}`,
+          originalName: file.name,
+          fileSize: file.size,
+          fileType: file.type || `.${file.name.split(".").pop()}`,
+          uploadDate: new Date(),
+          uploadedBy: "Admin User",
+          filePath: `/uploads/expenses/${file.name}`,
+          createdAt: new Date(),
+          updatedAt: new Date(),
         };
 
         addExpenseFile(editingExpense?.id || "temp", fileData);

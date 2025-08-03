@@ -1,5 +1,5 @@
 import { StateCreator } from "zustand";
-import { Client } from "@/types";
+import { Client, Project } from "@/types";
 import { CodeGenerator } from "@/utils/codeGenerator";
 
 export interface ClientSlice {

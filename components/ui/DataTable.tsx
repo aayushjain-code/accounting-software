@@ -5,7 +5,10 @@ import { formatCurrency, formatDate, formatNumber } from "@/utils/formatters";
 interface Column<T> {
   key: keyof T;
   label: string;
+  header?: string;
   sortable?: boolean;
+  width?: string;
+  className?: string;
   render?: (value: T[keyof T], item: T) => React.ReactNode;
 }
 
@@ -22,7 +25,7 @@ interface DataTableProps<T extends Record<string, unknown>> {
   loading?: boolean;
 }
 
-export function DataTable<T extends Record<string, any>>({
+export function DataTable<T extends Record<string, unknown>>({
   data,
   columns,
   sortable = true,
@@ -171,7 +174,7 @@ export function DataTable<T extends Record<string, any>>({
                   onClick={() => column.sortable && handleSort(column.key)}
                 >
                   <div className="flex items-center gap-2">
-                    {column.header}
+                    {column.label}
                     {column.sortable && sortable && sortColumn === column.key && (
                       <span>{sortDirection === "asc" ? "↑" : "↓"}</span>
                     )}

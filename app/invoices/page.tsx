@@ -17,7 +17,6 @@ import { ActionTooltip } from "@/components/Tooltip";
 import { ConfirmationDialog } from "@/components/ConfirmationDialog";
 import Modal from "@/components/Modal";
 import { useSearch } from "@/hooks/useSearch";
-import { ViewToggle } from "@/components/ViewToggle";
 import { InvoicesTable } from "@/components/InvoicesTable";
 
 export default function InvoicesPage() {
@@ -34,7 +33,18 @@ export default function InvoicesPage() {
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [invoiceToDelete, setInvoiceToDelete] = useState<string | null>(null);
-  const [viewMode, setViewMode] = useState<"cards" | "table">("cards");
+  const [formData, setFormData] = useState({
+    invoiceNumber: "",
+    clientId: "",
+    projectId: "",
+    amount: "",
+    issueDate: format(new Date(), "yyyy-MM-dd"),
+    dueDate: format(
+      new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
+      "yyyy-MM-dd"
+    ),
+    status: "draft" as "draft" | "sent" | "paid",
+  });
 
   // Search and filter functionality
   const {
@@ -54,19 +64,6 @@ export default function InvoicesPage() {
 
     return filtered;
   }, [searchFilteredInvoices, statusFilter]);
-
-  const [formData, setFormData] = useState({
-    invoiceNumber: "",
-    clientId: "",
-    projectId: "",
-    amount: "",
-    issueDate: format(new Date(), "yyyy-MM-dd"),
-    dueDate: format(
-      new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
-      "yyyy-MM-dd"
-    ),
-    status: "draft" as "draft" | "sent" | "paid",
-  });
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -187,11 +184,6 @@ export default function InvoicesPage() {
             </div>
           </div>
           <div className="flex items-center space-x-3">
-            <ViewToggle
-              viewMode={viewMode}
-              onViewChange={setViewMode}
-              className="mr-2"
-            />
             <ActionTooltip
               content="Create New Invoice"
               action="Generate a new invoice for a client"
@@ -241,121 +233,16 @@ export default function InvoicesPage() {
       </div>
 
       {/* Content based on view mode */}
-      {viewMode === "cards" ? (
-        /* Cards View */
-        <div className="space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {filteredInvoices.map((invoice) => {
-              const client = clients.find((c) => c.id === invoice.clientId);
-              const project = projects.find((p) => p.id === invoice.projectId);
-              return (
-                <div
-                  key={invoice.id}
-                  className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6 hover:shadow-md transition-shadow duration-200"
-                >
-                  {/* Header */}
-                  <div className="flex items-start justify-between mb-4">
-                    <div className="flex-1">
-                      <div className="flex items-center space-x-2 mb-2">
-                        <span className="font-mono font-semibold text-primary-700 bg-primary-50 dark:bg-primary-900 px-3 py-1 rounded-md border border-primary-200 dark:border-primary-800 text-sm">
-                          {invoice.invoiceNumber}
-                        </span>
-                        <span
-                          className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full border ${getStatusColor(
-                            invoice.status
-                          )}`}
-                        >
-                          {formatStatus(invoice.status)}
-                        </span>
-                      </div>
-                      <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-1">
-                        Invoice #{invoice.invoiceNumber}
-                      </h3>
-                    </div>
-                  </div>
-
-                  {/* Client and Project Info */}
-                  <div className="space-y-3 mb-4">
-                    <div className="flex items-center space-x-2 text-sm text-gray-600 dark:text-gray-400">
-                      <span className="font-medium">Client:</span>
-                      <span className="text-gray-900 dark:text-white">
-                        {client?.name || "Unknown Client"}
-                      </span>
-                    </div>
-                    {project && (
-                      <div className="flex items-center space-x-2 text-sm text-gray-600 dark:text-gray-400">
-                        <span className="font-medium">Project:</span>
-                        <span className="text-gray-900 dark:text-white">
-                          {project.name}
-                        </span>
-                      </div>
-                    )}
-                  </div>
-
-                  {/* Invoice Details */}
-                  <div className="space-y-3 mb-6">
-                    <div className="flex justify-between items-center">
-                      <span className="text-sm text-gray-600 dark:text-gray-400">
-                        Amount:
-                      </span>
-                      <span className="text-lg font-semibold text-green-600 dark:text-green-400">
-                        {formatCurrency(invoice.total)}
-                      </span>
-                    </div>
-                    <div className="flex justify-between items-center">
-                      <span className="text-sm text-gray-600 dark:text-gray-400">
-                        Issue Date:
-                      </span>
-                      <span className="text-sm font-medium text-gray-900 dark:text-white">
-                        {format(new Date(invoice.issueDate), "MMM dd, yyyy")}
-                      </span>
-                    </div>
-                    <div className="flex justify-between items-center">
-                      <span className="text-sm text-gray-600 dark:text-gray-400">
-                        Due Date:
-                      </span>
-                      <span className="text-sm font-medium text-gray-900 dark:text-white">
-                        {format(new Date(invoice.dueDate), "MMM dd, yyyy")}
-                      </span>
-                    </div>
-                  </div>
-
-                  {/* Actions */}
-                  <div className="flex items-center justify-between pt-4 border-t border-gray-200 dark:border-gray-700">
-                    <div className="flex items-center space-x-2">
-                      <button
-                        onClick={() => handleEdit(invoice)}
-                        className="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300 p-2 rounded-lg hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors"
-                        title="Edit Invoice"
-                      >
-                        <PencilIcon className="h-4 w-4" />
-                      </button>
-                      <button
-                        onClick={() => handleDelete(invoice.id)}
-                        className="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300 p-2 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
-                        title="Delete Invoice"
-                      >
-                        <TrashIcon className="h-4 w-4" />
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-      ) : (
-        /* Table View */
-        <div className="space-y-6">
-          <InvoicesTable
-            invoices={filteredInvoices}
-            clients={clients}
-            projects={projects}
-            onEdit={handleEdit}
-            onDelete={handleDelete}
-          />
-        </div>
-      )}
+      {/* Table View */}
+      <div className="space-y-6">
+        <InvoicesTable
+          invoices={filteredInvoices}
+          clients={clients}
+          projects={projects}
+          onEdit={handleEdit}
+          onDelete={handleDelete}
+        />
+      </div>
 
       {/* Empty State */}
       {filteredInvoices.length === 0 && (

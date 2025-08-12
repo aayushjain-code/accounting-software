@@ -16,7 +16,6 @@ import FileUpload from "@/components/FileUpload";
 import FileList from "@/components/FileList";
 import { CloudArrowUpIcon } from "@heroicons/react/24/outline";
 import React from "react";
-import { ViewToggle } from "@/components/ViewToggle";
 import { ExpensesTable } from "@/components/ExpensesTable";
 
 export default function ExpensesPage() {
@@ -34,7 +33,6 @@ export default function ExpensesPage() {
   } = useAccountingStore();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingExpense, setEditingExpense] = useState<Expense | null>(null);
-  const [viewMode, setViewMode] = useState<"cards" | "table">("cards");
   const [formData, setFormData] = useState({
     category: "",
     description: "",
@@ -213,11 +211,6 @@ export default function ExpensesPage() {
             </p>
           </div>
           <div className="flex items-center space-x-3">
-            <ViewToggle
-              viewMode={viewMode}
-              onViewChange={setViewMode}
-              className="mr-2"
-            />
             <button
               onClick={() => setIsModalOpen(true)}
               className="bg-primary-600 text-white px-6 py-3 rounded-xl font-semibold hover:bg-primary-700 transition-colors duration-200 flex items-center shadow-lg hover:shadow-xl"
@@ -269,120 +262,15 @@ export default function ExpensesPage() {
       </div>
 
       {/* Content based on view mode */}
-      {viewMode === "cards" ? (
-        /* Cards View */
-        <div className="space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {expenses
-              .sort(
-                (a, b) =>
-                  new Date(b.date).getTime() - new Date(a.date).getTime()
-              )
-              .map((expense) => {
-                const project = expense.projectId
-                  ? projects.find((p) => p.id === expense.projectId)
-                  : null;
-                return (
-                  <div
-                    key={expense.id}
-                    className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6 hover:shadow-md transition-all duration-200"
-                  >
-                    <div className="flex items-start justify-between mb-4">
-                      <div className="flex items-center space-x-3">
-                        <div className="w-12 h-12 bg-gradient-to-br from-danger-500 to-danger-600 rounded-xl flex items-center justify-center">
-                          <CurrencyRupeeIcon className="h-6 w-6 text-white" />
-                        </div>
-                        <div>
-                          <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-                            {expense.description}
-                          </h3>
-                          <p className="text-sm text-gray-500 dark:text-gray-400">
-                            {format(new Date(expense.date), "MMM dd, yyyy")}
-                          </p>
-                        </div>
-                      </div>
-                      <span
-                        className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${getCategoryColor(
-                          expense.category
-                        )}`}
-                      >
-                        {expense.category}
-                      </span>
-                    </div>
-
-                    <div className="space-y-3 mb-6">
-                      <div className="flex justify-between items-center">
-                        <span className="text-sm text-gray-600 dark:text-gray-400">
-                          Amount:
-                        </span>
-                        <span className="text-lg font-semibold text-danger-600 dark:text-danger-400">
-                          {formatCurrency(expense.amount)}
-                        </span>
-                      </div>
-                      {project && (
-                        <div className="flex justify-between items-center">
-                          <span className="text-sm text-gray-600 dark:text-gray-400">
-                            Project:
-                          </span>
-                          <span className="text-sm font-medium text-gray-900 dark:text-white">
-                            {project.name}
-                          </span>
-                        </div>
-                      )}
-                      <div className="flex justify-between items-center">
-                        <span className="text-sm text-gray-600 dark:text-gray-400">
-                          Status:
-                        </span>
-                        <span
-                          className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
-                            expense.status === "approved"
-                              ? "bg-green-100 text-green-800 border-green-200"
-                              : expense.status === "rejected"
-                              ? "bg-red-100 text-red-800 border-red-200"
-                              : "bg-yellow-100 text-yellow-800 border-yellow-200"
-                          }`}
-                        >
-                          {expense.status.charAt(0).toUpperCase() +
-                            expense.status.slice(1)}
-                        </span>
-                      </div>
-                    </div>
-
-                    {/* Actions */}
-                    <div className="flex items-center justify-between pt-4 border-t border-gray-200 dark:border-gray-700">
-                      <div className="flex items-center space-x-2">
-                        <button
-                          onClick={() => handleEdit(expense)}
-                          className="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300 p-2 rounded-lg hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors"
-                          title="Edit Expense"
-                        >
-                          <PencilIcon className="h-4 w-4" />
-                        </button>
-                        <button
-                          onClick={() => handleDelete(expense.id)}
-                          className="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300 p-2 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
-                          title="Delete Expense"
-                        >
-                          <TrashIcon className="h-4 w-4" />
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                );
-              })}
-          </div>
-        </div>
-      ) : (
-        /* Table View */
-        <div className="space-y-6">
-          <ExpensesTable
-            expenses={expenses}
-            projects={projects}
-            onEdit={handleEdit}
-            onDelete={handleDelete}
-          />
-        </div>
-      )}
+      {/* Table View */}
+      <div className="space-y-6">
+        <ExpensesTable
+          expenses={expenses}
+          projects={projects}
+          onEdit={handleEdit}
+          onDelete={handleDelete}
+        />
+      </div>
 
       {/* Empty State */}
       {expenses.length === 0 && (

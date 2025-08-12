@@ -23,28 +23,7 @@ import Modal from "./Modal";
 import { Button } from "./Button";
 import { ConfirmationDialog } from "./ConfirmationDialog";
 import { toast } from "react-hot-toast";
-
-interface DirectoryContact {
-  id: string;
-  name: string;
-  role: string;
-  email: string;
-  phone: string;
-  company: string;
-  companyIndustry: string;
-  companySize: string;
-  address: string;
-  city: string;
-  state: string;
-  country: string;
-  website: string;
-  linkedin: string;
-  notes: string;
-  isPrimary: boolean;
-  lastContact: Date;
-  createdAt: Date;
-  updatedAt: Date;
-}
+import { DirectoryContact } from "@/types";
 
 interface DirectoryProps {
   contacts: DirectoryContact[];
@@ -75,7 +54,6 @@ export const Directory: React.FC<DirectoryProps> = ({
   const [contactToDelete, setContactToDelete] = useState<string | null>(null);
   const [showFilters, setShowFilters] = useState(false);
   const [companyFilter, setCompanyFilter] = useState<string>("all");
-  const [industryFilter, setIndustryFilter] = useState<string>("all");
   const [roleFilter, setRoleFilter] = useState<string>("all");
 
   // Excel-like sorting
@@ -99,11 +77,9 @@ export const Directory: React.FC<DirectoryProps> = ({
 
       const matchesCompany =
         companyFilter === "all" || contact.company === companyFilter;
-      const matchesIndustry =
-        industryFilter === "all" || contact.companyIndustry === industryFilter;
       const matchesRole = roleFilter === "all" || contact.role === roleFilter;
 
-      return matchesSearch && matchesCompany && matchesIndustry && matchesRole;
+      return matchesSearch && matchesCompany && matchesRole;
     })
     .sort((a, b) => {
       const aValue = a[sortField];
@@ -224,9 +200,6 @@ export const Directory: React.FC<DirectoryProps> = ({
     { key: "email", label: "Email", sortable: true },
     { key: "phone", label: "Phone", sortable: true },
     { key: "company", label: "Company", sortable: true },
-    { key: "companyIndustry", label: "Industry", sortable: true },
-    { key: "companySize", label: "Size", sortable: true },
-    { key: "lastContact", label: "Last Contact", sortable: true },
     { key: "actions", label: "Actions", sortable: false },
   ];
 
@@ -262,7 +235,7 @@ export const Directory: React.FC<DirectoryProps> = ({
 
         {/* Advanced Filters */}
         {showFilters && (
-          <div className="mt-4 grid grid-cols-2 md:grid-cols-4 gap-4">
+          <div className="mt-4 grid grid-cols-2 md:grid-cols-3 gap-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                 Company
@@ -280,26 +253,6 @@ export const Directory: React.FC<DirectoryProps> = ({
                     </option>
                   )
                 )}
-              </select>
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                Industry
-              </label>
-              <select
-                value={industryFilter}
-                onChange={(e) => setIndustryFilter(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
-              >
-                <option value="all">All Industries</option>
-                {Array.from(
-                  new Set(contacts.map((c) => c.companyIndustry))
-                ).map((industry) => (
-                  <option key={industry} value={industry}>
-                    {industry}
-                  </option>
-                ))}
               </select>
             </div>
 
@@ -334,7 +287,7 @@ export const Directory: React.FC<DirectoryProps> = ({
               {columns.map((column) => (
                 <th
                   key={column.key}
-                  className={`px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider ${
+                  className={`px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider ${
                     column.sortable
                       ? "cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600"
                       : ""
@@ -359,90 +312,73 @@ export const Directory: React.FC<DirectoryProps> = ({
                 key={contact.id}
                 className="hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
               >
-                <td className="px-6 py-4 whitespace-nowrap">
+                <td className="px-3 py-2 whitespace-nowrap">
                   <div className="flex items-center">
-                    <div className="flex-shrink-0 h-8 w-8">
-                      <div className="h-8 w-8 rounded-full bg-gradient-to-br from-primary-500 to-primary-600 flex items-center justify-center">
-                        <UserIcon className="h-4 w-4 text-white" />
+                    <div className="flex-shrink-0 h-6 w-6">
+                      <div className="h-6 w-6 rounded-full bg-gradient-to-br from-primary-500 to-primary-600 flex items-center justify-center">
+                        <UserIcon className="h-3 w-3 text-white" />
                       </div>
                     </div>
-                    <div className="ml-3">
+                    <div className="ml-2">
                       <div className="text-sm font-medium text-gray-900 dark:text-white">
                         {renderEditableCell(contact, "name", contact.name)}
                       </div>
                       {contact.isPrimary && (
-                        <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-primary-100 text-primary-800">
+                        <span className="inline-flex items-center px-1.5 py-0.5 rounded-full text-xs font-medium bg-primary-100 text-primary-800">
                           Primary
                         </span>
                       )}
                     </div>
                   </div>
                 </td>
-                <td className="px-6 py-4 whitespace-nowrap">
+                <td className="px-3 py-2 whitespace-nowrap">
                   <div className="text-sm text-gray-900 dark:text-white">
                     {renderEditableCell(contact, "role", contact.role)}
                   </div>
                 </td>
-                <td className="px-6 py-4 whitespace-nowrap">
+                <td className="px-3 py-2 whitespace-nowrap max-w-48">
                   <div className="flex items-center">
-                    <EnvelopeIcon className="h-4 w-4 text-gray-400 mr-2" />
-                    <div className="text-sm text-gray-900 dark:text-white">
+                    <EnvelopeIcon className="h-4 w-4 text-gray-400 mr-1 flex-shrink-0" />
+                    <div
+                      className="text-sm text-gray-900 dark:text-white truncate"
+                      title={contact.email}
+                    >
                       {renderEditableCell(contact, "email", contact.email)}
                     </div>
                   </div>
                 </td>
-                <td className="px-6 py-4 whitespace-nowrap">
+                <td className="px-3 py-2 whitespace-nowrap">
                   <div className="flex items-center">
-                    <PhoneIcon className="h-4 w-4 text-gray-400 mr-2" />
+                    <PhoneIcon className="h-4 w-4 text-gray-400 mr-1 flex-shrink-0" />
                     <div className="text-sm text-gray-900 dark:text-white">
                       {renderEditableCell(contact, "phone", contact.phone)}
                     </div>
                   </div>
                 </td>
-                <td className="px-6 py-4 whitespace-nowrap">
+                <td className="px-3 py-2 whitespace-nowrap max-w-40">
                   <div className="flex items-center">
-                    <BuildingOfficeIcon className="h-4 w-4 text-gray-400 mr-2" />
-                    <div className="text-sm text-gray-900 dark:text-white">
+                    <BuildingOfficeIcon className="h-4 w-4 text-gray-400 mr-1 flex-shrink-0" />
+                    <div
+                      className="text-sm text-gray-900 dark:text-white truncate"
+                      title={contact.company}
+                    >
                       {renderEditableCell(contact, "company", contact.company)}
                     </div>
                   </div>
                 </td>
-                <td className="px-6 py-4 whitespace-nowrap">
-                  <span
-                    className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getIndustryColor(
-                      contact.companyIndustry
-                    )}`}
-                  >
-                    {contact.companyIndustry}
-                  </span>
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap">
-                  <span
-                    className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getCompanySizeColor(
-                      contact.companySize
-                    )}`}
-                  >
-                    {contact.companySize}
-                  </span>
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap">
-                  <div className="text-sm text-gray-900 dark:text-white">
-                    {contact.lastContact
-                      ? format(new Date(contact.lastContact), "MMM dd, yyyy")
-                      : "-"}
-                  </div>
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                  <div className="flex items-center space-x-2">
+                <td className="px-3 py-2 whitespace-nowrap text-sm font-medium">
+                  <div className="flex items-center space-x-1">
                     <button
                       onClick={() => onView(contact)}
-                      className="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300"
+                      className="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300 p-1 rounded"
+                      title="View Details"
                     >
                       <EyeIcon className="h-4 w-4" />
                     </button>
                     <button
                       onClick={() => onEdit(contact)}
-                      className="text-indigo-600 hover:text-indigo-900 dark:text-indigo-400 dark:hover:text-indigo-300"
+                      className="text-indigo-600 hover:text-indigo-900 dark:text-indigo-400 dark:hover:text-indigo-300 p-1 rounded"
+                      title="Edit Contact"
                     >
                       <PencilIcon className="h-4 w-4" />
                     </button>
@@ -451,7 +387,8 @@ export const Directory: React.FC<DirectoryProps> = ({
                         setContactToDelete(contact.id);
                         setShowDeleteDialog(true);
                       }}
-                      className="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300"
+                      className="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300 p-1 rounded"
+                      title="Delete Contact"
                     >
                       <TrashIcon className="h-4 w-4" />
                     </button>
@@ -467,10 +404,7 @@ export const Directory: React.FC<DirectoryProps> = ({
       {filteredAndSortedContacts.length === 0 && (
         <div className="text-center py-12">
           <div className="text-gray-500 dark:text-gray-400">
-            {searchTerm ||
-            companyFilter !== "all" ||
-            industryFilter !== "all" ||
-            roleFilter !== "all" ? (
+            {searchTerm || companyFilter !== "all" || roleFilter !== "all" ? (
               <>
                 <p className="text-lg font-medium">No contacts found</p>
                 <p className="text-sm">

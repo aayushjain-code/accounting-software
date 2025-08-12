@@ -22,141 +22,38 @@ import { useSearch } from "@/hooks/useSearch";
 import { ActionTooltip, IconTooltip } from "@/components/Tooltip";
 import Modal from "@/components/Modal";
 import toast from "react-hot-toast";
-import { ViewToggle } from "@/components/ViewToggle";
 import { DailyLogsTable } from "@/components/DailyLogsTable";
 
-interface LogCardProps {
-  log: DailyLog;
-  onEdit: (log: DailyLog) => void;
-  onDelete: (id: string) => void;
-}
+// Helper functions for colors
+const getCategoryColor = (category: string) => {
+  switch (category.toLowerCase()) {
+    case "accounting":
+      return "bg-blue-100 text-blue-800 border-blue-200";
+    case "important":
+      return "bg-red-100 text-red-800 border-red-200";
+    case "reminder":
+      return "bg-yellow-100 text-yellow-800 border-yellow-200";
+    case "milestone":
+      return "bg-green-100 text-green-800 border-green-200";
+    default:
+      return "bg-gray-100 text-gray-800 border-gray-200";
+  }
+};
 
-// Log Card Component
-const LogCard = React.memo(({ log, onEdit, onDelete }: LogCardProps) => {
-  const getPriorityColor = (priority: string) => {
-    switch (priority) {
-      case "critical":
-        return "bg-red-100 text-red-800 border-red-200";
-      case "high":
-        return "bg-orange-100 text-orange-800 border-orange-200";
-      case "medium":
-        return "bg-yellow-100 text-yellow-800 border-yellow-200";
-      case "low":
-        return "bg-green-100 text-green-800 border-green-200";
-      default:
-        return "bg-gray-100 text-gray-800 border-gray-200";
-    }
-  };
-
-  const getCategoryIcon = (category: string) => {
-    switch (category) {
-      case "accounting":
-        return "📊";
-      case "important":
-        return "⭐";
-      case "reminder":
-        return "⏰";
-      case "milestone":
-        return "🎯";
-      default:
-        return "📝";
-    }
-  };
-
-  const getCategoryColor = (category: string) => {
-    switch (category) {
-      case "accounting":
-        return "bg-blue-100 text-blue-800";
-      case "important":
-        return "bg-purple-100 text-purple-800";
-      case "reminder":
-        return "bg-yellow-100 text-yellow-800";
-      case "milestone":
-        return "bg-green-100 text-green-800";
-      default:
-        return "bg-gray-100 text-gray-800";
-    }
-  };
-
-  return (
-    <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6 hover:shadow-md transition-all duration-200">
-      <div className="flex items-start justify-between mb-4">
-        <div className="flex items-center space-x-3">
-          <span className="text-2xl">{getCategoryIcon(log.category)}</span>
-          <div>
-            <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-              {log.title}
-            </h3>
-            <p className="text-sm text-gray-500 dark:text-gray-400">
-              {format(new Date(log.date), "MMM dd, yyyy")}
-            </p>
-          </div>
-        </div>
-        <div className="flex items-center space-x-2">
-          <span
-            className={`px-2 py-1 rounded-full text-xs font-medium border ${getPriorityColor(
-              log.priority
-            )}`}
-          >
-            {log.priority}
-          </span>
-          <span
-            className={`px-2 py-1 rounded-full text-xs font-medium ${getCategoryColor(
-              log.category
-            )}`}
-          >
-            {log.category}
-          </span>
-        </div>
-      </div>
-
-      <p className="text-gray-700 dark:text-gray-300 mb-4 leading-relaxed">
-        {log.description}
-      </p>
-
-      {log.tags.length > 0 && (
-        <div className="flex flex-wrap gap-2 mb-4">
-          {log.tags.map((tag: string, index: number) => (
-            <span
-              key={index}
-              className="px-2 py-1 bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400 text-xs rounded-md flex items-center"
-            >
-              <TagIcon className="h-3 w-3 mr-1" />
-              {tag}
-            </span>
-          ))}
-        </div>
-      )}
-
-      <div className="flex items-center justify-between pt-4 border-t border-gray-100 dark:border-gray-700">
-        <div className="flex items-center text-xs text-gray-500 dark:text-gray-400">
-          <CalendarIcon className="h-4 w-4 mr-1" />
-          Created: {format(new Date(log.createdAt), "MMM dd, yyyy")}
-        </div>
-        <div className="flex items-center space-x-2">
-          <ActionTooltip content="Edit log entry" action="Modify details">
-            <button
-              onClick={() => onEdit(log)}
-              className="p-2 text-gray-400 hover:text-primary-600 hover:bg-primary-50 rounded-lg transition-all duration-200"
-            >
-              <PencilIcon className="h-4 w-4" />
-            </button>
-          </ActionTooltip>
-          <ActionTooltip content="Delete log entry" action="Permanently remove">
-            <button
-              onClick={() => onDelete(log.id)}
-              className="p-2 text-gray-400 hover:text-danger-600 hover:bg-danger-50 rounded-lg transition-all duration-200"
-            >
-              <TrashIcon className="h-4 w-4" />
-            </button>
-          </ActionTooltip>
-        </div>
-      </div>
-    </div>
-  );
-});
-
-LogCard.displayName = "LogCard";
+const getPriorityColor = (priority: string) => {
+  switch (priority.toLowerCase()) {
+    case "critical":
+      return "bg-red-100 text-red-800 border-red-200";
+    case "high":
+      return "bg-orange-100 text-orange-800 border-orange-200";
+    case "medium":
+      return "bg-yellow-100 text-yellow-800 border-yellow-200";
+    case "low":
+      return "bg-green-100 text-green-800 border-green-200";
+    default:
+      return "bg-gray-100 text-gray-800 border-gray-200";
+  }
+};
 
 // Log Modal Component
 interface LogModalProps {
@@ -434,11 +331,11 @@ export default function DailyLogsPage() {
 
   const { dailyLogs, projects, addDailyLog, updateDailyLog, deleteDailyLog } =
     useAccountingStore();
-  const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingLog, setEditingLog] = useState<DailyLog | null>(null);
+  const [viewLog, setViewLog] = useState<DailyLog | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
   const [selectedPriority, setSelectedPriority] = useState<string>("all");
-  const [viewMode, setViewMode] = useState<"cards" | "table">("cards");
 
   const {
     searchTerm,
@@ -500,10 +397,17 @@ export default function DailyLogsPage() {
     setIsModalOpen(true);
   };
 
-  const handleDelete = (id: string) => {
-    if (confirm("Are you sure you want to delete this log entry?")) {
-      deleteDailyLog(id);
+  const handleDelete = async (id: string) => {
+    try {
+      await deleteDailyLog(id);
+      toast.success("Daily log deleted successfully");
+    } catch (error) {
+      toast.error("Failed to delete daily log");
     }
+  };
+
+  const handleView = (log: DailyLog) => {
+    setViewLog(log);
   };
 
   if (!isClient) {
@@ -524,11 +428,6 @@ export default function DailyLogsPage() {
             </p>
           </div>
           <div className="flex items-center space-x-3">
-            <ViewToggle
-              viewMode={viewMode}
-              onViewChange={setViewMode}
-              className="mr-2"
-            />
             <button
               onClick={() => {
                 setEditingLog(null);
@@ -683,30 +582,15 @@ export default function DailyLogsPage() {
       </div>
 
       {/* Content based on view mode */}
-      {viewMode === "cards" ? (
-        /* Cards View */
-        <div className="space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {filteredByFilters.map((log: DailyLog) => (
-              <LogCard
-                key={log.id}
-                log={log}
-                onEdit={handleEdit}
-                onDelete={handleDelete}
-              />
-            ))}
-          </div>
-        </div>
-      ) : (
-        /* Table View */
-        <div className="space-y-6">
-          <DailyLogsTable
-            dailyLogs={filteredByFilters}
-            onEdit={handleEdit}
-            onDelete={handleDelete}
-          />
-        </div>
-      )}
+      {/* Table View */}
+      <div className="space-y-6">
+        <DailyLogsTable
+          dailyLogs={filteredByFilters}
+          onEdit={handleEdit}
+          onDelete={handleDelete}
+          onView={handleView}
+        />
+      </div>
 
       {/* Empty State */}
       {filteredByFilters.length === 0 && (
@@ -751,6 +635,107 @@ export default function DailyLogsPage() {
         editingLog={editingLog}
         onSubmit={handleSubmit}
       />
+
+      {/* View Modal */}
+      {viewLog && (
+        <Modal
+          isOpen={!!viewLog}
+          onClose={() => setViewLog(null)}
+          title="Log Details"
+        >
+          <div className="space-y-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  Title
+                </label>
+                <p className="text-lg font-semibold text-gray-900 dark:text-white">
+                  {viewLog.title}
+                </p>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  Date
+                </label>
+                <p className="text-gray-900 dark:text-white">
+                  {format(new Date(viewLog.date), "MMMM dd, yyyy")}
+                </p>
+              </div>
+            </div>
+
+            {viewLog.description && (
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  Description
+                </label>
+                <p className="text-gray-900 dark:text-white whitespace-pre-wrap">
+                  {viewLog.description}
+                </p>
+              </div>
+            )}
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  Category
+                </label>
+                <span
+                  className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium border ${getCategoryColor(
+                    viewLog.category
+                  )}`}
+                >
+                  {viewLog.category.charAt(0).toUpperCase() +
+                    viewLog.category.slice(1)}
+                </span>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  Priority
+                </label>
+                <span
+                  className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium border ${getPriorityColor(
+                    viewLog.priority
+                  )}`}
+                >
+                  {viewLog.priority.charAt(0).toUpperCase() +
+                    viewLog.priority.slice(1)}
+                </span>
+              </div>
+            </div>
+
+            {viewLog.projectId && (
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  Related Project
+                </label>
+                <p className="text-gray-900 dark:text-white">
+                  {projects.find((p) => p.id === viewLog.projectId)?.name ||
+                    "Unknown Project"}
+                </p>
+              </div>
+            )}
+
+            <div className="flex justify-end space-x-3 pt-4 border-t border-gray-200 dark:border-gray-700">
+              <button
+                onClick={() => {
+                  setEditingLog(viewLog);
+                  setViewLog(null);
+                  setIsModalOpen(true);
+                }}
+                className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
+              >
+                Edit
+              </button>
+              <button
+                onClick={() => setViewLog(null)}
+                className="bg-gray-600 text-white px-4 py-2 rounded-lg hover:bg-gray-700 transition-colors"
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        </Modal>
+      )}
     </div>
   );
 }

@@ -6,14 +6,10 @@ import {
   PencilIcon,
   TrashIcon,
   EyeIcon,
-  PlusIcon,
-  MagnifyingGlassIcon,
-  FunnelIcon,
   ArrowUpIcon,
   ArrowDownIcon,
   CalendarIcon,
   CurrencyDollarIcon,
-  UserGroupIcon,
 } from "@heroicons/react/24/outline";
 import { useAccountingStore } from "@/store";
 import { Project } from "@/types";
@@ -38,15 +34,13 @@ export const ProjectsTable: React.FC<ProjectsTableProps> = ({
   const { updateProject } = useAccountingStore();
 
   // State for Excel-like features
-  const [searchTerm, setSearchTerm] = useState("");
   const [sortField, setSortField] = useState<keyof Project>("name");
   const [sortDirection, setSortDirection] = useState<"asc" | "desc">("asc");
   const [editingProject, setEditingProject] = useState<Project | null>(null);
   const [editingField, setEditingField] = useState<keyof Project | null>(null);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [projectToDelete, setProjectToDelete] = useState<string | null>(null);
-  const [showFilters, setShowFilters] = useState(false);
-  const [statusFilter, setStatusFilter] = useState<string>("all");
+  const [viewProject, setViewProject] = useState<Project | null>(null);
 
   // Excel-like sorting
   const handleSort = (field: keyof Project) => {
@@ -57,35 +51,6 @@ export const ProjectsTable: React.FC<ProjectsTableProps> = ({
       setSortDirection("asc");
     }
   };
-
-  // Excel-like filtering and sorting
-  const filteredAndSortedProjects = projects
-    .filter((project) => {
-      const matchesSearch =
-        project.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        project.description.toLowerCase().includes(searchTerm.toLowerCase());
-
-      const matchesStatus =
-        statusFilter === "all" || project.status === statusFilter;
-
-      return matchesSearch && matchesStatus;
-    })
-    .sort((a, b) => {
-      const aValue = a[sortField];
-      const bValue = b[sortField];
-
-      if (typeof aValue === "string" && typeof bValue === "string") {
-        return sortDirection === "asc"
-          ? aValue.localeCompare(bValue)
-          : bValue.localeCompare(aValue);
-      }
-
-      if (aValue !== undefined && bValue !== undefined) {
-        if (aValue < bValue) return sortDirection === "asc" ? -1 : 1;
-        if (aValue > bValue) return sortDirection === "asc" ? 1 : -1;
-      }
-      return 0;
-    });
 
   // Excel-like inline editing
   const handleInlineEdit = (
@@ -181,52 +146,6 @@ export const ProjectsTable: React.FC<ProjectsTableProps> = ({
 
   return (
     <div className="bg-white dark:bg-gray-800 rounded-lg shadow overflow-hidden">
-      {/* Excel-like Toolbar */}
-      <div className="p-4 border-b border-gray-200 dark:border-gray-700">
-        <div className="flex flex-col sm:flex-row gap-4">
-          <div className="flex-1 relative">
-            <MagnifyingGlassIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-            <input
-              type="text"
-              placeholder="Search projects..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
-            />
-          </div>
-
-          <button
-            onClick={() => setShowFilters(!showFilters)}
-            className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 flex items-center gap-2"
-          >
-            <FunnelIcon className="h-4 w-4" />
-            Filters
-          </button>
-        </div>
-
-        {/* Advanced Filters */}
-        {showFilters && (
-          <div className="mt-4 grid grid-cols-2 md:grid-cols-4 gap-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                Status
-              </label>
-              <select
-                value={statusFilter}
-                onChange={(e) => setStatusFilter(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
-              >
-                <option value="all">All Statuses</option>
-                <option value="active">Active</option>
-                <option value="completed">Completed</option>
-                <option value="on-hold">On Hold</option>
-                <option value="archived">Archived</option>
-              </select>
-            </div>
-          </div>
-        )}
-      </div>
-
       {/* Table */}
       <div className="overflow-x-auto">
         <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
@@ -235,7 +154,7 @@ export const ProjectsTable: React.FC<ProjectsTableProps> = ({
               {columns.map((column) => (
                 <th
                   key={column.key}
-                  className={`px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider ${
+                  className={`px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider ${
                     column.sortable
                       ? "cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600"
                       : ""
@@ -254,109 +173,238 @@ export const ProjectsTable: React.FC<ProjectsTableProps> = ({
             </tr>
           </thead>
           <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
-            {filteredAndSortedProjects.map((project) => (
-              <tr
-                key={project.id}
-                className="hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
-              >
-                <td className="px-6 py-4 whitespace-nowrap">
-                  <div className="text-sm font-medium text-gray-900 dark:text-white">
-                    {project.projectCode}
-                  </div>
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap">
-                  <div className="text-sm font-medium text-gray-900 dark:text-white">
-                    {renderEditableCell(project, "name", project.name)}
-                  </div>
-                </td>
-                <td className="px-6 py-4">
-                  <div className="text-sm text-gray-900 dark:text-white">
-                    <div className="max-w-xs truncate">
+            {projects
+              .sort((a, b) => {
+                const aValue = a[sortField];
+                const bValue = b[sortField];
+
+                if (typeof aValue === "string" && typeof bValue === "string") {
+                  return sortDirection === "asc"
+                    ? aValue.localeCompare(bValue)
+                    : bValue.localeCompare(aValue);
+                }
+
+                if (aValue !== undefined && bValue !== undefined) {
+                  if (aValue < bValue) return sortDirection === "asc" ? -1 : 1;
+                  if (aValue > bValue) return sortDirection === "asc" ? 1 : -1;
+                }
+                return 0;
+              })
+              .map((project) => (
+                <tr
+                  key={project.id}
+                  className="hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+                >
+                  <td className="px-3 py-2 whitespace-nowrap">
+                    <div className="text-sm font-medium text-gray-900 dark:text-white">
+                      {project.projectCode}
+                    </div>
+                  </td>
+                  <td className="px-3 py-2 whitespace-nowrap max-w-32">
+                    <div
+                      className="text-sm font-medium text-gray-900 dark:text-white truncate"
+                      title={project.name}
+                    >
+                      {renderEditableCell(project, "name", project.name)}
+                    </div>
+                  </td>
+                  <td className="px-3 py-2 max-w-48">
+                    <div className="text-sm text-gray-900 dark:text-white">
+                      <div className="truncate" title={project.description}>
+                        {renderEditableCell(
+                          project,
+                          "description",
+                          project.description
+                        )}
+                      </div>
+                    </div>
+                  </td>
+                  <td className="px-3 py-2 whitespace-nowrap">
+                    <span
+                      className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getStatusColor(
+                        project.status
+                      )}`}
+                    >
+                      {project.status}
+                    </span>
+                  </td>
+                  <td className="px-3 py-2 whitespace-nowrap">
+                    <div className="flex items-center">
+                      <CurrencyDollarIcon className="h-4 w-4 text-gray-400 mr-1 flex-shrink-0" />
                       {renderEditableCell(
                         project,
-                        "description",
-                        project.description
+                        "budget",
+                        formatCurrency(project.budget || 0)
                       )}
                     </div>
-                  </div>
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap">
-                  <span
-                    className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getStatusColor(
-                      project.status
-                    )}`}
-                  >
-                    {project.status}
-                  </span>
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap">
-                  <div className="flex items-center">
-                    <CurrencyDollarIcon className="h-4 w-4 text-gray-400 mr-1" />
-                    {renderEditableCell(
-                      project,
-                      "budget",
-                      formatCurrency(project.budget || 0)
-                    )}
-                  </div>
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap">
-                  <div className="flex items-center">
-                    <CalendarIcon className="h-4 w-4 text-gray-400 mr-1" />
-                    {project.startDate
-                      ? format(new Date(project.startDate), "MMM dd, yyyy")
-                      : "-"}
-                  </div>
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                  <div className="flex items-center space-x-2">
-                    <button
-                      onClick={() => onView(project)}
-                      className="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300"
-                    >
-                      <EyeIcon className="h-4 w-4" />
-                    </button>
-                    <button
-                      onClick={() => onEdit(project)}
-                      className="text-indigo-600 hover:text-indigo-900 dark:text-indigo-400 dark:hover:text-indigo-300"
-                    >
-                      <PencilIcon className="h-4 w-4" />
-                    </button>
-                    <button
-                      onClick={() => {
-                        setProjectToDelete(project.id);
-                        setShowDeleteDialog(true);
-                      }}
-                      className="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300"
-                    >
-                      <TrashIcon className="h-4 w-4" />
-                    </button>
-                  </div>
-                </td>
-              </tr>
-            ))}
+                  </td>
+                  <td className="px-3 py-2 whitespace-nowrap">
+                    <div className="flex items-center">
+                      <CalendarIcon className="h-4 w-4 text-gray-400 mr-1 flex-shrink-0" />
+                      {project.startDate
+                        ? format(new Date(project.startDate), "MMM dd")
+                        : "-"}
+                    </div>
+                  </td>
+                  <td className="px-3 py-2 whitespace-nowrap text-sm font-medium">
+                    <div className="flex items-center space-x-1">
+                      <button
+                        onClick={() => onView(project)}
+                        className="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300 p-1 rounded"
+                        title="View Details"
+                      >
+                        <EyeIcon className="h-4 w-4" />
+                      </button>
+                      <button
+                        onClick={() => onEdit(project)}
+                        className="text-indigo-600 hover:text-indigo-900 dark:text-indigo-400 dark:hover:text-indigo-300 p-1 rounded"
+                        title="Edit Project"
+                      >
+                        <PencilIcon className="h-4 w-4" />
+                      </button>
+                      <button
+                        onClick={() => {
+                          setProjectToDelete(project.id);
+                          setShowDeleteDialog(true);
+                        }}
+                        className="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300 p-1 rounded"
+                        title="Delete Project"
+                      >
+                        <TrashIcon className="h-4 w-4" />
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              ))}
           </tbody>
         </table>
       </div>
 
+      {/* View Modal */}
+      {viewProject && (
+        <Modal
+          isOpen={!!viewProject}
+          onClose={() => setViewProject(null)}
+          title="Project Details"
+        >
+          <div className="space-y-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  Project Code
+                </label>
+                <p className="text-lg font-semibold text-gray-900 dark:text-white">
+                  {viewProject.projectCode}
+                </p>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  Status
+                </label>
+                <span
+                  className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium border ${getStatusColor(
+                    viewProject.status
+                  )}`}
+                >
+                  {viewProject.status}
+                </span>
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                Project Name
+              </label>
+              <p className="text-xl font-semibold text-gray-900 dark:text-white">
+                {viewProject.name}
+              </p>
+            </div>
+
+            {viewProject.description && (
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  Description
+                </label>
+                <p className="text-gray-900 dark:text-white whitespace-pre-wrap">
+                  {viewProject.description}
+                </p>
+              </div>
+            )}
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  Budget
+                </label>
+                <p className="text-lg font-semibold text-green-600 dark:text-green-400">
+                  {formatCurrency(viewProject.budget || 0)}
+                </p>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  Start Date
+                </label>
+                <p className="text-gray-900 dark:text-white">
+                  {viewProject.startDate
+                    ? format(new Date(viewProject.startDate), "MMMM dd, yyyy")
+                    : "Not set"}
+                </p>
+              </div>
+            </div>
+
+            {viewProject.billingRate && (
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  Billing Rate
+                </label>
+                <p className="text-gray-900 dark:text-white">
+                  {formatCurrency(viewProject.billingRate)}/hr
+                </p>
+              </div>
+            )}
+
+            {viewProject.estimatedHours && (
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  Estimated Hours
+                </label>
+                <p className="text-gray-900 dark:text-white">
+                  {viewProject.estimatedHours} hours
+                </p>
+              </div>
+            )}
+
+            <div className="flex justify-end space-x-3 pt-4 border-t border-gray-200 dark:border-gray-700">
+              <button
+                onClick={() => {
+                  onEdit(viewProject);
+                  setViewProject(null);
+                }}
+                className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
+              >
+                Edit
+              </button>
+              <button
+                onClick={() => setViewProject(null)}
+                className="bg-gray-600 text-white px-4 py-2 rounded-lg hover:bg-gray-700 transition-colors"
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        </Modal>
+      )}
+
       {/* Empty State */}
-      {filteredAndSortedProjects.length === 0 && (
+      {projects.length === 0 && (
         <div className="text-center py-12">
           <div className="text-gray-500 dark:text-gray-400">
-            {searchTerm || statusFilter !== "all" ? (
-              <>
-                <p className="text-lg font-medium">No projects found</p>
-                <p className="text-sm">
-                  Try adjusting your search or filter criteria
-                </p>
-              </>
-            ) : (
-              <>
-                <p className="text-lg font-medium">No projects yet</p>
-                <p className="text-sm">
-                  Get started by adding your first project
-                </p>
-              </>
-            )}
+            <>
+              <p className="text-lg font-medium">No projects yet</p>
+              <p className="text-sm">
+                Get started by adding your first project
+              </p>
+            </>
           </div>
         </div>
       )}

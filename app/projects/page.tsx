@@ -24,9 +24,7 @@ import { useSearch } from "@/hooks/useSearch";
 import { usePagination } from "@/hooks/usePagination";
 import { Pagination } from "@/components/Pagination";
 import { performanceMonitor } from "@/utils/performance";
-import { ViewToggle } from "@/components/ViewToggle";
 import { ProjectsTable } from "@/components/ProjectsTable";
-import { ProjectCard } from "@/components/ProjectCard";
 
 export default function ProjectsPage() {
   const { projects, clients, addProject, updateProject, deleteProject } =
@@ -36,7 +34,6 @@ export default function ProjectsPage() {
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [projectToDelete, setProjectToDelete] = useState<string | null>(null);
-  const [viewMode, setViewMode] = useState<"cards" | "table">("cards");
   const [formData, setFormData] = useState({
     projectCode: "",
     name: "",
@@ -230,11 +227,6 @@ export default function ProjectsPage() {
             </div>
           </div>
           <div className="flex items-center space-x-3">
-            <ViewToggle
-              viewMode={viewMode}
-              onViewChange={setViewMode}
-              className="mr-2"
-            />
             <ActionTooltip
               content="Add New Project"
               action="Create a new project profile"
@@ -285,32 +277,15 @@ export default function ProjectsPage() {
       </div>
 
       {/* Content based on view mode */}
-      {viewMode === "cards" ? (
-        /* Cards View */
-        <div className="space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {filteredProjects.map((project) => (
-              <ProjectCard
-                key={project.id}
-                project={project}
-                client={clients.find((c) => c.id === project.clientId)}
-                onEdit={handleEdit}
-                onDelete={handleDelete}
-              />
-            ))}
-          </div>
-        </div>
-      ) : (
-        /* Table View */
-        <div className="space-y-6">
-          <ProjectsTable
-            projects={filteredProjects}
-            onEdit={handleEdit}
-            onDelete={handleDelete}
-            onView={handleView}
-          />
-        </div>
-      )}
+      {/* Table View */}
+      <div className="space-y-6">
+        <ProjectsTable
+          projects={filteredProjects}
+          onEdit={handleEdit}
+          onDelete={handleDelete}
+          onView={handleView}
+        />
+      </div>
 
       {/* Empty State */}
       {filteredProjects.length === 0 && (

@@ -105,14 +105,23 @@ export const DailyLogsTable: React.FC<DailyLogsTableProps> = ({
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm text-gray-900 dark:text-white">
-                        {dailyLog.title}
-                      </div>
-                      {dailyLog.description && (
-                        <div className="text-sm text-gray-500 dark:text-gray-400">
-                          {dailyLog.description}
+                      <div className="text-sm text-gray-900 dark:text-white max-w-xs">
+                        <div className="truncate" title={dailyLog.title}>
+                          {dailyLog.title.length > 50
+                            ? `${dailyLog.title.substring(0, 50)}...`
+                            : dailyLog.title}
                         </div>
-                      )}
+                        {dailyLog.description && (
+                          <div
+                            className="text-sm text-gray-500 dark:text-gray-400 truncate max-w-xs"
+                            title={dailyLog.description}
+                          >
+                            {dailyLog.description.length > 60
+                              ? `${dailyLog.description.substring(0, 60)}...`
+                              : dailyLog.description}
+                          </div>
+                        )}
+                      </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <span
@@ -134,15 +143,13 @@ export const DailyLogsTable: React.FC<DailyLogsTableProps> = ({
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                       <div className="flex items-center space-x-2">
-                        {onView && (
-                          <button
-                            onClick={() => onView(dailyLog)}
-                            className="text-primary-600 hover:text-primary-900 dark:text-primary-400 dark:hover:text-primary-300"
-                            title="View Details"
-                          >
-                            <EyeIcon className="h-4 w-4" />
-                          </button>
-                        )}
+                        <button
+                          onClick={() => onView?.(dailyLog)}
+                          className="text-primary-600 hover:text-primary-900 dark:text-primary-400 dark:hover:text-primary-300"
+                          title="View Details"
+                        >
+                          <EyeIcon className="h-4 w-4" />
+                        </button>
                         <button
                           onClick={() => onEdit(dailyLog)}
                           className="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300"

@@ -15,15 +15,13 @@ export interface Client {
   pocEmail: string;
   pocContact: string;
   companyLogo: string;
+  poNumber?: string; // Purchase Order Number
   // Additional fields for comprehensive client database
   industry: string;
   companySize: "startup" | "small" | "medium" | "large" | "enterprise";
   status: "active" | "inactive" | "prospect" | "lead";
   source: string; // How the client was acquired
   notes: string;
-  tags: string[];
-  annualRevenue?: number;
-  employeeCount?: number;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -144,6 +142,7 @@ export interface Invoice {
   taxRate: number;
   taxAmount: number;
   total: number;
+  poNumber?: string; // Purchase Order Number
   notes?: string;
 
   // File attachments
@@ -260,7 +259,27 @@ export interface DailyLog {
   description: string;
   category: "accounting" | "important" | "reminder" | "milestone";
   priority: "low" | "medium" | "high" | "critical";
+  projectId?: string; // Optional reference to related project
   tags: string[];
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface DirectoryContact {
+  id: string;
+  name: string;
+  role: string;
+  email: string;
+  phone: string;
+  company: string;
+  address: string;
+  city: string;
+  state: string;
+  country: string;
+  website: string;
+  linkedin: string;
+  notes: string;
+  isPrimary: boolean;
   createdAt: Date;
   updatedAt: Date;
 }

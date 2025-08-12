@@ -13,8 +13,6 @@ interface DirectoryContact {
   email: string;
   phone: string;
   company: string;
-  companyIndustry: string;
-  companySize: string;
   address: string;
   city: string;
   state: string;
@@ -23,7 +21,6 @@ interface DirectoryContact {
   linkedin: string;
   notes: string;
   isPrimary: boolean;
-  lastContact: Date;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -37,8 +34,6 @@ export default function DirectoryPage() {
       email: "john.smith@techcorp.com",
       phone: "+1-555-0123",
       company: "TechCorp Solutions",
-      companyIndustry: "technology",
-      companySize: "medium",
       address: "123 Tech Street",
       city: "San Francisco",
       state: "CA",
@@ -47,7 +42,6 @@ export default function DirectoryPage() {
       linkedin: "linkedin.com/in/johnsmith",
       notes: "Primary decision maker for all technology projects",
       isPrimary: true,
-      lastContact: new Date("2024-01-15"),
       createdAt: new Date("2024-01-01"),
       updatedAt: new Date("2024-01-15"),
     },
@@ -58,8 +52,6 @@ export default function DirectoryPage() {
       email: "sarah.johnson@healthcareplus.com",
       phone: "+1-555-0124",
       company: "Healthcare Plus",
-      companyIndustry: "healthcare",
-      companySize: "large",
       address: "456 Health Avenue",
       city: "Boston",
       state: "MA",
@@ -68,7 +60,6 @@ export default function DirectoryPage() {
       linkedin: "linkedin.com/in/sarahjohnson",
       notes: "Coordinates all project implementations",
       isPrimary: false,
-      lastContact: new Date("2024-01-10"),
       createdAt: new Date("2024-01-01"),
       updatedAt: new Date("2024-01-10"),
     },
@@ -79,8 +70,6 @@ export default function DirectoryPage() {
       email: "michael.chen@financetrust.com",
       phone: "+1-555-0125",
       company: "Finance Trust Bank",
-      companyIndustry: "finance",
-      companySize: "enterprise",
       address: "789 Finance Boulevard",
       city: "New York",
       state: "NY",
@@ -89,7 +78,6 @@ export default function DirectoryPage() {
       linkedin: "linkedin.com/in/michaelchen",
       notes: "Handles all financial approvals and budgeting",
       isPrimary: true,
-      lastContact: new Date("2024-01-12"),
       createdAt: new Date("2024-01-01"),
       updatedAt: new Date("2024-01-12"),
     },
@@ -256,8 +244,6 @@ const ContactForm: React.FC<ContactFormProps> = ({
       email: "",
       phone: "",
       company: "",
-      companyIndustry: "technology",
-      companySize: "small",
       address: "",
       city: "",
       state: "",
@@ -345,45 +331,6 @@ const ContactForm: React.FC<ContactFormProps> = ({
             }
             className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
           />
-        </div>
-
-        <div>
-          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-            Industry
-          </label>
-          <select
-            value={formData.companyIndustry || ""}
-            onChange={(e) =>
-              setFormData({ ...formData, companyIndustry: e.target.value })
-            }
-            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
-          >
-            <option value="technology">Technology</option>
-            <option value="healthcare">Healthcare</option>
-            <option value="finance">Finance</option>
-            <option value="retail">Retail</option>
-            <option value="manufacturing">Manufacturing</option>
-            <option value="other">Other</option>
-          </select>
-        </div>
-
-        <div>
-          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-            Company Size
-          </label>
-          <select
-            value={formData.companySize || ""}
-            onChange={(e) =>
-              setFormData({ ...formData, companySize: e.target.value })
-            }
-            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
-          >
-            <option value="startup">Startup</option>
-            <option value="small">Small</option>
-            <option value="medium">Medium</option>
-            <option value="large">Large</option>
-            <option value="enterprise">Enterprise</option>
-          </select>
         </div>
 
         <div>
@@ -551,22 +498,7 @@ const ContactView: React.FC<ContactViewProps> = ({
                 {contact.company}
               </p>
             </div>
-            <div>
-              <label className="text-sm font-medium text-gray-500 dark:text-gray-400">
-                Industry
-              </label>
-              <p className="text-sm text-gray-900 dark:text-white capitalize">
-                {contact.companyIndustry}
-              </p>
-            </div>
-            <div>
-              <label className="text-sm font-medium text-gray-500 dark:text-gray-400">
-                Company Size
-              </label>
-              <p className="text-sm text-gray-900 dark:text-white capitalize">
-                {contact.companySize}
-              </p>
-            </div>
+
             <div>
               <label className="text-sm font-medium text-gray-500 dark:text-gray-400">
                 Location

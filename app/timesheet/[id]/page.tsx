@@ -154,31 +154,7 @@ const WorkCalculationCard = React.memo(
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           <div className="space-y-6">
-            <div className="bg-gradient-to-r from-primary-50 to-blue-50 p-6 rounded-xl border border-primary-100">
-              <h4 className="text-lg font-semibold text-gray-900 mb-4">
-                Project Information
-              </h4>
-              <div className="space-y-3">
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-gray-600">Project:</span>
-                  <span className="font-semibold text-gray-900">
-                    {project?.name || "Unknown Project"}
-                  </span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-gray-600">Project Code:</span>
-                  <span className="font-semibold text-gray-900">
-                    {project?.projectCode || "N/A"}
-                  </span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-gray-600">Month:</span>
-                  <span className="font-semibold text-gray-900">
-                    {format(new Date(timesheet.month + "-01"), "MMMM yyyy")}
-                  </span>
-                </div>
-              </div>
-            </div>
+            {/* Project Information section removed as requested */}
           </div>
 
           <div className="space-y-6">

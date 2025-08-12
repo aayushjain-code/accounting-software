@@ -255,6 +255,7 @@ export const ClientsTable: React.FC<ClientsTableProps> = ({
                 { key: "company", label: "Company", sortable: true },
                 { key: "email", label: "Email", sortable: true },
                 { key: "phone", label: "Phone", sortable: false },
+                { key: "gstId", label: "GST Number", sortable: false },
                 { key: "status", label: "Status", sortable: true },
                 { key: "industry", label: "Industry", sortable: true },
                 { key: "createdAt", label: "Created", sortable: true },
@@ -297,6 +298,9 @@ export const ClientsTable: React.FC<ClientsTableProps> = ({
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">
                   {renderEditableCell(client, "phone", client.phone)}
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap">
+                  {renderEditableCell(client, "gstId", client.gstId)}
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">
                   <span

@@ -19,6 +19,7 @@ import {
   UsersIcon,
   CalendarIcon,
   ChartBarIcon,
+  PencilSquareIcon,
 } from "@heroicons/react/24/outline";
 import { useTheme } from "@/hooks/useTheme";
 import { useAuth } from "@/hooks/useAuth";
@@ -33,6 +34,7 @@ const navigation = [
   { name: "Clients", href: "/clients", icon: UsersIcon },
   { name: "Projects", href: "/projects", icon: FolderIcon },
   { name: "Invoices", href: "/invoices", icon: DocumentTextIcon },
+  { name: "Invoice Editor", href: "/invoice-editor", icon: PencilSquareIcon },
   { name: "Expenses", href: "/expenses", icon: ReceiptRefundIcon },
   { name: "Daily Logs", href: "/daily-logs", icon: CalendarIcon },
   { name: "Timesheets", href: "/timesheet", icon: ClockIcon },

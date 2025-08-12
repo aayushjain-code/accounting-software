@@ -33,7 +33,6 @@ import FileUpload from "@/components/FileUpload";
 import FileList from "@/components/FileList";
 import { CloudArrowUpIcon } from "@heroicons/react/24/outline";
 import { TimesheetFile } from "@/types";
-import { ViewToggle } from "@/components/ViewToggle";
 import { TimesheetsTable } from "@/components/TimesheetsTable";
 
 // Enhanced Status Badge Component
@@ -688,72 +687,8 @@ const TimesheetModal = React.memo(
         </div>
 
         {/* Project and Costing Information */}
-        {selectedProject && (
-          <div className="bg-gradient-to-r from-primary-50 to-blue-50 p-6 rounded-xl border border-primary-100">
-            <h4 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
-              <CalculatorIcon className="h-5 w-5 mr-2 text-primary-600" />
-              Project Information
-            </h4>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              <div className="bg-white p-3 rounded-lg">
-                <p className="text-xs text-gray-500 font-medium">Project</p>
-                <p className="text-sm font-semibold text-gray-900 mt-1">
-                  {selectedProject.name}
-                </p>
-              </div>
-              <div className="bg-white p-3 rounded-lg">
-                <p className="text-xs text-gray-500 font-medium">
-                  Project Budget
-                </p>
-                <p className="text-sm font-semibold text-gray-900 mt-1">
-                  ₹
-                  {selectedProject.budget.toLocaleString("en-IN", {
-                    minimumFractionDigits: 2,
-                    maximumFractionDigits: 2,
-                  })}
-                </p>
-              </div>
-              <div className="bg-white p-3 rounded-lg">
-                <p className="text-xs text-gray-500 font-medium">
-                  Monthly Rate
-                </p>
-                <p className="text-sm font-semibold text-gray-900 mt-1">
-                  ₹
-                  {formData.totalWorkingDays
-                    ? (
-                        selectedProject.budget /
-                        parseInt(formData.totalWorkingDays)
-                      ).toLocaleString("en-IN", {
-                        minimumFractionDigits: 2,
-                        maximumFractionDigits: 2,
-                      })
-                    : 0}
-                  /day
-                </p>
-              </div>
-              <div className="bg-white p-3 rounded-lg">
-                <p className="text-xs text-gray-500 font-medium">
-                  Working Days
-                </p>
-                <p className="text-sm font-semibold text-gray-900 mt-1">
-                  {formData.totalWorkingDays}
-                </p>
-              </div>
-              <div className="bg-white p-3 rounded-lg">
-                <p className="text-xs text-gray-500 font-medium">
-                  Calculated Amount
-                </p>
-                <p className="text-sm font-semibold text-primary-600 mt-1">
-                  ₹
-                  {calculatedAmount.toLocaleString("en-IN", {
-                    minimumFractionDigits: 2,
-                    maximumFractionDigits: 2,
-                  })}
-                </p>
-              </div>
-            </div>
-          </div>
-        )}
+        {/* Project Information section removed as requested */}
+
         <div className="border-t border-gray-200 dark:border-gray-700 pt-6">
           <FileUpload
             files={uploadedFiles}
@@ -949,7 +884,6 @@ export default function TimesheetPage() {
             </p>
           </div>
           <div className="flex items-center space-x-4">
-            <ViewToggle viewMode={viewMode} onViewChange={setViewMode} />
             <button
               onClick={() => setIsModalOpen(true)}
               className="bg-primary-600 text-white px-6 py-3 rounded-xl font-semibold hover:bg-primary-700 transition-colors duration-200 flex items-center shadow-lg hover:shadow-xl"

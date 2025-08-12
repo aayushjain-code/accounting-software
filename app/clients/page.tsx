@@ -14,9 +14,6 @@ import {
   GlobeAltIcon,
   UserIcon,
   MapPinIcon,
-  TagIcon,
-  CurrencyRupeeIcon,
-  UserGroupIcon,
   MagnifyingGlassIcon,
   FunnelIcon,
   EyeIcon,
@@ -215,52 +212,16 @@ const ClientCard = React.memo(
           </div>
         )}
 
-        {/* Financial Information */}
-        <div className="grid grid-cols-2 gap-3 mb-4">
-          {client.annualRevenue && (
-            <div className="bg-gradient-to-r from-green-50 to-emerald-50 p-3 rounded-lg border border-green-100">
-              <div className="flex items-center space-x-2">
-                <CurrencyRupeeIcon className="h-4 w-4 text-green-600" />
-                <span className="text-xs font-medium text-green-700">
-                  Annual Revenue
-                </span>
-              </div>
-              <div className="text-sm font-semibold text-green-800 mt-1">
-                ₹
-                {client.annualRevenue.toLocaleString("en-IN", {
-                  minimumFractionDigits: 2,
-                  maximumFractionDigits: 2,
-                })}
-              </div>
-            </div>
-          )}
-          {client.employeeCount && (
-            <div className="bg-gradient-to-r from-blue-50 to-indigo-50 p-3 rounded-lg border border-blue-100">
-              <div className="flex items-center space-x-2">
-                <UserGroupIcon className="h-4 w-4 text-blue-600" />
-                <span className="text-xs font-medium text-blue-700">
-                  Employees
-                </span>
-              </div>
-              <div className="text-sm font-semibold text-blue-800 mt-1">
-                {client.employeeCount}
-              </div>
-            </div>
-          )}
-        </div>
-
-        {/* Tags */}
-        {client.tags && client.tags.length > 0 && (
-          <div className="flex flex-wrap gap-1 mb-4">
-            {client.tags.map((tag, index) => (
-              <span
-                key={index}
-                className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-primary-100 text-primary-800"
-              >
-                <TagIcon className="h-3 w-3 mr-1" />
-                {tag}
+        {/* GST Information */}
+        {client.gstId && (
+          <div className="bg-blue-50 rounded-lg p-3 mb-4">
+            <div className="flex items-center space-x-2 mb-2">
+              <ReceiptRefundIcon className="h-4 w-4 text-blue-600" />
+              <span className="text-sm font-medium text-blue-700">
+                GST Number
               </span>
-            ))}
+            </div>
+            <div className="text-sm text-blue-800">{client.gstId}</div>
           </div>
         )}
 
@@ -289,6 +250,7 @@ export default function ClientsPage() {
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [clientToDelete, setClientToDelete] = useState<string | null>(null);
   const [viewMode, setViewMode] = useState<"cards" | "table">("cards");
+  const [errors, setErrors] = useState<Record<string, string>>({});
 
   // Performance monitoring
   const renderStart = performance.now();
@@ -344,9 +306,6 @@ export default function ClientsPage() {
     status: "active" as "active" | "inactive" | "prospect" | "lead",
     source: "",
     notes: "",
-    tags: [] as string[],
-    annualRevenue: "",
-    employeeCount: "",
   });
 
   // Performance monitoring - record render time
@@ -355,17 +314,26 @@ export default function ClientsPage() {
     performanceMonitor.recordRenderTime("ClientsPage", renderTime);
   }, [renderStart]);
 
+  const validateForm = () => {
+    const newErrors: Record<string, string> = {};
+
+    if (!formData.name.trim()) newErrors.name = "Name is required";
+    if (!formData.email.trim()) newErrors.email = "Email is required";
+    if (!formData.company.trim()) newErrors.company = "Company is required";
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
+    if (!validateForm()) {
+      return;
+    }
+
     const clientData = {
       ...formData,
-      annualRevenue: formData.annualRevenue
-        ? parseInt(formData.annualRevenue)
-        : undefined,
-      employeeCount: formData.employeeCount
-        ? parseInt(formData.employeeCount)
-        : undefined,
     };
 
     if (editingClient) {
@@ -398,10 +366,8 @@ export default function ClientsPage() {
       status: "active" as const,
       source: "",
       notes: "",
-      tags: [] as string[],
-      annualRevenue: "",
-      employeeCount: "",
     });
+    setErrors({});
   };
 
   const handleEdit = (client: Client) => {
@@ -426,9 +392,6 @@ export default function ClientsPage() {
       status: client.status,
       source: client.source,
       notes: client.notes,
-      tags: client.tags,
-      annualRevenue: client.annualRevenue?.toString() || "",
-      employeeCount: client.employeeCount?.toString() || "",
     });
     setIsModalOpen(true);
   };
@@ -462,9 +425,6 @@ export default function ClientsPage() {
       status: client.status || "active",
       source: client.source || "",
       notes: client.notes || "",
-      tags: client.tags || [],
-      annualRevenue: client.annualRevenue?.toString() || "",
-      employeeCount: client.employeeCount?.toString() || "",
     });
     setIsModalOpen(true);
   };
@@ -650,10 +610,8 @@ export default function ClientsPage() {
             status: "active" as const,
             source: "",
             notes: "",
-            tags: [] as string[],
-            annualRevenue: "",
-            employeeCount: "",
           });
+          setErrors({});
         }}
         title={editingClient ? "Edit Client" : "Add New Client"}
         footer={
@@ -683,10 +641,8 @@ export default function ClientsPage() {
                   status: "active" as const,
                   source: "",
                   notes: "",
-                  tags: [] as string[],
-                  annualRevenue: "",
-                  employeeCount: "",
                 });
+                setErrors({});
               }}
               className="btn-secondary mr-2"
             >
@@ -718,8 +674,13 @@ export default function ClientsPage() {
                 onChange={(e) =>
                   setFormData({ ...formData, name: e.target.value })
                 }
-                className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200"
+                className={`w-full px-4 py-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200 ${
+                  errors.name ? "border-red-300" : "border-gray-300"
+                }`}
               />
+              {errors.name && (
+                <p className="text-sm text-red-500 mt-1">{errors.name}</p>
+              )}
             </div>
             <div>
               <label className="block text-sm font-semibold text-gray-700 mb-3">
@@ -739,8 +700,13 @@ export default function ClientsPage() {
                 onChange={(e) =>
                   setFormData({ ...formData, company: e.target.value })
                 }
-                className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200"
+                className={`w-full px-4 py-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200 ${
+                  errors.company ? "border-red-300" : "border-gray-300"
+                }`}
               />
+              {errors.company && (
+                <p className="text-sm text-red-500 mt-1">{errors.company}</p>
+              )}
             </div>
             <div>
               <label className="block text-sm font-semibold text-gray-700 mb-3">
@@ -760,8 +726,13 @@ export default function ClientsPage() {
                 onChange={(e) =>
                   setFormData({ ...formData, email: e.target.value })
                 }
-                className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200"
+                className={`w-full px-4 py-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200 ${
+                  errors.email ? "border-red-300" : "border-gray-300"
+                }`}
               />
+              {errors.email && (
+                <p className="text-sm text-red-500 mt-1">{errors.email}</p>
+              )}
             </div>
             <div>
               <label className="block text-sm font-semibold text-gray-700 mb-3">
@@ -867,54 +838,6 @@ export default function ClientsPage() {
                 <option value="lead">Lead</option>
               </select>
             </div>
-            <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-3">
-                Annual Revenue (₹)
-                <IconTooltip
-                  content="Client's annual revenue in Indian Rupees"
-                  icon={InformationCircleIcon}
-                  position="right"
-                >
-                  <span></span>
-                </IconTooltip>
-              </label>
-              <input
-                type="number"
-                value={formData.annualRevenue}
-                onChange={(e) =>
-                  setFormData({
-                    ...formData,
-                    annualRevenue: e.target.value,
-                  })
-                }
-                className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200"
-                placeholder="Annual revenue in INR"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-3">
-                Employee Count
-                <IconTooltip
-                  content="Number of employees in the organization"
-                  icon={InformationCircleIcon}
-                  position="right"
-                >
-                  <span></span>
-                </IconTooltip>
-              </label>
-              <input
-                type="number"
-                value={formData.employeeCount}
-                onChange={(e) =>
-                  setFormData({
-                    ...formData,
-                    employeeCount: e.target.value,
-                  })
-                }
-                className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200"
-                placeholder="Number of employees"
-              />
-            </div>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -967,6 +890,27 @@ export default function ClientsPage() {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+              <label className="block text-sm font-semibold text-gray-700 mb-3">
+                GST Number
+                <IconTooltip
+                  content="Client's GST registration number"
+                  icon={InformationCircleIcon}
+                  position="right"
+                >
+                  <span></span>
+                </IconTooltip>
+              </label>
+              <input
+                type="text"
+                value={formData.gstId}
+                onChange={(e) =>
+                  setFormData({ ...formData, gstId: e.target.value })
+                }
+                className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200"
+                placeholder="e.g., 27AABCT1234Z1Z5"
+              />
+            </div>
             <div>
               <label className="block text-sm font-semibold text-gray-700 mb-3">
                 POC Name

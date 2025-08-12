@@ -16,7 +16,6 @@ import {
   ExpenseFile,
 } from "@/types";
 import { CodeGenerator } from "@/utils/codeGenerator";
-import { electronStore, isElectron } from "./electronStore";
 
 interface AccountingStore {
   // Data
@@ -53,6 +52,7 @@ interface AccountingStore {
   ) => void;
   updateTimesheet: (id: string, timesheet: Partial<Timesheet>) => Promise<void>;
   deleteTimesheet: (id: string) => void;
+  reloadTimesheet: (id: string) => Promise<void>;
 
   addTimesheetEntry: (
     entry: Omit<TimesheetEntry, "id" | "createdAt" | "updatedAt">
@@ -198,13 +198,17 @@ export const useAccountingStore = create<AccountingStore>()(
           ),
         }));
 
-        // Persist to database via Electron API
+        // Persist to localStorage for web-based app
         try {
-          if (typeof window !== "undefined" && window.electronAPI?.updateClient) {
-            await window.electronAPI.updateClient(id, client);
+          if (typeof window !== "undefined") {
+            const currentData = JSON.parse(
+              localStorage.getItem("accountingData") || "{}"
+            );
+            currentData.clients = get().clients;
+            localStorage.setItem("accountingData", JSON.stringify(currentData));
           }
         } catch (error) {
-          console.error("Failed to update client in database:", error);
+          console.error("Failed to save client to localStorage:", error);
         }
       },
 
@@ -214,13 +218,17 @@ export const useAccountingStore = create<AccountingStore>()(
           clients: state.clients.filter((c) => c.id !== id),
         }));
 
-        // Persist to database via Electron API
+        // Persist to localStorage for web-based app
         try {
-          if (typeof window !== "undefined" && window.electronAPI?.deleteClient) {
-            await window.electronAPI.deleteClient(id);
+          if (typeof window !== "undefined") {
+            const currentData = JSON.parse(
+              localStorage.getItem("accountingData") || "{}"
+            );
+            currentData.clients = get().clients;
+            localStorage.setItem("accountingData", JSON.stringify(currentData));
           }
         } catch (error) {
-          console.error("Failed to delete client in database:", error);
+          console.error("Failed to save clients to localStorage:", error);
         }
       },
 
@@ -234,13 +242,20 @@ export const useAccountingStore = create<AccountingStore>()(
           },
         }));
 
-        // Persist to database via Electron API
+        // Persist to localStorage for web-based app
         try {
-          if (typeof window !== "undefined" && window.electronAPI?.updateCompanyProfile) {
-            await window.electronAPI.updateCompanyProfile(profile);
+          if (typeof window !== "undefined") {
+            const currentData = JSON.parse(
+              localStorage.getItem("accountingData") || "{}"
+            );
+            currentData.companyProfile = get().companyProfile;
+            localStorage.setItem("accountingData", JSON.stringify(currentData));
           }
         } catch (error) {
-          console.error("Failed to update company profile in database:", error);
+          console.error(
+            "Failed to save company profile to localStorage:",
+            error
+          );
         }
       },
 
@@ -263,13 +278,17 @@ export const useAccountingStore = create<AccountingStore>()(
           ),
         }));
 
-        // Persist to database via Electron API
+        // Persist to localStorage for web-based app
         try {
-          if (typeof window !== "undefined" && window.electronAPI?.updateProject) {
-            await window.electronAPI.updateProject(id, project);
+          if (typeof window !== "undefined") {
+            const currentData = JSON.parse(
+              localStorage.getItem("accountingData") || "{}"
+            );
+            currentData.projects = get().projects;
+            localStorage.setItem("accountingData", JSON.stringify(currentData));
           }
         } catch (error) {
-          console.error("Failed to update project in database:", error);
+          console.error("Failed to save projects to localStorage:", error);
         }
       },
 
@@ -279,13 +298,17 @@ export const useAccountingStore = create<AccountingStore>()(
           projects: state.projects.filter((p) => p.id !== id),
         }));
 
-        // Persist to database via Electron API
+        // Persist to localStorage for web-based app
         try {
-          if (typeof window !== "undefined" && window.electronAPI?.deleteProject) {
-            await window.electronAPI.deleteProject(id);
+          if (typeof window !== "undefined") {
+            const currentData = JSON.parse(
+              localStorage.getItem("accountingData") || "{}"
+            );
+            currentData.projects = get().projects;
+            localStorage.setItem("accountingData", JSON.stringify(currentData));
           }
         } catch (error) {
-          console.error("Failed to delete project in database:", error);
+          console.error("Failed to save projects to localStorage:", error);
         }
       },
 
@@ -304,6 +327,8 @@ export const useAccountingStore = create<AccountingStore>()(
       },
 
       updateTimesheet: async (id, timesheet) => {
+        console.log("🔄 Store updateTimesheet called with:", { id, timesheet });
+
         // Update frontend state immediately for responsive UI
         set((state) => ({
           timesheets: state.timesheets.map((t) =>
@@ -311,16 +336,27 @@ export const useAccountingStore = create<AccountingStore>()(
           ),
         }));
 
-        // Persist to database via Electron API
+        // Persist to localStorage for web-based app
         try {
-          if (typeof window !== "undefined" && window.electronAPI?.updateTimesheet) {
-            await window.electronAPI.updateTimesheet(id, timesheet);
+          if (typeof window !== "undefined") {
+            const currentData = JSON.parse(
+              localStorage.getItem("accountingData") || "{}"
+            );
+            currentData.timesheets = get().timesheets;
+            localStorage.setItem("accountingData", JSON.stringify(currentData));
           }
         } catch (error) {
-          console.error("Failed to update timesheet in database:", error);
-          // Optionally revert the frontend state on error
-          // set((state) => ({ timesheets: state.timesheets }));
+          console.error("Failed to save timesheets to localStorage:", error);
         }
+      },
+
+      // For web-based app, this function is not needed as data is loaded from localStorage
+      reloadTimesheet: async (id: string) => {
+        console.log(
+          "🔄 reloadTimesheet called for id:",
+          id,
+          "- not needed in web version"
+        );
       },
 
       deleteTimesheet: (id) => {
@@ -374,13 +410,17 @@ export const useAccountingStore = create<AccountingStore>()(
           ),
         }));
 
-        // Persist to database via Electron API
+        // Persist to localStorage for web-based app
         try {
-          if (typeof window !== "undefined" && window.electronAPI?.updateInvoice) {
-            await window.electronAPI.updateInvoice(id, invoice);
+          if (typeof window !== "undefined") {
+            const currentData = JSON.parse(
+              localStorage.getItem("accountingData") || "{}"
+            );
+            currentData.invoices = get().invoices;
+            localStorage.setItem("accountingData", JSON.stringify(currentData));
           }
         } catch (error) {
-          console.error("Failed to update invoice in database:", error);
+          console.error("Failed to save invoices to localStorage:", error);
         }
       },
 
@@ -390,13 +430,17 @@ export const useAccountingStore = create<AccountingStore>()(
           invoices: state.invoices.filter((i) => i.id !== id),
         }));
 
-        // Persist to database via Electron API
+        // Persist to localStorage for web-based app
         try {
-          if (typeof window !== "undefined" && window.electronAPI?.deleteInvoice) {
-            await window.electronAPI.deleteInvoice(id);
+          if (typeof window !== "undefined") {
+            const currentData = JSON.parse(
+              localStorage.getItem("accountingData") || "{}"
+            );
+            currentData.invoices = get().invoices;
+            localStorage.setItem("accountingData", JSON.stringify(currentData));
           }
         } catch (error) {
-          console.error("Failed to delete invoice in database:", error);
+          console.error("Failed to save invoices to localStorage:", error);
         }
       },
 
@@ -457,13 +501,17 @@ export const useAccountingStore = create<AccountingStore>()(
           ),
         }));
 
-        // Persist to database via Electron API
+        // Persist to localStorage for web-based app
         try {
-          if (typeof window !== "undefined" && window.electronAPI?.updateExpense) {
-            await window.electronAPI.updateExpense(id, expense);
+          if (typeof window !== "undefined") {
+            const currentData = JSON.parse(
+              localStorage.getItem("accountingData") || "{}"
+            );
+            currentData.expenses = get().expenses;
+            localStorage.setItem("accountingData", JSON.stringify(currentData));
           }
         } catch (error) {
-          console.error("Failed to update expense in database:", error);
+          console.error("Failed to save expenses to localStorage:", error);
         }
       },
 
@@ -473,13 +521,17 @@ export const useAccountingStore = create<AccountingStore>()(
           expenses: state.expenses.filter((e) => e.id !== id),
         }));
 
-        // Persist to database via Electron API
+        // Persist to localStorage for web-based app
         try {
-          if (typeof window !== "undefined" && window.electronAPI?.deleteExpense) {
-            await window.electronAPI.deleteExpense(id);
+          if (typeof window !== "undefined") {
+            const currentData = JSON.parse(
+              localStorage.getItem("accountingData") || "{}"
+            );
+            currentData.expenses = get().expenses;
+            localStorage.setItem("accountingData", JSON.stringify(currentData));
           }
         } catch (error) {
-          console.error("Failed to delete expense in database:", error);
+          console.error("Failed to save expenses to localStorage:", error);
         }
       },
 
@@ -501,13 +553,17 @@ export const useAccountingStore = create<AccountingStore>()(
           ),
         }));
 
-        // Persist to database via Electron API
+        // Persist to localStorage for web-based app
         try {
-          if (typeof window !== "undefined" && window.electronAPI?.updateDailyLog) {
-            await window.electronAPI.updateDailyLog(id, log);
+          if (typeof window !== "undefined") {
+            const currentData = JSON.parse(
+              localStorage.getItem("accountingData") || "{}"
+            );
+            currentData.dailyLogs = get().dailyLogs;
+            localStorage.setItem("accountingData", JSON.stringify(currentData));
           }
         } catch (error) {
-          console.error("Failed to update daily log in database:", error);
+          console.error("Failed to save daily logs to localStorage:", error);
         }
       },
 
@@ -517,13 +573,17 @@ export const useAccountingStore = create<AccountingStore>()(
           dailyLogs: state.dailyLogs.filter((l) => l.id !== id),
         }));
 
-        // Persist to database via Electron API
+        // Persist to localStorage for web-based app
         try {
-          if (typeof window !== "undefined" && window.electronAPI?.deleteDailyLog) {
-            await window.electronAPI.deleteDailyLog(id);
+          if (typeof window !== "undefined") {
+            const currentData = JSON.parse(
+              localStorage.getItem("accountingData") || "{}"
+            );
+            currentData.dailyLogs = get().dailyLogs;
+            localStorage.setItem("accountingData", JSON.stringify(currentData));
           }
         } catch (error) {
-          console.error("Failed to delete daily log in database:", error);
+          console.error("Failed to save daily logs to localStorage:", error);
         }
       },
 

@@ -1,6 +1,6 @@
 # 🏢 BST Accounting Management System
 
-A comprehensive desktop accounting application built with **Electron**, **Next.js**, and **TypeScript** for secure, offline-first business management.
+A comprehensive web-based accounting application built with **Next.js** and **TypeScript** for secure, modern business management.
 
 ## 🚀 **Quick Start**
 
@@ -8,32 +8,31 @@ A comprehensive desktop accounting application built with **Electron**, **Next.j
 # Install dependencies
 npm install
 
-# Start development server with Electron
-npm run electron-dev
+# Start development server
+npm run dev
 
 # Build for production
-npm run electron-pack
+npm run build
+
+# Start production server
+npm start
 ```
 
-## 📚 **Documentation**
+## 📚 **Features**
 
-All documentation has been organized in the **[`docs/`](./docs/)** folder for easy access:
-
-- **[📖 Documentation Index](./docs/README.md)** - Complete documentation overview
-- **[🚀 Getting Started](./docs/ELECTRON_SETUP.md)** - Development setup guide
-- **[🏗️ Architecture](./docs/OPTIMIZATION_COMPLETE.md)** - SOLID & DRY principles
-- **[💾 Data Management](./docs/CUSTOM_DATA_STORAGE_SUCCESS.md)** - Storage features
-- **[🖥️ Desktop App](./docs/ELECTRON_SUCCESS.md)** - Electron implementation
+The application provides comprehensive accounting management capabilities with a modern web interface.
 
 ## ✨ **Key Features**
 
 ### **🔒 Security & Privacy**
-- ✅ **Local Storage Only** - No internet required
-- ✅ **AES-256 Encryption** - All data encrypted
-- ✅ **Offline-First** - Works without connection
-- ✅ **Cross-Platform** - Windows, macOS, Linux
+
+- ✅ **Local Storage** - Data stored in browser
+- ✅ **Secure Authentication** - PIN-based login system
+- ✅ **Data Export/Import** - Backup and restore functionality
+- ✅ **Cross-Platform** - Works on any device with a web browser
 
 ### **💼 Business Management**
+
 - 👥 **Client Management** - Complete client profiles
 - 📊 **Project Tracking** - Project lifecycle management
 - ⏰ **Timesheet System** - Work tracking with calculations
@@ -42,6 +41,7 @@ All documentation has been organized in the **[`docs/`](./docs/)** folder for ea
 - 📈 **Financial Reports** - Comprehensive analytics
 
 ### **🛠️ Developer Experience**
+
 - 🏗️ **SOLID Architecture** - Clean, maintainable code
 - 🔄 **DRY Principles** - No code duplication
 - ⚡ **Performance Optimized** - Fast, responsive UI
@@ -68,10 +68,12 @@ accounting-ai/
 ## 🚀 **Development**
 
 ### **Prerequisites**
+
 - Node.js 18+
 - npm or yarn
 
 ### **Installation**
+
 ```bash
 # Clone the repository
 git clone https://github.com/aayushjain-code/accounting-software.git
@@ -79,62 +81,62 @@ cd accounting-software
 
 # Install dependencies
 npm install
-
-# Install Electron dependencies
-npm run postinstall
 ```
 
 ### **Development Commands**
-```bash
-# Start with hot reload
-npm run electron-dev
 
-# Or run separately
-npm run dev          # Next.js server
-npm run electron     # Electron app
+```bash
+# Start development server
+npm run dev
 
 # Build for production
-npm run electron-pack
+npm run build
 
-# Build for distribution
-npm run electron-dist
+# Start production server
+npm start
 ```
 
-## 📦 **Distribution**
+## 🌐 **Deployment**
 
 ### **Supported Platforms**
-- **Windows**: NSIS installer (.exe)
-- **macOS**: DMG installer
-- **Linux**: AppImage format
+
+- **Web**: Any modern web browser
+- **Mobile**: Responsive design for mobile devices
+- **Desktop**: Works on Windows, macOS, and Linux
 
 ### **Features**
-- ✅ **Auto-updates** - Seamless updates
-- ✅ **Native menus** - Desktop integration
-- ✅ **File associations** - Open files directly
-- ✅ **System tray** - Background operation
+
+- ✅ **Responsive Design** - Works on all screen sizes
+- ✅ **Modern Web Standards** - Latest web technologies
+- ✅ **Cross-Browser Support** - Chrome, Firefox, Safari, Edge
+- ✅ **Progressive Web App** - Install as desktop app
 
 ## 🔧 **Configuration**
 
 ### **Environment Variables**
+
 ```bash
 NODE_ENV=development  # Development mode
 NODE_ENV=production   # Production mode
 ```
 
 ### **Data Storage**
-- **Location**: `~/Documents/BST Accounting Backups/`
-- **Format**: Encrypted JSON files
-- **Backup**: Automatic backup functionality
+
+- **Location**: Browser localStorage
+- **Format**: JSON files
+- **Backup**: Manual export/import functionality
 
 ## 📊 **Performance**
 
 ### **Optimizations**
+
 - ✅ **Memoized Components** - Prevent unnecessary re-renders
 - ✅ **Optimized Computations** - Efficient data processing
 - ✅ **Reduced Bundle Size** - Smaller application size
 - ✅ **Efficient Data Structures** - Handle large datasets
 
 ### **Architecture**
+
 - ✅ **SOLID Principles** - Clean, maintainable code
 - ✅ **DRY Principles** - No code duplication
 - ✅ **Type Safety** - Full TypeScript coverage
@@ -144,34 +146,32 @@ NODE_ENV=production   # Production mode
 
 1. **Fork the repository**
 2. **Create a feature branch**
-3. **Follow the architecture** - Read [OPTIMIZATION_COMPLETE.md](./docs/OPTIMIZATION_COMPLETE.md)
-4. **Test thoroughly** - Read [TESTS.md](./docs/TESTS.md)
+3. **Follow the architecture** - Use SOLID principles
+4. **Test thoroughly** - Ensure all functionality works
 5. **Submit a pull request**
 
 ## 📋 **Requirements**
 
 ### **System Requirements**
-- **OS**: Windows 10+, macOS 10.14+, Ubuntu 18.04+
-- **RAM**: 4GB minimum, 8GB recommended
-- **Storage**: 500MB available space
-- **Display**: 1200x800 minimum resolution
+
+- **Browser**: Modern web browser (Chrome 90+, Firefox 88+, Safari 14+, Edge 90+)
+- **RAM**: 2GB minimum, 4GB recommended
+- **Storage**: 100MB available space
+- **Display**: Responsive design for all screen sizes
 
 ### **Development Requirements**
+
 - Node.js 18.0.0+
 - npm 8.0.0+
 - Git
 
 ## 🆘 **Support**
 
-### **Documentation**
-- **[📚 Complete Documentation](./docs/README.md)** - All guides and references
-- **[🚀 Setup Guide](./docs/ELECTRON_SETUP.md)** - Development setup
-- **[🛠️ Troubleshooting](./docs/ELECTRON_FIXED.md)** - Common issues
-
 ### **Getting Help**
+
 - Create an issue on GitHub
-- Check the documentation in `docs/` folder
-- Review the troubleshooting guide
+- Check the code comments and structure
+- Review the component documentation
 
 ## 📄 **License**
 
@@ -179,6 +179,6 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ---
 
-**🏢 Built with ❤️ for secure, offline-first business management**
+**🏢 Built with ❤️ for modern, web-based business management**
 
-**📚 [View Complete Documentation](./docs/README.md)** 
+**📚 [View Complete Documentation](./docs/README.md)**

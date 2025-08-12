@@ -33,6 +33,8 @@ import FileUpload from "@/components/FileUpload";
 import FileList from "@/components/FileList";
 import { CloudArrowUpIcon } from "@heroicons/react/24/outline";
 import { TimesheetFile } from "@/types";
+import { ViewToggle } from "@/components/ViewToggle";
+import { TimesheetsTable } from "@/components/TimesheetsTable";
 
 // Enhanced Status Badge Component
 const StatusBadge = React.memo(({ status }: { status: string }) => {
@@ -833,6 +835,7 @@ export default function TimesheetPage() {
   const [timesheetToDelete, setTimesheetToDelete] = useState<string | null>(
     null
   );
+  const [viewMode, setViewMode] = useState<"cards" | "table">("cards");
 
   // Use the search hook
   const {
@@ -945,13 +948,16 @@ export default function TimesheetPage() {
               Manage project work calculations and generate invoices
             </p>
           </div>
-          <button
-            onClick={() => setIsModalOpen(true)}
-            className="bg-primary-600 text-white px-6 py-3 rounded-xl font-semibold hover:bg-primary-700 transition-colors duration-200 flex items-center shadow-lg hover:shadow-xl"
-          >
-            <PlusIcon className="h-5 w-5 mr-2" />
-            Create Timesheet
-          </button>
+          <div className="flex items-center space-x-4">
+            <ViewToggle viewMode={viewMode} onViewChange={setViewMode} />
+            <button
+              onClick={() => setIsModalOpen(true)}
+              className="bg-primary-600 text-white px-6 py-3 rounded-xl font-semibold hover:bg-primary-700 transition-colors duration-200 flex items-center shadow-lg hover:shadow-xl"
+            >
+              <PlusIcon className="h-5 w-5 mr-2" />
+              Create Timesheet
+            </button>
+          </div>
         </div>
       </div>
       {/* (Removed: Stats Cards and Status Summary Cards) */}
@@ -983,70 +989,81 @@ export default function TimesheetPage() {
           </div>
         </div>
 
-        {/* Enhanced Timesheets Table */}
-        <div className="overflow-hidden rounded-xl border border-gray-200 dark:border-gray-700">
-          <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-            <thead className="bg-gray-50 dark:bg-gray-800">
-              <tr>
-                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
-                  Codes
-                </th>
-                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
-                  Project
-                </th>
-                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
-                  Work Details
-                </th>
-                <th className="px-6 py-4 text-right text-xs font-semibold text-gray-500 uppercase tracking-wider">
-                  Amount
-                </th>
-                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
-                  Status
-                </th>
-                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
-                  Actions
-                </th>
-              </tr>
-            </thead>
-            <tbody className="bg-white dark:bg-gray-900 divide-y divide-gray-200 dark:divide-gray-700">
-              {filteredTimesheets.map((timesheet) => {
-                const project = projects.find(
-                  (p) => p.id === timesheet.projectId
-                );
+        {/* Conditional Rendering for Cards vs Table View */}
+        {viewMode === "cards" ? (
+          /* Enhanced Timesheets Table (Card View) */
+          <div className="overflow-hidden rounded-xl border border-gray-200 dark:border-gray-700">
+            <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+              <thead className="bg-gray-50 dark:bg-gray-800">
+                <tr>
+                  <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                    Codes
+                  </th>
+                  <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                    Project
+                  </th>
+                  <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                    Work Details
+                  </th>
+                  <th className="px-6 py-4 text-right text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                    Amount
+                  </th>
+                  <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                    Status
+                  </th>
+                  <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                    Actions
+                  </th>
+                </tr>
+              </thead>
+              <tbody className="bg-white dark:bg-gray-900 divide-y divide-gray-200 dark:divide-gray-700">
+                {filteredTimesheets.map((timesheet) => {
+                  const project = projects.find(
+                    (p) => p.id === timesheet.projectId
+                  );
 
-                return (
-                  <TimesheetRow
-                    key={timesheet.id}
-                    timesheet={timesheet}
-                    project={project}
-                    onEdit={handleEdit}
-                    onDelete={handleDelete}
-                  />
-                );
-              })}
-            </tbody>
-          </table>
-          {filteredTimesheets.length === 0 && (
-            <div className="text-center py-12">
-              <div className="mx-auto h-12 w-12 text-gray-400 mb-4">
-                <CalculatorIcon className="h-12 w-12" />
+                  return (
+                    <TimesheetRow
+                      key={timesheet.id}
+                      timesheet={timesheet}
+                      project={project}
+                      onEdit={handleEdit}
+                      onDelete={handleDelete}
+                    />
+                  );
+                })}
+              </tbody>
+            </table>
+            {filteredTimesheets.length === 0 && (
+              <div className="text-center py-12">
+                <div className="mx-auto h-12 w-12 text-gray-400 mb-4">
+                  <CalculatorIcon className="h-12 w-12" />
+                </div>
+                <p className="text-gray-500 text-lg font-medium">
+                  {searchTerm
+                    ? "No timesheets found matching your search."
+                    : "No timesheets found. Create your first timesheet to get started."}
+                </p>
+                {!searchTerm && (
+                  <button
+                    onClick={() => setIsModalOpen(true)}
+                    className="mt-4 bg-primary-600 text-white px-6 py-3 rounded-xl font-semibold hover:bg-primary-700 transition-colors duration-200"
+                  >
+                    Create Your First Timesheet
+                  </button>
+                )}
               </div>
-              <p className="text-gray-500 text-lg font-medium">
-                {searchTerm
-                  ? "No timesheets found matching your search."
-                  : "No timesheets found. Create your first timesheet to get started."}
-              </p>
-              {!searchTerm && (
-                <button
-                  onClick={() => setIsModalOpen(true)}
-                  className="mt-4 bg-primary-600 text-white px-6 py-3 rounded-xl font-semibold hover:bg-primary-700 transition-colors duration-200"
-                >
-                  Create Your First Timesheet
-                </button>
-              )}
-            </div>
-          )}
-        </div>
+            )}
+          </div>
+        ) : (
+          /* Table View */
+          <TimesheetsTable
+            timesheets={filteredTimesheets}
+            projects={projects}
+            onEdit={handleEdit}
+            onDelete={handleDelete}
+          />
+        )}
       </div>
 
       {/* Modal */}

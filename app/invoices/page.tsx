@@ -2,107 +2,88 @@
 
 import { useState, useMemo } from "react";
 import { useAccountingStore } from "@/store";
-import { Invoice, InvoiceFile } from "@/types";
-import { PlusIcon, PencilIcon, TrashIcon } from "@heroicons/react/24/outline";
+import { Invoice, Client, Project } from "@/types";
+import { DocumentTextIcon } from "@heroicons/react/24/outline";
+import {
+  PlusIcon,
+  PencilIcon,
+  TrashIcon,
+  EyeIcon,
+  DocumentIcon,
+} from "@heroicons/react/24/outline";
 import { format } from "date-fns";
 import toast from "react-hot-toast";
+import { ActionTooltip } from "@/components/Tooltip";
+import { ConfirmationDialog } from "@/components/ConfirmationDialog";
 import Modal from "@/components/Modal";
-import FileUpload from "@/components/FileUpload";
-import FileList from "@/components/FileList";
-import { CloudArrowUpIcon } from "@heroicons/react/24/outline";
-import React from "react";
+import { useSearch } from "@/hooks/useSearch";
+import { ViewToggle } from "@/components/ViewToggle";
+import { InvoicesTable } from "@/components/InvoicesTable";
 
 export default function InvoicesPage() {
-  const [uploadedFiles, setUploadedFiles] = useState<File[]>([]);
-  const [isUploading, setIsUploading] = useState(false);
-
   const {
     invoices,
     clients,
     projects,
-    timesheets,
     addInvoice,
     updateInvoice,
     deleteInvoice,
-    addInvoiceFile,
-    removeInvoiceFile,
   } = useAccountingStore();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingInvoice, setEditingInvoice] = useState<Invoice | null>(null);
-  const [formData, setFormData] = useState({
-    timesheetId: "",
-    projectId: "",
-    clientId: "",
-    issueDate: "",
-    dueDate: "",
-    status: "draft" as "draft" | "sent" | "paid",
-    subtotal: "",
-    taxRate: "18",
-    taxAmount: "",
-    total: "",
-    notes: "",
-  });
+  const [statusFilter, setStatusFilter] = useState<string>("all");
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [invoiceToDelete, setInvoiceToDelete] = useState<string | null>(null);
+  const [viewMode, setViewMode] = useState<"cards" | "table">("cards");
 
-  const generateInvoiceNumber = () => {
-    const currentYear = new Date().getFullYear();
-    const invoiceCount = invoices.length + 1;
-    return `INV-${currentYear}-${invoiceCount.toString().padStart(3, "0")}`;
-  };
+  // Search and filter functionality
+  const {
+    searchTerm,
+    isSearching,
+    handleSearchChange,
+    filteredItems: searchFilteredInvoices,
+  } = useSearch(invoices, ["invoiceNumber"]);
 
-  // Derive project, client, and amount from timesheet
-  const selectedTimesheet = useMemo(
-    () => timesheets.find((t) => t.id === formData.timesheetId),
-    [formData.timesheetId, timesheets]
-  );
-  const selectedProject = useMemo(
-    () =>
-      projects.find(
-        (p) => p.id === (formData.projectId || selectedTimesheet?.projectId)
-      ),
-    [formData.projectId, selectedTimesheet, projects]
-  );
-  const selectedClient = useMemo(
-    () =>
-      clients.find(
-        (c) => c.id === (formData.clientId || selectedProject?.clientId)
-      ),
-    [formData.clientId, selectedProject, clients]
-  );
+  // Filter invoices based on search and status
+  const filteredInvoices = useMemo(() => {
+    let filtered = searchFilteredInvoices;
 
-  // Auto-populate fields when timesheet is selected
-  React.useEffect(() => {
-    if (selectedTimesheet && selectedProject && selectedClient) {
-      const subtotal = selectedTimesheet.totalAmount || 0;
-      const taxRate = parseFloat(formData.taxRate);
-      const taxAmount = subtotal * (taxRate / 100);
-      const total = subtotal + taxAmount;
-
-      setFormData((prev) => ({
-        ...prev,
-        projectId: selectedProject.id,
-        clientId: selectedClient.id,
-        subtotal: subtotal.toString(),
-        taxAmount: taxAmount.toString(),
-        total: total.toString(),
-      }));
+    if (statusFilter !== "all") {
+      filtered = filtered.filter((invoice) => invoice.status === statusFilter);
     }
-  }, [selectedTimesheet, selectedProject, selectedClient, formData.taxRate]);
+
+    return filtered;
+  }, [searchFilteredInvoices, statusFilter]);
+
+  const [formData, setFormData] = useState({
+    invoiceNumber: "",
+    clientId: "",
+    projectId: "",
+    amount: "",
+    issueDate: format(new Date(), "yyyy-MM-dd"),
+    dueDate: format(
+      new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
+      "yyyy-MM-dd"
+    ),
+    status: "draft" as "draft" | "sent" | "paid",
+  });
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     const invoiceData = {
-      timesheetId: formData.timesheetId,
+      invoiceNumber: formData.invoiceNumber,
       clientId: formData.clientId,
       projectId: formData.projectId,
+      timesheetId: "", // We'll need to get this from a timesheet
+      amount: parseFloat(formData.amount),
       issueDate: new Date(formData.issueDate),
       dueDate: new Date(formData.dueDate),
       status: formData.status,
-      subtotal: parseFloat(formData.subtotal),
-      taxRate: parseFloat(formData.taxRate),
-      taxAmount: parseFloat(formData.taxAmount),
-      total: parseFloat(formData.total),
-      notes: formData.notes,
+      subtotal: parseFloat(formData.amount),
+      taxRate: 0,
+      taxAmount: 0,
+      total: parseFloat(formData.amount),
     };
 
     if (editingInvoice) {
@@ -116,85 +97,62 @@ export default function InvoicesPage() {
     setIsModalOpen(false);
     setEditingInvoice(null);
     setFormData({
-      timesheetId: "",
+      invoiceNumber: "",
       clientId: "",
       projectId: "",
+      amount: "",
       issueDate: format(new Date(), "yyyy-MM-dd"),
-      dueDate: format(new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), "yyyy-MM-dd"),
-      status: "draft" as const,
-      subtotal: "",
-      taxRate: "18",
-      taxAmount: "",
-      total: "",
-      notes: "",
+      dueDate: format(
+        new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
+        "yyyy-MM-dd"
+      ),
+      status: "draft",
     });
   };
 
   const handleEdit = (invoice: Invoice) => {
     setEditingInvoice(invoice);
     setFormData({
-      timesheetId: invoice.timesheetId,
-      projectId: invoice.projectId,
+      invoiceNumber: invoice.invoiceNumber,
       clientId: invoice.clientId,
+      projectId: invoice.projectId,
+      amount: invoice.total.toString(),
       issueDate: format(new Date(invoice.issueDate), "yyyy-MM-dd"),
       dueDate: format(new Date(invoice.dueDate), "yyyy-MM-dd"),
       status: invoice.status,
-      subtotal: invoice.subtotal.toString(),
-      taxRate: invoice.taxRate.toString(),
-      taxAmount: invoice.taxAmount.toString(),
-      total: invoice.total.toString(),
-      notes: invoice.notes || "",
     });
     setIsModalOpen(true);
   };
 
   const handleDelete = (id: string) => {
-    if (confirm("Are you sure you want to delete this invoice?")) {
-      deleteInvoice(id);
+    setInvoiceToDelete(id);
+    setShowDeleteDialog(true);
+  };
+
+  const confirmDelete = () => {
+    if (invoiceToDelete) {
+      deleteInvoice(invoiceToDelete);
       toast.success("Invoice deleted successfully");
+      setShowDeleteDialog(false);
+      setInvoiceToDelete(null);
     }
   };
 
-  const handleFileUpload = async () => {
-    if (uploadedFiles.length === 0) {
-      toast.error("Please select files to upload");
-      return;
-    }
-
-    setIsUploading(true);
-    try {
-      for (const file of uploadedFiles) {
-        const fileData: InvoiceFile = {
-          id: `file_${Date.now()}_${Math.random()}`,
-          invoiceId: editingInvoice?.id || "temp",
-          fileName: `invoice_${editingInvoice?.id || "temp"}_${file.name}`,
-          originalName: file.name,
-          fileSize: file.size,
-          fileType: file.type || `.${file.name.split(".").pop()}`,
-          uploadDate: new Date(),
-          uploadedBy: "Admin User",
-          filePath: `/uploads/invoices/${file.name}`,
-          createdAt: new Date(),
-          updatedAt: new Date(),
-        };
-
-        addInvoiceFile(editingInvoice?.id || "temp", fileData);
-      }
-
-      toast.success("Files uploaded successfully");
-      setUploadedFiles([]);
-    } catch {
-      toast.error("Failed to upload files");
-    } finally {
-      setIsUploading(false);
+  const getStatusColor = (status: string) => {
+    switch (status.toLowerCase()) {
+      case "paid":
+        return "bg-green-100 text-green-800 border-green-200";
+      case "sent":
+        return "bg-blue-100 text-blue-800 border-blue-200";
+      case "draft":
+        return "bg-gray-100 text-gray-800 border-gray-200";
+      default:
+        return "bg-gray-100 text-gray-800 border-gray-200";
     }
   };
 
-  const handleFileDelete = (fileId: string) => {
-    if (editingInvoice) {
-      removeInvoiceFile(editingInvoice.id, fileId);
-      toast.success("File deleted successfully!");
-    }
+  const formatStatus = (status: string) => {
+    return status.charAt(0).toUpperCase() + status.slice(1);
   };
 
   const formatCurrency = (amount: number) => {
@@ -202,19 +160,6 @@ export default function InvoicesPage() {
       style: "currency",
       currency: "INR",
     }).format(amount);
-  };
-
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case "paid":
-        return "text-success-600 bg-success-100";
-      case "sent":
-        return "text-warning-600 bg-warning-100";
-      case "draft":
-        return "text-gray-600 bg-gray-100";
-      default:
-        return "text-gray-600 bg-gray-100";
-    }
   };
 
   return (
@@ -227,140 +172,212 @@ export default function InvoicesPage() {
               Invoices
             </h1>
             <p className="text-gray-600 dark:text-gray-400 mt-2">
-              Manage your client invoices and payments
+              Manage your invoices and track payments
             </p>
+            <div className="flex items-center space-x-4 mt-3">
+              <div className="flex items-center space-x-2 text-sm text-gray-600 dark:text-gray-400">
+                <DocumentTextIcon className="h-4 w-4 text-primary-600" />
+                <span>
+                  <span className="font-semibold text-primary-600">
+                    {invoices.length}
+                  </span>{" "}
+                  Invoices
+                </span>
+              </div>
+            </div>
           </div>
-          <button
-            onClick={() => setIsModalOpen(true)}
-            className="bg-primary-600 text-white px-6 py-3 rounded-xl font-semibold hover:bg-primary-700 transition-colors duration-200 flex items-center shadow-lg hover:shadow-xl"
-          >
-            <PlusIcon className="h-5 w-5 mr-2" />
-            Add Invoice
-          </button>
+          <div className="flex items-center space-x-3">
+            <ViewToggle
+              viewMode={viewMode}
+              onViewChange={setViewMode}
+              className="mr-2"
+            />
+            <ActionTooltip
+              content="Create New Invoice"
+              action="Generate a new invoice for a client"
+            >
+              <button
+                onClick={() => setIsModalOpen(true)}
+                className="bg-primary-600 text-white px-6 py-3 rounded-xl font-semibold hover:bg-primary-700 transition-colors duration-200 flex items-center shadow-lg hover:shadow-xl"
+              >
+                <PlusIcon className="h-5 w-5 mr-2" />
+                Create Invoice
+              </button>
+            </ActionTooltip>
+          </div>
         </div>
       </div>
 
-      {/* Summary Stats */}
-      <div className="grid grid-cols-1 gap-6 sm:grid-cols-4">
-        <div className="card">
-          <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
-            Total Invoices
-          </h3>
-          <p className="text-3xl font-bold text-primary-600 dark:text-primary-400">
-            {invoices.length}
-          </p>
-        </div>
-        <div className="card">
-          <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
-            Paid
-          </h3>
-          <p className="text-3xl font-bold text-success-600 dark:text-success-400">
-            {formatCurrency(
-              invoices
-                .filter((i) => i.status === "paid")
-                .reduce((sum, i) => sum + i.total, 0)
+      {/* Search and Filters */}
+      <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+        <div className="flex flex-col md:flex-row gap-4">
+          <div className="flex-1 relative">
+            <input
+              type="text"
+              placeholder="Search invoices by number or description..."
+              value={searchTerm}
+              onChange={(e) => handleSearchChange(e.target.value)}
+              className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400"
+            />
+            {isSearching && (
+              <div className="absolute right-4 top-1/2 transform -translate-y-1/2">
+                <div className="animate-spin rounded-full h-5 w-5 border-2 border-gray-300 border-t-primary-600"></div>
+              </div>
             )}
-          </p>
-        </div>
-        <div className="card">
-          <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
-            Sent
-          </h3>
-          <p className="text-3xl font-bold text-warning-600 dark:text-warning-400">
-            {formatCurrency(
-              invoices
-                .filter((i) => i.status === "sent")
-                .reduce((sum, i) => sum + i.total, 0)
-            )}
-          </p>
+          </div>
+          <div className="flex items-center space-x-3">
+            <select
+              value={statusFilter}
+              onChange={(e) => setStatusFilter(e.target.value)}
+              className="px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200"
+            >
+              <option value="all">All Status</option>
+              <option value="draft">Draft</option>
+              <option value="sent">Sent</option>
+              <option value="paid">Paid</option>
+            </select>
+          </div>
         </div>
       </div>
 
-      {/* Invoices Table */}
-      <div className="card">
-        <div className="overflow-x-auto">
-          <table className="table">
-            <thead>
-              <tr>
-                <th>Invoice #</th>
-                <th>Client</th>
-                <th>Project</th>
-                <th>Issue Date</th>
-                <th>Due Date</th>
-                <th>Total</th>
-                <th>Status</th>
-                <th>Actions</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
-              {invoices
-                .sort(
-                  (a, b) =>
-                    new Date(b.createdAt).getTime() -
-                    new Date(a.createdAt).getTime()
-                )
-                .map((invoice) => {
-                  const client = clients.find((c) => c.id === invoice.clientId);
-                  const project = projects.find(
-                    (p) => p.id === invoice.projectId
-                  );
-                  return (
-                    <tr key={invoice.id}>
-                      <td>
-                        <div className="space-y-1">
-                          <span className="font-mono font-semibold text-primary-700 bg-primary-50 dark:bg-primary-900 px-3 py-1 rounded-md border border-primary-200 dark:border-primary-800 text-sm">
-                            {invoice.invoiceNumber}
-                          </span>
-                        </div>
-                      </td>
-                      <td>{client?.name || "Unknown Client"}</td>
-                      <td>{project?.name || "Unknown Project"}</td>
-                      <td>
-                        {format(new Date(invoice.issueDate), "MMM dd, yyyy")}
-                      </td>
-                      <td>
-                        {format(new Date(invoice.dueDate), "MMM dd, yyyy")}
-                      </td>
-                      <td>{formatCurrency(invoice.total)}</td>
-                      <td>
+      {/* Content based on view mode */}
+      {viewMode === "cards" ? (
+        /* Cards View */
+        <div className="space-y-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {filteredInvoices.map((invoice) => {
+              const client = clients.find((c) => c.id === invoice.clientId);
+              const project = projects.find((p) => p.id === invoice.projectId);
+              return (
+                <div
+                  key={invoice.id}
+                  className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6 hover:shadow-md transition-shadow duration-200"
+                >
+                  {/* Header */}
+                  <div className="flex items-start justify-between mb-4">
+                    <div className="flex-1">
+                      <div className="flex items-center space-x-2 mb-2">
+                        <span className="font-mono font-semibold text-primary-700 bg-primary-50 dark:bg-primary-900 px-3 py-1 rounded-md border border-primary-200 dark:border-primary-800 text-sm">
+                          {invoice.invoiceNumber}
+                        </span>
                         <span
-                          className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(
+                          className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full border ${getStatusColor(
                             invoice.status
                           )}`}
                         >
-                          {invoice.status}
+                          {formatStatus(invoice.status)}
                         </span>
-                      </td>
-                      <td>
-                        <div className="flex space-x-2">
-                          <button
-                            onClick={() => handleEdit(invoice)}
-                            className="text-primary-600 hover:text-primary-900"
-                          >
-                            <PencilIcon className="h-4 w-4" />
-                          </button>
-                          <button
-                            onClick={() => handleDelete(invoice.id)}
-                            className="text-danger-600 hover:text-danger-900"
-                          >
-                            <TrashIcon className="h-4 w-4" />
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  );
-                })}
-            </tbody>
-          </table>
-          {invoices.length === 0 && (
-            <div className="text-center py-8">
-              <p className="text-gray-500">
-                No invoices found. Create your first invoice to get started.
-              </p>
-            </div>
+                      </div>
+                      <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-1">
+                        Invoice #{invoice.invoiceNumber}
+                      </h3>
+                    </div>
+                  </div>
+
+                  {/* Client and Project Info */}
+                  <div className="space-y-3 mb-4">
+                    <div className="flex items-center space-x-2 text-sm text-gray-600 dark:text-gray-400">
+                      <span className="font-medium">Client:</span>
+                      <span className="text-gray-900 dark:text-white">
+                        {client?.name || "Unknown Client"}
+                      </span>
+                    </div>
+                    {project && (
+                      <div className="flex items-center space-x-2 text-sm text-gray-600 dark:text-gray-400">
+                        <span className="font-medium">Project:</span>
+                        <span className="text-gray-900 dark:text-white">
+                          {project.name}
+                        </span>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Invoice Details */}
+                  <div className="space-y-3 mb-6">
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm text-gray-600 dark:text-gray-400">
+                        Amount:
+                      </span>
+                      <span className="text-lg font-semibold text-green-600 dark:text-green-400">
+                        {formatCurrency(invoice.total)}
+                      </span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm text-gray-600 dark:text-gray-400">
+                        Issue Date:
+                      </span>
+                      <span className="text-sm font-medium text-gray-900 dark:text-white">
+                        {format(new Date(invoice.issueDate), "MMM dd, yyyy")}
+                      </span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm text-gray-600 dark:text-gray-400">
+                        Due Date:
+                      </span>
+                      <span className="text-sm font-medium text-gray-900 dark:text-white">
+                        {format(new Date(invoice.dueDate), "MMM dd, yyyy")}
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Actions */}
+                  <div className="flex items-center justify-between pt-4 border-t border-gray-200 dark:border-gray-700">
+                    <div className="flex items-center space-x-2">
+                      <button
+                        onClick={() => handleEdit(invoice)}
+                        className="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300 p-2 rounded-lg hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors"
+                        title="Edit Invoice"
+                      >
+                        <PencilIcon className="h-4 w-4" />
+                      </button>
+                      <button
+                        onClick={() => handleDelete(invoice.id)}
+                        className="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300 p-2 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
+                        title="Delete Invoice"
+                      >
+                        <TrashIcon className="h-4 w-4" />
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      ) : (
+        /* Table View */
+        <div className="space-y-6">
+          <InvoicesTable
+            invoices={filteredInvoices}
+            clients={clients}
+            projects={projects}
+            onEdit={handleEdit}
+            onDelete={handleDelete}
+          />
+        </div>
+      )}
+
+      {/* Empty State */}
+      {filteredInvoices.length === 0 && (
+        <div className="text-center py-12">
+          <div className="mx-auto h-16 w-16 text-gray-400 mb-4">
+            <DocumentTextIcon className="h-16 w-16" />
+          </div>
+          <p className="text-gray-500 text-lg font-medium mb-4">
+            {searchTerm || statusFilter !== "all"
+              ? "No invoices found matching your criteria."
+              : "No invoices found. Create your first invoice to get started."}
+          </p>
+          {!searchTerm && statusFilter === "all" && (
+            <button
+              onClick={() => setIsModalOpen(true)}
+              className="bg-primary-600 text-white px-6 py-3 rounded-xl font-semibold hover:bg-primary-700 transition-colors duration-200"
+            >
+              Create Your First Invoice
+            </button>
           )}
         </div>
-      </div>
+      )}
 
       {/* Modal */}
       <Modal
@@ -369,19 +386,17 @@ export default function InvoicesPage() {
           setIsModalOpen(false);
           setEditingInvoice(null);
           setFormData({
-            timesheetId: "",
-            projectId: "",
+            invoiceNumber: "",
             clientId: "",
-            issueDate: "",
-            dueDate: "",
+            projectId: "",
+            amount: "",
+            issueDate: format(new Date(), "yyyy-MM-dd"),
+            dueDate: format(
+              new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
+              "yyyy-MM-dd"
+            ),
             status: "draft",
-            subtotal: "",
-            taxRate: "18",
-            taxAmount: "",
-            total: "",
-            notes: "",
           });
-          setUploadedFiles([]);
         }}
         title={editingInvoice ? "Edit Invoice" : "Create New Invoice"}
         footer={
@@ -392,19 +407,17 @@ export default function InvoicesPage() {
                 setIsModalOpen(false);
                 setEditingInvoice(null);
                 setFormData({
-                  timesheetId: "",
-                  projectId: "",
+                  invoiceNumber: "",
                   clientId: "",
-                  issueDate: "",
-                  dueDate: "",
+                  projectId: "",
+                  amount: "",
+                  issueDate: format(new Date(), "yyyy-MM-dd"),
+                  dueDate: format(
+                    new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
+                    "yyyy-MM-dd"
+                  ),
                   status: "draft",
-                  subtotal: "",
-                  taxRate: "18",
-                  taxAmount: "",
-                  total: "",
-                  notes: "",
                 });
-                setUploadedFiles([]);
               }}
               className="btn-secondary mr-2"
             >
@@ -417,51 +430,22 @@ export default function InvoicesPage() {
         }
       >
         <form id="invoice-form" onSubmit={handleSubmit} className="space-y-6">
-          {/* Timesheet selection */}
+          {/* Invoice Number */}
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-              Timesheet
+              Invoice Number
             </label>
-            <select
-              value={formData.timesheetId}
+            <input
+              type="text"
+              value={formData.invoiceNumber}
               onChange={(e) =>
-                setFormData((f) => ({ ...f, timesheetId: e.target.value }))
+                setFormData((f) => ({ ...f, invoiceNumber: e.target.value }))
               }
               className="input"
               required
-              disabled={!!editingInvoice}
-            >
-              <option value="">Select Timesheet</option>
-              {timesheets.map((t) => (
-                <option key={t.id} value={t.id}>
-                  {t.month} {t.year} -{" "}
-                  {projects.find((p) => p.id === t.projectId)?.name || ""}
-                </option>
-              ))}
-            </select>
+            />
           </div>
-          {/* Project (editable) */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-              Project
-            </label>
-            <select
-              value={formData.projectId}
-              onChange={(e) =>
-                setFormData((f) => ({ ...f, projectId: e.target.value }))
-              }
-              className="input"
-              required
-            >
-              <option value="">Select Project</option>
-              {projects.map((project) => (
-                <option key={project.id} value={project.id}>
-                  {project.projectCode} - {project.name}
-                </option>
-              ))}
-            </select>
-          </div>
-          {/* Client (editable) */}
+          {/* Client */}
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
               Client
@@ -482,86 +466,46 @@ export default function InvoicesPage() {
               ))}
             </select>
           </div>
-          {/* Subtotal (editable) */}
+          {/* Project */}
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-              Subtotal (₹)
+              Project
+            </label>
+            <select
+              value={formData.projectId}
+              onChange={(e) =>
+                setFormData((f) => ({ ...f, projectId: e.target.value }))
+              }
+              className="input"
+              required
+            >
+              <option value="">Select Project</option>
+              {projects.map((project) => (
+                <option key={project.id} value={project.id}>
+                  {project.projectCode} - {project.name}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          {/* Amount */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              Amount (₹)
             </label>
             <input
               type="number"
-              value={formData.subtotal}
-              onChange={(e) => {
-                const subtotal = parseFloat(e.target.value) || 0;
-                const taxRate = parseFloat(formData.taxRate);
-                const taxAmount = subtotal * (taxRate / 100);
-                const total = subtotal + taxAmount;
-                setFormData((f) => ({
-                  ...f,
-                  subtotal: e.target.value,
-                  taxAmount: taxAmount.toString(),
-                  total: total.toString(),
-                }));
-              }}
+              value={formData.amount}
+              onChange={(e) =>
+                setFormData((f) => ({ ...f, amount: e.target.value }))
+              }
               className="input"
               required
               min="0"
               step="0.01"
             />
           </div>
-          {/* Tax Rate (editable) */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-              Tax Rate (%)
-            </label>
-            <input
-              type="number"
-              value={formData.taxRate}
-              onChange={(e) => {
-                const taxRate = parseFloat(e.target.value) || 0;
-                const subtotal = parseFloat(formData.subtotal) || 0;
-                const taxAmount = subtotal * (taxRate / 100);
-                const total = subtotal + taxAmount;
-                setFormData((f) => ({
-                  ...f,
-                  taxRate: e.target.value,
-                  taxAmount: taxAmount.toString(),
-                  total: total.toString(),
-                }));
-              }}
-              className="input"
-              required
-              min="0"
-              max="100"
-              step="0.01"
-            />
-          </div>
-          {/* Tax Amount (calculated) */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-              Tax Amount (₹)
-            </label>
-            <input
-              type="number"
-              value={formData.taxAmount}
-              className="input bg-gray-100 dark:bg-gray-800 cursor-not-allowed"
-              readOnly
-              tabIndex={-1}
-            />
-          </div>
-          {/* Total (calculated) */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-              Total (₹)
-            </label>
-            <input
-              type="number"
-              value={formData.total}
-              className="input bg-gray-100 dark:bg-gray-800 cursor-not-allowed"
-              readOnly
-              tabIndex={-1}
-            />
-          </div>
-          {/* Status dropdown */}
+          {/* Status */}
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
               Status
@@ -611,77 +555,21 @@ export default function InvoicesPage() {
               required
             />
           </div>
-          {/* Notes */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-              Notes
-            </label>
-            <textarea
-              value={formData.notes}
-              onChange={(e) =>
-                setFormData((f) => ({ ...f, notes: e.target.value }))
-              }
-              className="input"
-              rows={2}
-            />
-          </div>
-          {/* File Upload Section */}
-          <div className="border-t border-gray-200 dark:border-gray-700 pt-6">
-            <FileUpload
-              files={uploadedFiles}
-              onFilesChange={setUploadedFiles}
-              maxFiles={5}
-              maxSize={10}
-              title="Upload Invoice Files"
-              description="Upload invoice documents, receipts, or supporting files"
-              acceptedTypes={[
-                ".pdf",
-                ".doc",
-                ".docx",
-                ".xls",
-                ".xlsx",
-                ".jpg",
-                ".jpeg",
-                ".png",
-              ]}
-            />
-
-            {uploadedFiles.length > 0 && (
-              <div className="mt-4 flex justify-end">
-                <button
-                  type="button"
-                  onClick={handleFileUpload}
-                  disabled={isUploading}
-                  className="btn-secondary flex items-center space-x-2"
-                >
-                  {isUploading ? (
-                    <>
-                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-gray-600"></div>
-                      <span>Uploading...</span>
-                    </>
-                  ) : (
-                    <>
-                      <CloudArrowUpIcon className="h-4 w-4" />
-                      <span>Upload Files</span>
-                    </>
-                  )}
-                </button>
-              </div>
-            )}
-          </div>
-
-          {/* File List Section */}
-          {editingInvoice?.files && editingInvoice.files.length > 0 && (
-            <div className="border-t border-gray-200 dark:border-gray-700 pt-6">
-              <FileList
-                files={editingInvoice.files}
-                onDelete={handleFileDelete}
-                title="Invoice Files"
-              />
-            </div>
-          )}
         </form>
       </Modal>
+
+      {/* Confirmation Dialog */}
+      <ConfirmationDialog
+        isOpen={showDeleteDialog}
+        onClose={() => setShowDeleteDialog(false)}
+        onConfirm={confirmDelete}
+        title="Confirm Deletion"
+        message={`Are you sure you want to delete invoice "${
+          editingInvoice?.invoiceNumber || invoiceToDelete
+        }"? This action cannot be undone.`}
+        confirmText="Delete"
+        cancelText="Cancel"
+      />
     </div>
   );
 }

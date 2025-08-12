@@ -1,27 +1,42 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { useAccountingStore } from "@/store";
-import { Project } from "@/types";
+import { Project, Client } from "@/types";
+import { BuildingOfficeIcon } from "@heroicons/react/24/outline";
 import {
   PlusIcon,
   PencilIcon,
   TrashIcon,
-  ArchiveBoxIcon,
+  UserIcon,
+  CalendarIcon,
+  CurrencyRupeeIcon,
+  TagIcon,
+  EyeIcon,
 } from "@heroicons/react/24/outline";
 import { format } from "date-fns";
 import toast from "react-hot-toast";
-import clsx from "clsx";
+import { Tooltip, ActionTooltip, IconTooltip } from "@/components/Tooltip";
+import { ConfirmationDialog } from "@/components/ConfirmationDialog";
+import React from "react";
 import Modal from "@/components/Modal";
+import { useSearch } from "@/hooks/useSearch";
+import { usePagination } from "@/hooks/usePagination";
+import { Pagination } from "@/components/Pagination";
+import { performanceMonitor } from "@/utils/performance";
+import { ViewToggle } from "@/components/ViewToggle";
+import { ProjectsTable } from "@/components/ProjectsTable";
+import { ProjectCard } from "@/components/ProjectCard";
 
 export default function ProjectsPage() {
   const { projects, clients, addProject, updateProject, deleteProject } =
     useAccountingStore();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingProject, setEditingProject] = useState<Project | null>(null);
-  const [selectedTab, setSelectedTab] = useState<"all" | "active" | "inactive">(
-    "all"
-  );
+  const [statusFilter, setStatusFilter] = useState<string>("all");
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [projectToDelete, setProjectToDelete] = useState<string | null>(null);
+  const [viewMode, setViewMode] = useState<"cards" | "table">("cards");
   const [formData, setFormData] = useState({
     projectCode: "",
     name: "",
@@ -103,15 +118,17 @@ export default function ProjectsPage() {
     setFormData({
       projectCode: project.projectCode,
       name: project.name,
-      clientId: project.clientId,
       description: project.description,
-      budget: project.budget.toString(),
-      startDate: format(new Date(project.startDate), "yyyy-MM-dd"),
+      clientId: project.clientId,
+      startDate: project.startDate
+        ? format(new Date(project.startDate), "yyyy-MM-dd")
+        : "",
       status: project.status,
-      billingTerms: project.billingTerms.toString(),
+      budget: project.budget?.toString() || "",
+      billingTerms: project.billingTerms?.toString() || "",
       billingRate: project.billingRate?.toString() || "",
       estimatedHours: project.estimatedHours?.toString() || "",
-      gstRate: project.gstRate.toString(),
+      gstRate: project.gstRate?.toString() || "",
       gstInclusive: project.gstInclusive,
     });
     setIsModalOpen(true);
@@ -131,6 +148,29 @@ export default function ProjectsPage() {
     }
   };
 
+  const handleView = (project: Project) => {
+    // For now, just open the edit modal to view details
+    // You can implement a separate view modal later if needed
+    setEditingProject(project);
+    setFormData({
+      projectCode: project.projectCode,
+      name: project.name,
+      description: project.description,
+      clientId: project.clientId,
+      startDate: project.startDate
+        ? format(new Date(project.startDate), "yyyy-MM-dd")
+        : "",
+      status: project.status,
+      budget: project.budget?.toString() || "",
+      billingTerms: project.billingTerms?.toString() || "",
+      billingRate: project.billingRate?.toString() || "",
+      estimatedHours: project.estimatedHours?.toString() || "",
+      gstRate: project.gstRate?.toString() || "",
+      gstInclusive: project.gstInclusive,
+    });
+    setIsModalOpen(true);
+  };
+
   const getStatusColor = (status: string) => {
     switch (status) {
       case "active":
@@ -146,13 +186,24 @@ export default function ProjectsPage() {
     }
   };
 
-  // Filter projects based on selected tab
-  const filteredProjects = projects.filter((project) => {
-    if (selectedTab === "all") return true;
-    if (selectedTab === "active") return project.status === "active";
-    if (selectedTab === "inactive") return project.status === "inactive";
-    return true;
-  });
+  // Search and filter functionality
+  const {
+    searchTerm,
+    isSearching,
+    handleSearchChange,
+    filteredItems: searchFilteredProjects,
+  } = useSearch(projects, ["name", "projectCode", "description"]);
+
+  // Filter projects based on search and status
+  const filteredProjects = useMemo(() => {
+    let filtered = searchFilteredProjects;
+
+    if (statusFilter !== "all") {
+      filtered = filtered.filter((project) => project.status === statusFilter);
+    }
+
+    return filtered;
+  }, [searchFilteredProjects, statusFilter]);
 
   return (
     <div className="space-y-6">
@@ -164,175 +215,124 @@ export default function ProjectsPage() {
               Projects
             </h1>
             <p className="text-gray-600 dark:text-gray-400 mt-2">
-              Manage your client projects and track progress
+              Manage your projects and track their progress
             </p>
+            <div className="flex items-center space-x-4 mt-3">
+              <div className="flex items-center space-x-2 text-sm text-gray-600 dark:text-gray-400">
+                <BuildingOfficeIcon className="h-4 w-4 text-primary-600" />
+                <span>
+                  <span className="font-semibold text-primary-600">
+                    {projects.length}
+                  </span>{" "}
+                  Projects
+                </span>
+              </div>
+            </div>
           </div>
-          <button
-            onClick={() => setIsModalOpen(true)}
-            className="bg-primary-600 text-white px-6 py-3 rounded-xl font-semibold hover:bg-primary-700 transition-colors duration-200 flex items-center shadow-lg hover:shadow-xl"
-          >
-            <PlusIcon className="h-5 w-5 mr-2" />
-            Add Project
-          </button>
+          <div className="flex items-center space-x-3">
+            <ViewToggle
+              viewMode={viewMode}
+              onViewChange={setViewMode}
+              className="mr-2"
+            />
+            <ActionTooltip
+              content="Add New Project"
+              action="Create a new project profile"
+            >
+              <button
+                onClick={() => setIsModalOpen(true)}
+                className="bg-primary-600 text-white px-6 py-3 rounded-xl font-semibold hover:bg-primary-700 transition-colors duration-200 flex items-center shadow-lg hover:shadow-xl"
+              >
+                <PlusIcon className="h-5 w-5 mr-2" />
+                Add Project
+              </button>
+            </ActionTooltip>
+          </div>
         </div>
       </div>
-      {/* Tabs */}
-      <div className="flex space-x-2 border-b border-gray-200 dark:border-gray-700 mb-2">
-        {[
-          { label: "All", value: "all" },
-          { label: "Active", value: "active" },
-          { label: "Inactive", value: "inactive" },
-        ].map((tab) => (
-          <button
-            key={tab.value}
-            onClick={() => setSelectedTab(tab.value as any)}
-            className={clsx(
-              "px-4 py-2 text-sm font-medium focus:outline-none border-b-2 transition",
-              selectedTab === tab.value
-                ? "border-primary-600 text-primary-600 dark:text-primary-400 dark:border-primary-400"
-                : "border-transparent text-gray-600 dark:text-gray-400 hover:text-primary-600 dark:hover:text-primary-400"
+
+      {/* Search and Filters */}
+      <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+        <div className="flex flex-col md:flex-row gap-4">
+          <div className="flex-1 relative">
+            <input
+              type="text"
+              placeholder="Search projects by name, code, or description..."
+              value={searchTerm}
+              onChange={(e) => handleSearchChange(e.target.value)}
+              className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400"
+            />
+            {isSearching && (
+              <div className="absolute right-4 top-1/2 transform -translate-y-1/2">
+                <div className="animate-spin rounded-full h-5 w-5 border-2 border-gray-300 border-t-primary-600"></div>
+              </div>
             )}
-          >
-            {tab.label}
-          </button>
-        ))}
+          </div>
+          <div className="flex items-center space-x-3">
+            <select
+              value={statusFilter}
+              onChange={(e) => setStatusFilter(e.target.value)}
+              className="px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200"
+            >
+              <option value="all">All Status</option>
+              <option value="active">Active</option>
+              <option value="inactive">Inactive</option>
+              <option value="completed">Completed</option>
+              <option value="on-hold">On Hold</option>
+            </select>
+          </div>
+        </div>
       </div>
-      {/* Projects Table */}
-      <div className="card">
-        <div className="overflow-x-auto">
-          <table className="table">
-            <thead>
-              <tr>
-                <th>Code</th>
-                <th>Name</th>
-                <th>Client</th>
-                <th>Costing</th>
-                <th>GST</th>
-                <th>Total</th>
-                <th>Status</th>
-                <th>Start Date</th>
-                <th>Actions</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
-              {filteredProjects.map((project) => {
-                const client = clients.find((c) => c.id === project.clientId);
-                return (
-                  <tr key={project.id}>
-                    {/* Project Code as first column, rectangular background */}
-                    <td>
-                      <span className="font-mono font-semibold text-primary-700 bg-primary-50 dark:bg-primary-900 px-4 py-2 rounded-md border border-primary-200 dark:border-primary-800">
-                        {project.projectCode}
-                      </span>
-                    </td>
-                    <td>
-                      <div>
-                        <div className="font-medium text-gray-900 dark:text-white">
-                          {project.name}
-                        </div>
-                        <div className="text-sm text-gray-500 dark:text-gray-400">
-                          {project.description}
-                        </div>
-                      </div>
-                    </td>
-                    <td className="text-gray-900 dark:text-white">
-                      {client?.name || "Unknown Client"}
-                    </td>
-                    <td>
-                      <div className="space-y-1">
-                        <div className="font-medium text-gray-900 dark:text-white">
-                          ₹
-                          {project.budget.toLocaleString("en-IN", {
-                            minimumFractionDigits: 2,
-                            maximumFractionDigits: 2,
-                          })}
-                        </div>
-                        <div className="text-xs text-gray-500 dark:text-gray-400">
-                          {project.billingRate
-                            ? `₹${project.billingRate.toFixed(2)}/hr × `
-                            : ""}
-                          {project.estimatedHours
-                            ? `${project.estimatedHours} hrs`
-                            : "Not specified"}
-                        </div>
-                      </div>
-                    </td>
-                    <td>
-                      <div className="space-y-1">
-                        <div className="font-medium text-gray-900 dark:text-white">
-                          ₹
-                          {project.costBreakdown.gstAmount.toLocaleString(
-                            "en-IN",
-                            {
-                              minimumFractionDigits: 2,
-                              maximumFractionDigits: 2,
-                            }
-                          )}
-                        </div>
-                        <div className="text-xs text-gray-500 dark:text-gray-400">
-                          {project.gstRate}%{" "}
-                          {project.gstInclusive ? "(Inclusive)" : "(Exclusive)"}
-                        </div>
-                      </div>
-                    </td>
-                    <td className="font-medium text-green-600 dark:text-green-400">
-                      ₹
-                      {project.totalCost.toLocaleString("en-IN", {
-                        minimumFractionDigits: 2,
-                        maximumFractionDigits: 2,
-                      })}
-                    </td>
-                    <td>
-                      <span
-                        className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(
-                          project.status
-                        )}`}
-                      >
-                        {project.status}
-                      </span>
-                    </td>
-                    <td>
-                      {format(new Date(project.startDate), "MMM dd, yyyy")}
-                    </td>
-                    <td>
-                      <div className="flex space-x-2">
-                        <button
-                          onClick={() => handleEdit(project)}
-                          className="text-primary-600 dark:text-primary-400 hover:text-primary-900 dark:hover:text-primary-300"
-                        >
-                          <PencilIcon className="h-4 w-4" />
-                        </button>
-                        {project.status !== "archived" && (
-                          <button
-                            onClick={() => handleArchive(project.id)}
-                            className="text-warning-600 dark:text-warning-400 hover:text-warning-900 dark:hover:text-warning-300"
-                            title="Archive Project"
-                          >
-                            <ArchiveBoxIcon className="h-4 w-4" />
-                          </button>
-                        )}
-                        <button
-                          onClick={() => handleDelete(project.id)}
-                          className="text-danger-600 hover:text-danger-900"
-                        >
-                          <TrashIcon className="h-4 w-4" />
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
-          {filteredProjects.length === 0 && (
-            <div className="text-center py-8">
-              <p className="text-gray-500">
-                No projects found. Add your first project to get started.
-              </p>
-            </div>
+
+      {/* Content based on view mode */}
+      {viewMode === "cards" ? (
+        /* Cards View */
+        <div className="space-y-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {filteredProjects.map((project) => (
+              <ProjectCard
+                key={project.id}
+                project={project}
+                client={clients.find((c) => c.id === project.clientId)}
+                onEdit={handleEdit}
+                onDelete={handleDelete}
+              />
+            ))}
+          </div>
+        </div>
+      ) : (
+        /* Table View */
+        <div className="space-y-6">
+          <ProjectsTable
+            projects={filteredProjects}
+            onEdit={handleEdit}
+            onDelete={handleDelete}
+            onView={handleView}
+          />
+        </div>
+      )}
+
+      {/* Empty State */}
+      {filteredProjects.length === 0 && (
+        <div className="text-center py-12">
+          <div className="mx-auto h-16 w-16 text-gray-400 mb-4">
+            <BuildingOfficeIcon className="h-16 w-16" />
+          </div>
+          <p className="text-gray-500 text-lg font-medium mb-4">
+            {searchTerm || statusFilter !== "all"
+              ? "No projects found matching your criteria."
+              : "No projects found. Add your first project to get started."}
+          </p>
+          {!searchTerm && statusFilter === "all" && (
+            <button
+              onClick={() => setIsModalOpen(true)}
+              className="bg-primary-600 text-white px-6 py-3 rounded-xl font-semibold hover:bg-primary-700 transition-colors duration-200"
+            >
+              Add Your First Project
+            </button>
           )}
         </div>
-      </div>
+      )}
 
       {/* Modal */}
       <Modal

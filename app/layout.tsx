@@ -13,6 +13,9 @@ export const metadata: Metadata = {
   description: "Comprehensive accounting software for BST",
 };
 
+// Client Component for database loading
+import { DatabaseLoader } from "@/components/DatabaseLoader";
+
 export default function RootLayout({
   children,
 }: {
@@ -22,11 +25,13 @@ export default function RootLayout({
     <html lang="en">
       <body className={inter.className}>
         <ErrorBoundary>
-          <Layout>{children}</Layout>
-          <Toaster position="top-right" />
-          <PerformanceMonitor
-            showDetails={process.env.NODE_ENV === "development"}
-          />
+          <DatabaseLoader>
+            <Layout>{children}</Layout>
+            <Toaster position="top-right" />
+            <PerformanceMonitor
+              showDetails={process.env.NODE_ENV === "development"}
+            />
+          </DatabaseLoader>
         </ErrorBoundary>
       </body>
     </html>

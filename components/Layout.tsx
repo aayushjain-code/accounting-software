@@ -10,33 +10,34 @@ import {
   ClockIcon,
   DocumentTextIcon,
   ReceiptRefundIcon,
-  ChartBarIcon,
   UserIcon,
   Bars3Icon,
   XMarkIcon,
   SunIcon,
   MoonIcon,
-  ArrowRightOnRectangleIcon,
   CloudArrowUpIcon,
+  UsersIcon,
+  CalendarIcon,
+  ChartBarIcon,
 } from "@heroicons/react/24/outline";
 import { useTheme } from "@/hooks/useTheme";
+import { useAuth } from "@/hooks/useAuth";
 import clsx from "clsx";
 import { ErrorBoundary } from "./ErrorBoundary";
+import { LogoutButton } from "./LogoutButton";
+import { AuthOverlay } from "./AuthOverlay";
+import { StorageManager } from "./StorageManager";
 
 const navigation = [
   { name: "Dashboard", href: "/", icon: HomeIcon },
-  { name: "Clients", href: "/clients", icon: UserGroupIcon },
+  { name: "Clients", href: "/clients", icon: UsersIcon },
   { name: "Projects", href: "/projects", icon: FolderIcon },
-  { name: "Timesheets", href: "/timesheet", icon: ClockIcon },
   { name: "Invoices", href: "/invoices", icon: DocumentTextIcon },
   { name: "Expenses", href: "/expenses", icon: ReceiptRefundIcon },
-  { name: "Daily Logs", href: "/daily-logs", icon: DocumentTextIcon },
-  { name: "Kanban", href: "/kanban", icon: ChartBarIcon },
-  {
-    name: "Storage Management",
-    href: "/storage-management",
-    icon: CloudArrowUpIcon,
-  },
+  { name: "Daily Logs", href: "/daily-logs", icon: CalendarIcon },
+  { name: "Timesheets", href: "/timesheet", icon: ClockIcon },
+  { name: "Directory", href: "/directory", icon: UserGroupIcon },
+  { name: "Reports", href: "/reports", icon: ChartBarIcon },
 ];
 
 export default function Layout({ children }: { children: React.ReactNode }) {
@@ -44,15 +45,13 @@ export default function Layout({ children }: { children: React.ReactNode }) {
   const [profileMenuOpen, setProfileMenuOpen] = React.useState(false);
   const pathname = usePathname();
   const { theme, toggleTheme } = useTheme();
-
-  const handleLogout = () => {
-    // In a real app, you would handle logout logic here
-    console.log("Logout clicked");
-    // You could redirect to login page or clear auth tokens
-  };
+  const { isAuthenticated, isLoading, logout } = useAuth();
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+      {!isLoading && !isAuthenticated && (
+        <AuthOverlay onAuthenticated={() => window.location.reload()} />
+      )}
       {/* Top Navbar */}
       <div className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
         <div className="flex h-16 items-center justify-between px-4 sm:px-6 lg:px-8">
@@ -118,16 +117,18 @@ export default function Layout({ children }: { children: React.ReactNode }) {
                   )}
                   {theme === "light" ? "Dark Mode" : "Light Mode"}
                 </button>
-                <button
-                  onClick={() => {
-                    handleLogout();
-                    setProfileMenuOpen(false);
-                  }}
+                <Link
+                  href="/storage"
                   className="flex items-center w-full px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700"
+                  onClick={() => setProfileMenuOpen(false)}
                 >
-                  <ArrowRightOnRectangleIcon className="h-4 w-4 mr-3" />
-                  Logout
-                </button>
+                  <CloudArrowUpIcon className="h-4 w-4 mr-3" />
+                  Data Management
+                </Link>
+                <LogoutButton
+                  className="flex items-center w-full px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700"
+                  onLogout={logout}
+                />
               </div>
             )}
           </div>

@@ -1,20 +1,12 @@
 {
   "name": "accounting-software",
   "version": "1.0.0",
-  "description": "BST Accounting Management System - Desktop App",
-  "main": "electron/main.js",
-  "homepage": "./",
+  "description": "BST Accounting Management System - Web App",
   "scripts": {
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint",
-    "electron": "electron .",
-    "electron-dev": "concurrently \"npm run dev\" \"wait-on http://localhost:3000 && NODE_ENV=development electron .\"",
-    "electron-pack": "npm run build && electron-builder",
-    "electron-dist": "npm run build && electron-builder --publish=never",
-    "vercel-build": "npm run build",
-    "electron-setup": "electron-builder install-app-deps && @electron/rebuild"
+    "lint": "next lint"
   },
   "dependencies": {
     "@heroicons/react": "^2.0.18",
@@ -35,67 +27,16 @@
     "zustand": "^4.4.7"
   },
   "devDependencies": {
-    "@electron/rebuild": "^3.7.2",
-    "@types/better-sqlite3": "^7.6.13",
-    "@types/electron": "^1.6.12",
-    "better-sqlite3": "^12.2.0",
-    "concurrently": "^8.2.2",
-    "electron": "^28.3.3",
-    "electron-builder": "^24.13.3",
-    "electron-rebuild": "^3.2.9",
-    "electron-store": "^8.2.0",
-    "eslint": "^8.0.0",
-    "eslint-config-next": "^14.0.0",
-    "wait-on": "^7.2.0"
+    "eslint": "^8.57.1",
+    "eslint-config-next": "^14.0.0"
   },
-  "build": {
-    "appId": "com.bst.accounting",
-    "productName": "BST Accounting System",
-    "directories": {
-      "output": "dist"
-    },
-    "files": [
-      "electron/**/*",
-      "out/**/*",
-      "package.json"
-    ],
-    "mac": {
-      "category": "public.app-category.business",
-      "icon": "assets/icon.icns"
-    },
-    "win": {
-      "icon": "assets/icon.ico",
-      "target": [
-        {
-          "target": "nsis",
-          "arch": [
-            "x64"
-          ]
-        }
-      ]
-    },
-    "linux": {
-      "icon": "assets/icon.png",
-      "target": [
-        {
-          "target": "AppImage",
-          "arch": [
-            "x64"
-          ]
-        }
-      ]
-    },
-    "nsis": {
-      "oneClick": false,
-      "allowToChangeInstallationDirectory": true
-    }
-  },
+
   "keywords": [
     "accounting",
     "business",
     "finance",
-    "desktop",
-    "electron"
+    "web",
+    "nextjs"
   ],
   "author": "BST Accounting",
   "license": "MIT"

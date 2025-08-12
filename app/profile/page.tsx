@@ -15,10 +15,24 @@ import {
 } from "@heroicons/react/24/outline";
 import toast from "react-hot-toast";
 import { Card } from "@/components/Card";
+import {
+  LockClosedIcon,
+  EyeIcon,
+  EyeSlashIcon,
+} from "@heroicons/react/24/outline";
 
 export default function ProfilePage() {
   const { companyProfile, updateCompanyProfile } = useAccountingStore();
   const [isEditing, setIsEditing] = useState(false);
+  const [showPinChange, setShowPinChange] = useState(false);
+  const [pinData, setPinData] = useState({
+    currentPin: "",
+    newPin: "",
+    confirmPin: "",
+  });
+  const [showCurrentPin, setShowCurrentPin] = useState(false);
+  const [showNewPin, setShowNewPin] = useState(false);
+  const [showConfirmPin, setShowConfirmPin] = useState(false);
   const [formData, setFormData] = useState({
     name: companyProfile.name,
     legalName: companyProfile.legalName,
@@ -88,6 +102,42 @@ export default function ProfilePage() {
     [formData, updateCompanyProfile]
   );
 
+  const handlePinChange = useCallback(
+    async (e: React.FormEvent) => {
+      e.preventDefault();
+
+      if (pinData.newPin !== pinData.confirmPin) {
+        toast.error("New PIN and confirm PIN do not match");
+        return;
+      }
+
+      if (pinData.newPin.length !== 4) {
+        toast.error("PIN must be exactly 4 digits");
+        return;
+      }
+
+      try {
+        // For web-based app, validate the current PIN and update
+        const currentStoredPin = "1234"; // In production, this would be stored securely
+
+        if (pinData.currentPin !== currentStoredPin) {
+          toast.error("Current PIN is incorrect");
+          return;
+        }
+
+        // In a real web app, you would send this to your backend
+        // For now, we'll just show a success message
+        toast.success("PIN changed successfully (demo mode)");
+        setPinData({ currentPin: "", newPin: "", confirmPin: "" });
+        setShowPinChange(false);
+      } catch (error) {
+        toast.error("Failed to change PIN");
+        console.error("PIN change error:", error);
+      }
+    },
+    [pinData]
+  );
+
   const handleCancel = useCallback(() => {
     setFormData({
       name: companyProfile.name,
@@ -153,6 +203,157 @@ export default function ProfilePage() {
           </button>
         </div>
       </div>
+
+      {/* PIN Change Section */}
+      <Card>
+        <div className="flex items-center space-x-4 mb-6">
+          <LockClosedIcon className="h-8 w-8 text-primary-600" />
+          <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
+            Security Settings
+          </h2>
+        </div>
+
+        {!showPinChange ? (
+          <div className="flex items-center justify-between">
+            <div>
+              <h3 className="text-lg font-medium text-gray-900 dark:text-white">
+                Change PIN
+              </h3>
+              <p className="text-gray-600 dark:text-gray-400 mt-1">
+                Update your application PIN for enhanced security
+              </p>
+            </div>
+            <button
+              onClick={() => setShowPinChange(true)}
+              className="bg-primary-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-primary-700 transition-colors duration-200"
+            >
+              Change PIN
+            </button>
+          </div>
+        ) : (
+          <form onSubmit={handlePinChange} className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  Current PIN
+                </label>
+                <div className="relative">
+                  <input
+                    type={showCurrentPin ? "text" : "password"}
+                    required
+                    maxLength={4}
+                    value={pinData.currentPin}
+                    onChange={(e) =>
+                      setPinData({
+                        ...pinData,
+                        currentPin: e.target.value.replace(/\D/g, ""),
+                      })
+                    }
+                    className="input pr-10"
+                    placeholder="Enter current PIN"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowCurrentPin(!showCurrentPin)}
+                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                  >
+                    {showCurrentPin ? (
+                      <EyeSlashIcon className="h-5 w-5" />
+                    ) : (
+                      <EyeIcon className="h-5 w-5" />
+                    )}
+                  </button>
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  New PIN
+                </label>
+                <div className="relative">
+                  <input
+                    type={showNewPin ? "text" : "password"}
+                    required
+                    maxLength={4}
+                    value={pinData.newPin}
+                    onChange={(e) =>
+                      setPinData({
+                        ...pinData,
+                        newPin: e.target.value.replace(/\D/g, ""),
+                      })
+                    }
+                    className="input pr-10"
+                    placeholder="Enter new PIN"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowNewPin(!showNewPin)}
+                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                  >
+                    {showNewPin ? (
+                      <EyeSlashIcon className="h-5 w-5" />
+                    ) : (
+                      <EyeIcon className="h-5 w-5" />
+                    )}
+                  </button>
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  Confirm New PIN
+                </label>
+                <div className="relative">
+                  <input
+                    type={showConfirmPin ? "text" : "password"}
+                    required
+                    maxLength={4}
+                    value={pinData.confirmPin}
+                    onChange={(e) =>
+                      setPinData({
+                        ...pinData,
+                        confirmPin: e.target.value.replace(/\D/g, ""),
+                      })
+                    }
+                    className="input pr-10"
+                    placeholder="Confirm new PIN"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowConfirmPin(!showConfirmPin)}
+                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                  >
+                    {showConfirmPin ? (
+                      <EyeSlashIcon className="h-5 w-5" />
+                    ) : (
+                      <EyeIcon className="h-5 w-5" />
+                    )}
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <div className="flex space-x-3">
+              <button
+                type="submit"
+                className="bg-primary-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-primary-700 transition-colors duration-200"
+              >
+                Update PIN
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setShowPinChange(false);
+                  setPinData({ currentPin: "", newPin: "", confirmPin: "" });
+                }}
+                className="bg-gray-300 text-gray-700 px-4 py-2 rounded-lg font-medium hover:bg-gray-400 transition-colors duration-200"
+              >
+                Cancel
+              </button>
+            </div>
+          </form>
+        )}
+      </Card>
 
       <form onSubmit={handleSubmit}>
         {/* Basic Information */}

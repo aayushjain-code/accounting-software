@@ -23,6 +23,7 @@ import { ActionTooltip, IconTooltip } from "@/components/Tooltip";
 import Link from "next/link";
 import FileUpload from "@/components/FileUpload";
 import FileList from "@/components/FileList";
+import { generateId } from "@/utils/helpers";
 
 // Enhanced Status Badge Component
 const StatusBadge = React.memo(({ status }: { status: string }) => {
@@ -77,38 +78,50 @@ const StatusBadge = React.memo(({ status }: { status: string }) => {
 StatusBadge.displayName = "StatusBadge";
 
 // Status Change Component
-const StatusChangeDropdown = React.memo(({ 
-  currentStatus, 
-  onStatusChange 
-}: { 
-  currentStatus: string; 
-  onStatusChange: (status: string) => void; 
-}) => {
-  const statusOptions = [
-    { value: "draft", label: "Draft" },
-    { value: "submitted", label: "Submitted" },
-    { value: "approved", label: "Approved" },
-    { value: "rejected", label: "Rejected" },
-    { value: "invoiced", label: "Invoiced" },
-  ];
+const StatusChangeDropdown = React.memo(
+  ({
+    currentStatus,
+    onStatusChange,
+  }: {
+    currentStatus: string;
+    onStatusChange: (status: string) => void;
+  }) => {
+    const statusOptions = [
+      { value: "draft", label: "Draft" },
+      { value: "submitted", label: "Submitted" },
+      { value: "approved", label: "Approved" },
+      { value: "rejected", label: "Rejected" },
+      { value: "invoiced", label: "Invoiced" },
+    ];
 
-  return (
-    <div className="flex items-center space-x-3">
-      <StatusBadge status={currentStatus} />
-      <select
-        value={currentStatus}
-        onChange={(e) => onStatusChange(e.target.value)}
-        className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-      >
-        {statusOptions.map((option) => (
-          <option key={option.value} value={option.value}>
-            {option.label}
-          </option>
-        ))}
-      </select>
-    </div>
-  );
-});
+    return (
+      <div className="flex items-center space-x-3">
+        <StatusBadge status={currentStatus} />
+        <select
+          value={currentStatus}
+          onChange={(e) => {
+            const selectedValue = e.target.value;
+            console.log("🔄 StatusChangeDropdown onChange:", {
+              selectedValue,
+              currentStatus,
+              willCallOnStatusChange: selectedValue !== currentStatus,
+            });
+            if (selectedValue !== currentStatus) {
+              onStatusChange(selectedValue);
+            }
+          }}
+          className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+        >
+          {statusOptions.map((option) => (
+            <option key={option.value} value={option.value}>
+              {option.label}
+            </option>
+          ))}
+        </select>
+      </div>
+    );
+  }
+);
 
 StatusChangeDropdown.displayName = "StatusChangeDropdown";
 
@@ -118,10 +131,12 @@ const WorkCalculationCard = React.memo(
     timesheet,
     project,
     onStatusChange,
+    currentStatus,
   }: {
     timesheet: Timesheet;
     project: Project | undefined;
     onStatusChange: (status: string) => void;
+    currentStatus: string;
   }) => {
     return (
       <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-8">
@@ -130,8 +145,9 @@ const WorkCalculationCard = React.memo(
             <CalculatorIcon className="h-6 w-6 mr-3 text-primary-600" />
             Work Calculations
           </h3>
-          <StatusChangeDropdown 
-            currentStatus={timesheet.status} 
+          <StatusChangeDropdown
+            key={currentStatus} // Force re-render when status changes
+            currentStatus={currentStatus}
             onStatusChange={onStatusChange}
           />
         </div>
@@ -243,9 +259,11 @@ const StatusActions = React.memo(
   ({
     timesheet,
     onStatusChange,
+    currentStatus,
   }: {
     timesheet: Timesheet;
     onStatusChange: (status: string) => void;
+    currentStatus: string;
   }) => {
     return (
       <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-8">
@@ -254,7 +272,7 @@ const StatusActions = React.memo(
           Status Actions
         </h3>
         <div className="space-y-4">
-          {timesheet.status === "draft" && (
+          {currentStatus === "draft" && (
             <ActionTooltip
               content="Submit for Approval"
               action="Move to review queue"
@@ -269,7 +287,7 @@ const StatusActions = React.memo(
             </ActionTooltip>
           )}
 
-          {timesheet.status === "submitted" && (
+          {currentStatus === "submitted" && (
             <div className="space-y-3">
               <ActionTooltip
                 content="Approve Timesheet"
@@ -298,7 +316,7 @@ const StatusActions = React.memo(
             </div>
           )}
 
-          {timesheet.status === "approved" && (
+          {currentStatus === "approved" && (
             <div className="space-y-3">
               <ActionTooltip
                 content="Mark as Invoiced"
@@ -315,7 +333,7 @@ const StatusActions = React.memo(
             </div>
           )}
 
-          {timesheet.status === "invoiced" && (
+          {currentStatus === "invoiced" && (
             <IconTooltip content="This timesheet has been invoiced and billed to the client">
               <div className="text-center p-8 bg-gradient-to-r from-green-50 to-emerald-50 rounded-xl border border-green-200">
                 <CurrencyRupeeIcon className="h-12 w-12 text-green-600 mx-auto mb-4" />
@@ -381,62 +399,107 @@ export default function TimesheetDetailPage({
 }: {
   params: { id: string };
 }) {
-  const [isClient, setIsClient] = useState(false);
-  const [uploadedFiles, setUploadedFiles] = useState<File[]>([]);
-  const [isUploading, setIsUploading] = useState(false);
-
-  React.useEffect(() => {
-    setIsClient(true);
-  }, []);
-
   const {
     timesheets,
     projects,
     updateTimesheet,
+    reloadTimesheet,
     generateInvoiceFromTimesheet,
     addTimesheetFile,
     removeTimesheetFile,
   } = useAccountingStore();
 
+  // Local state to track current status for immediate UI updates
+  const [currentStatus, setCurrentStatus] = React.useState<string>("");
+  const [uploadedFiles, setUploadedFiles] = React.useState<File[]>([]);
+  const [isUploading, setIsUploading] = React.useState(false);
+
+  // Load timesheet data directly from database on page load
+  React.useEffect(() => {
+    const loadTimesheetFromDatabase = async () => {
+      if (params.id) {
+        try {
+          console.log("🔄 Loading timesheet from store:", params.id);
+          // For web-based app, data is already loaded in the store
+          // Just update the local status state
+          const found = timesheets.find((t) => t.id === params.id);
+          if (found) {
+            setCurrentStatus(found.status);
+          }
+        } catch (error) {
+          console.error("Failed to load timesheet:", error);
+        }
+      }
+    };
+    loadTimesheetFromDatabase();
+  }, [params.id, reloadTimesheet]); // Dependency array includes reloadTimesheet
+
   // Get timesheet data
   const timesheet = useMemo(() => {
-    return timesheets.find((t) => t.id === params.id);
-  }, [timesheets, params.id]);
+    const found = timesheets.find((t) => t.id === params.id);
+    console.log("🔄 Current timesheet in store:", found);
+    console.log("🔄 Current status in store:", found?.status);
+    console.log("🔄 Local currentStatus state:", currentStatus);
+    // Update local status when timesheet changes
+    if (found && found.status !== currentStatus) {
+      console.log(
+        "🔄 Updating local status from",
+        currentStatus,
+        "to",
+        found.status
+      );
+      setCurrentStatus(found.status);
+    }
+    return found;
+  }, [timesheets, params.id, currentStatus]);
+
+  // Monitor status changes for debugging
+  React.useEffect(() => {
+    console.log("🔄 Status changed - Current status:", currentStatus);
+    console.log("🔄 Timesheet status from store:", timesheet?.status);
+  }, [currentStatus, timesheet?.status]);
 
   const project = useMemo(() => {
     return projects.find((p) => p.id === timesheet?.projectId);
   }, [projects, timesheet]);
 
   const handleFileUpload = async () => {
-    if (uploadedFiles.length === 0) return;
+    if (!timesheet) return;
 
-    setIsUploading(true);
     try {
-      // Simulate file upload
-      for (const file of uploadedFiles) {
-        const fileData: TimesheetFile = {
-          id: `file_${Date.now()}_${Math.random()}`,
-          timesheetId: timesheet!.id,
-          fileName: `timesheet_${timesheet!.id}_${file.name}`,
-          originalName: file.name,
-          fileSize: file.size,
-          fileType: file.type || `.${file.name.split(".").pop()}`,
-          uploadDate: new Date(),
-          uploadedBy: "Admin User",
-          filePath: `/uploads/timesheets/${file.name}`,
-          createdAt: new Date(),
-          updatedAt: new Date(),
-        };
+      const input = document.createElement("input");
+      input.type = "file";
+      input.multiple = true;
+      input.accept = ".pdf,.doc,.docx,.xls,.xlsx,.jpg,.jpeg,.png";
 
-        addTimesheetFile(timesheet!.id, fileData);
-      }
+      input.onchange = async (e) => {
+        const files = (e.target as HTMLInputElement).files;
+        if (files) {
+          for (let i = 0; i < files.length; i++) {
+            const file = files[i];
+            const timesheetFile: TimesheetFile = {
+              id: generateId(),
+              timesheetId: timesheet.id,
+              fileName: file.name,
+              originalName: file.name,
+              fileSize: file.size,
+              fileType: file.type,
+              uploadDate: new Date(),
+              uploadedBy: "User",
+              filePath: "",
+              createdAt: new Date(),
+              updatedAt: new Date(),
+            };
+            addTimesheetFile(timesheet.id, timesheetFile);
+          }
+          toast.success("Files uploaded successfully");
+        }
+      };
 
-      setUploadedFiles([]);
-      toast.success("Files uploaded successfully!");
+      input.click();
     } catch (error) {
+      console.error("Error uploading files:", error);
       toast.error("Failed to upload files");
-    } finally {
-      setIsUploading(false);
     }
   };
 
@@ -447,12 +510,57 @@ export default function TimesheetDetailPage({
     }
   };
 
-  const handleStatusChange = React.useCallback(async (newStatus: string) => {
-    if (timesheet && newStatus !== timesheet.status) {
-      await updateTimesheet(timesheet.id, { status: newStatus as any });
-      toast.success(`Status updated to ${newStatus}`);
-    }
-  }, [timesheet, updateTimesheet]);
+  const handleStatusChange = React.useCallback(
+    async (newStatus: string) => {
+      console.log("🔄 handleStatusChange called with:", {
+        newStatus,
+        currentStatus: timesheet?.status,
+        timesheetId: timesheet?.id,
+      });
+
+      if (timesheet && newStatus !== timesheet.status) {
+        console.log(
+          "🔄 Updating timesheet status from",
+          timesheet.status,
+          "to",
+          newStatus
+        );
+
+        // Update local state immediately for responsive UI
+        setCurrentStatus(newStatus);
+        console.log("🔄 Local state updated to:", newStatus);
+
+        try {
+          // Update the timesheet in database
+          console.log("🔄 Calling updateTimesheet with:", {
+            id: timesheet.id,
+            status: newStatus,
+          });
+          await updateTimesheet(timesheet.id, { status: newStatus as any });
+          console.log("🔄 updateTimesheet completed");
+
+          // Force reload from database to ensure UI shows correct data
+          console.log("🔄 Reloading timesheet from database...");
+          await reloadTimesheet(timesheet.id);
+          console.log("🔄 reloadTimesheet completed");
+
+          // For web-based app, just show success message
+          console.log("✅ Status successfully updated!");
+          toast.success(`Status updated to ${newStatus}`);
+        } catch (error) {
+          console.error("🔄 Error updating status:", error);
+          toast.error("Failed to update status");
+          // Revert local state on error
+          setCurrentStatus(timesheet.status);
+        }
+      } else {
+        console.log(
+          "🔄 No update needed - status is the same or timesheet not found"
+        );
+      }
+    },
+    [timesheet, updateTimesheet, reloadTimesheet]
+  );
 
   if (!timesheet) {
     return (
@@ -473,7 +581,7 @@ export default function TimesheetDetailPage({
   }
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-8" key={`timesheet-${params.id}-${currentStatus}`}>
       {/* Enhanced Header */}
       <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-8">
         <div className="flex items-center justify-between">
@@ -494,18 +602,57 @@ export default function TimesheetDetailPage({
               </p>
             </div>
           </div>
-          <StatusBadge status={timesheet.status} />
+          <StatusBadge status={currentStatus || timesheet.status} />
         </div>
       </div>
 
       {/* Work Calculations */}
-      <WorkCalculationCard timesheet={timesheet} project={project} onStatusChange={handleStatusChange} />
+      <WorkCalculationCard
+        timesheet={timesheet}
+        project={project}
+        onStatusChange={handleStatusChange}
+        currentStatus={currentStatus}
+      />
 
       {/* Status Actions */}
       <StatusActions
         timesheet={timesheet}
         onStatusChange={handleStatusChange}
+        currentStatus={currentStatus}
       />
+
+      {/* Debug Section - Remove in production */}
+      {process.env.NODE_ENV === "development" && (
+        <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+          <h4 className="font-semibold text-yellow-800 mb-2">Debug Controls</h4>
+          <div className="space-x-2">
+            <button
+              onClick={() => handleStatusChange("submitted")}
+              className="px-3 py-1 bg-blue-500 text-white rounded text-sm"
+            >
+              Set to Submitted
+            </button>
+            <button
+              onClick={() => handleStatusChange("approved")}
+              className="px-3 py-1 bg-green-500 text-white rounded text-sm"
+            >
+              Set to Approved
+            </button>
+            <button
+              onClick={() => handleStatusChange("rejected")}
+              className="px-3 py-1 bg-red-500 text-white rounded text-sm"
+            >
+              Set to Rejected
+            </button>
+            <button
+              onClick={() => handleStatusChange("invoiced")}
+              className="px-3 py-1 bg-purple-500 text-white rounded text-sm"
+            >
+              Set to Invoiced
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Enhanced Additional Information */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">

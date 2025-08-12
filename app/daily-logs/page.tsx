@@ -22,6 +22,8 @@ import { useSearch } from "@/hooks/useSearch";
 import { ActionTooltip, IconTooltip } from "@/components/Tooltip";
 import Modal from "@/components/Modal";
 import toast from "react-hot-toast";
+import { ViewToggle } from "@/components/ViewToggle";
+import { DailyLogsTable } from "@/components/DailyLogsTable";
 
 interface LogCardProps {
   log: DailyLog;
@@ -430,12 +432,13 @@ export default function DailyLogsPage() {
     setIsClient(true);
   }, []);
 
-  const { dailyLogs, addDailyLog, updateDailyLog, deleteDailyLog } =
+  const { dailyLogs, projects, addDailyLog, updateDailyLog, deleteDailyLog } =
     useAccountingStore();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingLog, setEditingLog] = useState<DailyLog | null>(null);
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
   const [selectedPriority, setSelectedPriority] = useState<string>("all");
+  const [viewMode, setViewMode] = useState<"cards" | "table">("cards");
 
   const {
     searchTerm,
@@ -478,7 +481,9 @@ export default function DailyLogsPage() {
     };
   }, [dailyLogs]);
 
-  const handleSubmit = async (data: Omit<DailyLog, "id" | "createdAt" | "updatedAt">) => {
+  const handleSubmit = async (
+    data: Omit<DailyLog, "id" | "createdAt" | "updatedAt">
+  ) => {
     if (editingLog) {
       await updateDailyLog(editingLog.id, data);
       toast.success("Log updated successfully");
@@ -518,16 +523,23 @@ export default function DailyLogsPage() {
               Record and track important accounting activities and events
             </p>
           </div>
-          <button
-            onClick={() => {
-              setEditingLog(null);
-              setIsModalOpen(true);
-            }}
-            className="bg-primary-600 text-white px-6 py-3 rounded-xl font-semibold hover:bg-primary-700 transition-colors duration-200 flex items-center shadow-lg hover:shadow-xl"
-          >
-            <PlusIcon className="h-5 w-5 mr-2" />
-            Add Log Entry
-          </button>
+          <div className="flex items-center space-x-3">
+            <ViewToggle
+              viewMode={viewMode}
+              onViewChange={setViewMode}
+              className="mr-2"
+            />
+            <button
+              onClick={() => {
+                setEditingLog(null);
+                setIsModalOpen(true);
+              }}
+              className="bg-primary-600 text-white px-6 py-3 rounded-xl font-semibold hover:bg-primary-700 transition-colors duration-200 flex items-center shadow-lg hover:shadow-xl"
+            >
+              <PlusIcon className="h-5 w-5 mr-2" />
+              Add Log Entry
+            </button>
+          </div>
         </div>
       </div>
 
@@ -670,17 +682,31 @@ export default function DailyLogsPage() {
         </div>
       </div>
 
-      {/* Logs Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {filteredByFilters.map((log: DailyLog) => (
-          <LogCard
-            key={log.id}
-            log={log}
+      {/* Content based on view mode */}
+      {viewMode === "cards" ? (
+        /* Cards View */
+        <div className="space-y-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {filteredByFilters.map((log: DailyLog) => (
+              <LogCard
+                key={log.id}
+                log={log}
+                onEdit={handleEdit}
+                onDelete={handleDelete}
+              />
+            ))}
+          </div>
+        </div>
+      ) : (
+        /* Table View */
+        <div className="space-y-6">
+          <DailyLogsTable
+            dailyLogs={filteredByFilters}
             onEdit={handleEdit}
             onDelete={handleDelete}
           />
-        ))}
-      </div>
+        </div>
+      )}
 
       {/* Empty State */}
       {filteredByFilters.length === 0 && (

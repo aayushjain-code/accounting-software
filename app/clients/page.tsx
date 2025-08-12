@@ -32,6 +32,8 @@ import { useSearch } from "@/hooks/useSearch";
 import { usePagination } from "@/hooks/usePagination";
 import { Pagination } from "@/components/Pagination";
 import { performanceMonitor } from "@/utils/performance";
+import { ViewToggle } from "@/components/ViewToggle";
+import { ClientsTable } from "@/components/ClientsTable";
 
 // Enhanced Client Card Component
 const ClientCard = React.memo(
@@ -286,6 +288,7 @@ export default function ClientsPage() {
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [clientToDelete, setClientToDelete] = useState<string | null>(null);
+  const [viewMode, setViewMode] = useState<"cards" | "table">("cards");
 
   // Performance monitoring
   const renderStart = performance.now();
@@ -435,6 +438,37 @@ export default function ClientsPage() {
     setShowDeleteDialog(true);
   };
 
+  const handleView = (client: Client) => {
+    // For now, just open the edit modal to view details
+    // You can implement a separate view modal later if needed
+    setEditingClient(client);
+    setFormData({
+      name: client.name,
+      email: client.email,
+      phone: client.phone || "",
+      company: client.company || "",
+      address: client.address || "",
+      gstId: client.gstId || "",
+      companyAddress: client.companyAddress || "",
+      companyWebsite: client.companyWebsite || "",
+      companyLinkedin: client.companyLinkedin || "",
+      companyOwner: client.companyOwner || "",
+      pocName: client.pocName || "",
+      pocEmail: client.pocEmail || "",
+      pocContact: client.pocContact || "",
+      companyLogo: client.companyLogo || "",
+      industry: client.industry || "",
+      companySize: client.companySize || "small",
+      status: client.status || "active",
+      source: client.source || "",
+      notes: client.notes || "",
+      tags: client.tags || [],
+      annualRevenue: client.annualRevenue?.toString() || "",
+      employeeCount: client.employeeCount?.toString() || "",
+    });
+    setIsModalOpen(true);
+  };
+
   const confirmDelete = () => {
     if (clientToDelete) {
       deleteClient(clientToDelete);
@@ -444,8 +478,8 @@ export default function ClientsPage() {
   };
 
   return (
-    <div className="space-y-8">
-      {/* Enhanced Header */}
+    <div className="space-y-6">
+      {/* Header */}
       <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700 p-8">
         <div className="flex flex-col md:flex-row md:items-center justify-between space-y-4 md:space-y-0">
           <div>
@@ -467,18 +501,25 @@ export default function ClientsPage() {
               </div>
             </div>
           </div>
-          <ActionTooltip
-            content="Add New Client"
-            action="Create a new client profile"
-          >
-            <button
-              onClick={() => setIsModalOpen(true)}
-              className="bg-primary-600 text-white px-6 py-3 rounded-xl font-semibold hover:bg-primary-700 transition-colors duration-200 flex items-center shadow-lg hover:shadow-xl"
+          <div className="flex items-center space-x-3">
+            <ViewToggle
+              viewMode={viewMode}
+              onViewChange={setViewMode}
+              className="mr-2"
+            />
+            <ActionTooltip
+              content="Add New Client"
+              action="Create a new client profile"
             >
-              <PlusIcon className="h-5 w-5 mr-2" />
-              Add Client
-            </button>
-          </ActionTooltip>
+              <button
+                onClick={() => setIsModalOpen(true)}
+                className="bg-primary-600 text-white px-6 py-3 rounded-xl font-semibold hover:bg-primary-700 transition-colors duration-200 flex items-center shadow-lg hover:shadow-xl"
+              >
+                <PlusIcon className="h-5 w-5 mr-2" />
+                Add Client
+              </button>
+            </ActionTooltip>
+          </div>
         </div>
       </div>
 
@@ -521,32 +562,45 @@ export default function ClientsPage() {
         </div>
       </div>
 
-      {/* Clients Grid with Pagination */}
-      <div className="space-y-6">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {clientsByStatus.map((client) => (
-            <ClientCard
-              key={client.id}
-              client={client}
-              onEdit={handleEdit}
-              onDelete={handleDelete}
-            />
-          ))}
-        </div>
-
-        {/* Pagination */}
-        {paginationState.totalPages > 1 && (
-          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
-            <Pagination
-              paginationState={paginationState}
-              onPageChange={goToPage}
-              onPageSizeChange={changePageSize}
-              showPageSizeSelector={true}
-              pageSizeOptions={[6, 12, 24, 48]}
-            />
+      {/* Content based on view mode */}
+      {viewMode === "cards" ? (
+        /* Cards View */
+        <div className="space-y-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {clientsByStatus.map((client) => (
+              <ClientCard
+                key={client.id}
+                client={client}
+                onEdit={handleEdit}
+                onDelete={handleDelete}
+              />
+            ))}
           </div>
-        )}
-      </div>
+        </div>
+      ) : (
+        /* Table View */
+        <div className="space-y-6">
+          <ClientsTable
+            clients={clientsByStatus}
+            onEdit={handleEdit}
+            onDelete={handleDelete}
+            onView={handleView}
+          />
+        </div>
+      )}
+
+      {/* Pagination */}
+      {paginationState.totalPages > 1 && (
+        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+          <Pagination
+            paginationState={paginationState}
+            onPageChange={goToPage}
+            onPageSizeChange={changePageSize}
+            showPageSizeSelector={true}
+            pageSizeOptions={[6, 12, 24, 48]}
+          />
+        </div>
+      )}
 
       {/* Empty State */}
       {clientsByStatus.length === 0 && (

@@ -1,32 +1,32 @@
 # 📊 Data Files
 
-This folder contains sample data and test backup files for the BST Accounting System.
+This folder contains sample data for the BST Accounting System web application.
 
 ## 📁 **File Descriptions**
 
 ### **Sample Data Files**
-- **`sample-data.json`** - Original sample data with complete business data
-- **`sample-data-v2.json`** - Updated sample data with enhanced structure
 
-### **Test Backup Files**
-- **`test-backup.json`** - Test backup file for development
-- **`test-database-backup-1754220972951.json`** - Timestamped test backup
+- **`sample-data-v2.json`** - Complete sample data with enhanced structure for testing and development
 
 ## 🚀 **Usage**
 
 ### **Importing Sample Data**
-1. **In the Electron App:**
-   - Go to Storage Management
+
+1. **In the Web App:**
+
+   - Go to Profile → Data Management
    - Click "Import Data"
-   - Select `sample-data.json` or `sample-data-v2.json`
+   - Select `sample-data-v2.json`
 
 2. **For Development:**
-   - Use these files to test import functionality
+   - Use this file to test import functionality
    - Verify data structure and validation
    - Test backup and restore features
 
 ### **File Structure**
+
 Each sample data file contains:
+
 - **Clients** - Sample client profiles
 - **Projects** - Sample project data
 - **Timesheets** - Sample work tracking data
@@ -37,6 +37,7 @@ Each sample data file contains:
 ## 📋 **Data Formats**
 
 ### **Sample Data Structure**
+
 ```json
 {
   "clients": [...],
@@ -49,6 +50,7 @@ Each sample data file contains:
 ```
 
 ### **Backup File Structure**
+
 ```json
 {
   "timestamp": "2024-01-01T00:00:00.000Z",
@@ -60,12 +62,14 @@ Each sample data file contains:
 ## 🔧 **Development**
 
 ### **Creating New Sample Data**
+
 1. **Export current data** from the app
 2. **Modify the structure** as needed
 3. **Test import** to verify compatibility
 4. **Update this README** with changes
 
 ### **Testing Backup/Restore**
+
 1. **Create test data** in the app
 2. **Export backup** to test file
 3. **Import backup** to verify restore
@@ -73,9 +77,8 @@ Each sample data file contains:
 
 ## 📚 **Related Documentation**
 
-- **[Sample Data Guide](../docs/SAMPLE_DATA_README.md)** - Detailed sample data documentation
-- **[Data Management](../docs/CUSTOM_DATA_STORAGE_SUCCESS.md)** - Data storage features
-- **[Import/Export](../docs/ELECTRON_DATA_MANAGEMENT.md)** - Data management guide
+- **Data Management** - Access via Profile → Data Management in the web app
+- **Import/Export** - Use the StorageManager component for data operations
 
 ## ⚠️ **Important Notes**
 
@@ -86,4 +89,4 @@ Each sample data file contains:
 
 ---
 
-**📊 This folder contains all sample data and test files for the BST Accounting System** 
+**📊 This folder contains sample data for the BST Accounting System web application**

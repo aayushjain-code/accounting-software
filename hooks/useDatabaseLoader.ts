@@ -1,40 +1,63 @@
-import { useEffect, useRef } from "react";
-import { useAccountingStore } from "@/store";
+"use client";
 
-export function useDatabaseLoader() {
-  const { clearAllData } = useAccountingStore();
-  const hasLoaded = useRef(false);
+import { useEffect, useState } from "react";
+import { useAccountingStore } from "../store";
+
+export const useDatabaseLoader = () => {
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const { replaceAllData } = useAccountingStore();
+
+  const loadDataFromDatabase = async () => {
+    if (typeof window === "undefined") {
+      console.log("🔄 Database loader: Not in browser environment");
+      setIsLoading(false);
+      return;
+    }
+
+    try {
+      console.log("🔄 Database loader: Loading data from localStorage...");
+      // For web-based app, load data from localStorage or use sample data
+      const storedData = localStorage.getItem("accountingData");
+      let data;
+
+      if (storedData) {
+        data = JSON.parse(storedData);
+        console.log("🔄 Database loader: Data loaded from localStorage:", data);
+      } else {
+        // Load sample data if no stored data exists
+        const sampleData = await import("../data/sample-data-v2.json");
+        data = sampleData.default;
+        console.log("🔄 Database loader: Sample data loaded:", data);
+      }
+
+      // Update the store with data
+      replaceAllData(data);
+      console.log("🔄 Database loader: Store updated with data");
+
+      setIsLoading(false);
+    } catch (error) {
+      console.error("🔄 Database loader: Error loading data:", error);
+      // Don't show error, just proceed without data
+      console.log("🔄 Database loader: Proceeding without data");
+      setIsLoading(false);
+    }
+  };
 
   useEffect(() => {
-    // Load data from database if in Electron mode and not already loaded
-    if (
-      typeof window !== "undefined" &&
-      window.electronAPI?.isElectron &&
-      !hasLoaded.current
-    ) {
-      hasLoaded.current = true;
+    loadDataFromDatabase();
+  }, []);
 
-      const loadDataFromDatabase = async () => {
-        try {
-          const data = await window.electronAPI?.getAllData?.();
-          if (data && Object.keys(data).length > 0) {
-            console.log("Loading data from database:", data);
+  // Reload data from database
+  const reloadData = async () => {
+    setIsLoading(true);
+    setError(null);
+    await loadDataFromDatabase();
+  };
 
-            // Clear current store data first
-            clearAllData();
-
-            // Force a page reload to get fresh data from database
-            setTimeout(() => {
-              window.location.reload();
-            }, 100);
-          }
-        } catch (error) {
-          console.error("Error loading data from database:", error);
-        }
-      };
-
-      // Load data after a short delay to ensure window.electronAPI is available
-      setTimeout(loadDataFromDatabase, 1000);
-    }
-  }, [clearAllData]);
-}
+  return {
+    isLoading,
+    error,
+    reloadData,
+  };
+};

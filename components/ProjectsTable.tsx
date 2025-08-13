@@ -9,7 +9,7 @@ import {
   ArrowUpIcon,
   ArrowDownIcon,
   CalendarIcon,
-  CurrencyDollarIcon,
+  CurrencyRupeeIcon,
 } from "@heroicons/react/24/outline";
 import { useAccountingStore } from "@/store";
 import { Project } from "@/types";
@@ -17,6 +17,7 @@ import Modal from "./Modal";
 import { Button } from "./Button";
 import { ConfirmationDialog } from "./ConfirmationDialog";
 import { toast } from "react-hot-toast";
+import { formatCurrency } from "@/utils/formatters";
 
 interface ProjectsTableProps {
   projects: Project[];
@@ -127,12 +128,7 @@ export const ProjectsTable: React.FC<ProjectsTableProps> = ({
     }
   };
 
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat("en-US", {
-      style: "currency",
-      currency: "USD",
-    }).format(amount);
-  };
+
 
   const columns = [
     { key: "projectCode", label: "Code", sortable: true },
@@ -230,7 +226,7 @@ export const ProjectsTable: React.FC<ProjectsTableProps> = ({
                   </td>
                   <td className="px-3 py-2 whitespace-nowrap">
                     <div className="flex items-center">
-                      <CurrencyDollarIcon className="h-4 w-4 text-gray-400 mr-1 flex-shrink-0" />
+                      <CurrencyRupeeIcon className="h-4 w-4 text-gray-400 mr-1 flex-shrink-0" />
                       {renderEditableCell(
                         project,
                         "budget",

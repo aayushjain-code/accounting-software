@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { Invoice, InvoiceItem, Client, Project } from "@/types";
 import { InvoiceTemplate } from "./InvoiceTemplate";
 
@@ -89,6 +89,28 @@ export const InvoiceEditor: React.FC<InvoiceEditorProps> = ({
 
   const [clients, setClients] = useState<Client[]>([]);
   const [selectedClientId, setSelectedClientId] = useState<string | "">("");
+  
+  // Ref for printing
+  const invoiceRef = useRef<HTMLDivElement>(null);
+
+  // Print handler
+  const handlePrint = () => {
+    // Hide editor interface before printing
+    const editorElements = document.querySelectorAll(".editor-interface");
+    editorElements.forEach((element) => {
+      (element as HTMLElement).style.display = "none";
+    });
+
+    // Print the page
+    window.print();
+
+    // Restore editor interface after printing
+    setTimeout(() => {
+      editorElements.forEach((element) => {
+        (element as HTMLElement).style.display = "";
+      });
+    }, 100);
+  };
 
   useEffect(() => {
     // Fetch clients from the backend
@@ -253,42 +275,36 @@ export const InvoiceEditor: React.FC<InvoiceEditorProps> = ({
             -webkit-print-color-adjust: exact !important;
             color-adjust: exact !important;
           }
+          
+          /* Better print formatting */
+          .invoice-content {
+            page-break-inside: avoid !important;
+            break-inside: avoid !important;
+          }
+          .invoice-content * {
+            page-break-inside: avoid !important;
+            break-inside: avoid !important;
+          }
         }
       `}</style>
       <div className="bg-white p-8 max-w-7xl mx-auto">
         {/* Editor Interface - Hidden when printing */}
         <div className="editor-interface">
-          <div className="flex justify-between items-center mb-6">
-            <h2 className="text-xl font-semibold text-gray-800">
+          <div className="flex justify-between items-center mb-4">
+            <h2 className="text-lg font-semibold text-gray-800">
               Invoice Preview
             </h2>
-            <div className="space-x-3">
+            <div className="space-x-2">
               <button
                 onClick={() => setIsEditing(true)}
-                className="px-4 py-2 text-gray-600 hover:text-gray-800 transition-colors"
+                className="px-3 py-1.5 text-sm text-gray-600 hover:text-gray-800 transition-colors"
               >
                 Edit Invoice
               </button>
+
               <button
-                onClick={() => {
-                  // Hide all editor elements for printing
-                  const editorElements =
-                    document.querySelectorAll(".editor-interface");
-                  editorElements.forEach((element) => {
-                    (element as HTMLElement).style.display = "none";
-                  });
-
-                  // Print the page
-                  window.print();
-
-                  // Restore editor elements after printing
-                  setTimeout(() => {
-                    editorElements.forEach((element) => {
-                      (element as HTMLElement).style.display = "";
-                    });
-                  }, 100);
-                }}
-                className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
+                onClick={handlePrint}
+                className="px-3 py-1.5 text-sm bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
               >
                 Print
               </button>
@@ -299,8 +315,8 @@ export const InvoiceEditor: React.FC<InvoiceEditorProps> = ({
           {isEditing && (
             <div className="space-y-6">
               {/* Invoice Details */}
-              <div className="bg-gray-50 p-6 rounded-lg">
-                <h3 className="text-lg font-semibold text-gray-800 mb-4">
+              <div className="bg-gray-50 p-4 rounded-lg">
+                <h3 className="text-base font-semibold text-gray-800 mb-3">
                   Invoice Details
                 </h3>
                 <div className="grid grid-cols-2 gap-4">
@@ -869,7 +885,7 @@ export const InvoiceEditor: React.FC<InvoiceEditorProps> = ({
         </div>
 
         {/* Invoice Template - Always visible, will be printed */}
-        <div className="mt-8 invoice-content">
+        <div ref={invoiceRef} className="mt-8 invoice-content">
           <InvoiceTemplate
             invoice={previewInvoice}
             client={previewClient}
@@ -882,6 +898,8 @@ export const InvoiceEditor: React.FC<InvoiceEditorProps> = ({
           />
         </div>
       </div>
+
+
     </>
   );
 };

@@ -102,7 +102,7 @@ export default function InvoiceDemoPage() {
           <InvoiceTemplate
             invoice={sampleInvoice}
             client={sampleClient}
-            project={sampleProject}
+
             items={sampleItems}
           />
         </div>

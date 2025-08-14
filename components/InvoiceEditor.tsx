@@ -1454,7 +1454,7 @@ export const InvoiceEditor: React.FC<InvoiceEditorProps> = ({
           <InvoiceTemplate
             invoice={previewInvoice}
             client={previewClient}
-            project={previewProject}
+
             items={items}
             companyInfo={companyInfo}
             clientInfo={clientInfo}

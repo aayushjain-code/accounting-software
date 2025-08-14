@@ -111,6 +111,14 @@ export const ClientsTable: React.FC<ClientsTableProps> = ({
     field: keyof Client,
     value: string | number | boolean
   ) => {
+    // Only allow editing of string fields for now
+    if (typeof value !== 'string') {
+      return (
+        <div className="px-2 py-1">
+          {value?.toString() || "-"}
+        </div>
+      );
+    }
     const isEditing = editingClient?.id === client.id && editingField === field;
 
     if (isEditing) {

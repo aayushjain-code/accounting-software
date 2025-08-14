@@ -80,6 +80,14 @@ export const ProjectsTable: React.FC<ProjectsTableProps> = ({
     field: keyof Project,
     value: string | number | boolean
   ) => {
+    // Only allow editing of string fields for now
+    if (typeof value !== 'string') {
+      return (
+        <div className="px-2 py-1">
+          {value?.toString() || "-"}
+        </div>
+      );
+    }
     const isEditing =
       editingProject?.id === project.id && editingField === field;
 

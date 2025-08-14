@@ -121,6 +121,14 @@ export const Directory: React.FC<DirectoryProps> = ({
     field: keyof DirectoryContact,
     value: string | number | boolean
   ) => {
+    // Only allow editing of string fields for now
+    if (typeof value !== 'string') {
+      return (
+        <div className="px-2 py-1">
+          {value?.toString() || "-"}
+        </div>
+      );
+    }
     const isEditing =
       editingContact?.id === contact.id && editingField === field;
 
@@ -189,10 +197,13 @@ export const Directory: React.FC<DirectoryProps> = ({
             Filters
           </button>
 
-          <Button onClick={onAdd} className="flex items-center gap-2">
+          <button
+            onClick={onAdd}
+            className="flex items-center gap-2 bg-primary-600 text-white px-4 py-2 rounded-lg hover:bg-primary-700 transition-colors"
+          >
             <PlusIcon className="h-4 w-4" />
             Add Contact
-          </Button>
+          </button>
         </div>
 
         {/* Advanced Filters */}

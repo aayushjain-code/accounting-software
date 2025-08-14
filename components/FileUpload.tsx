@@ -38,7 +38,7 @@ const FileUpload: React.FC<FileUploadProps> = ({
   const [isDragOver, setIsDragOver] = useState(false);
   const [error, setError] = useState<string>("");
 
-  const validateFile = (file: File): string | null => {
+  const validateFile = useCallback((file: File): string | null => {
     // Check file size
     if (file.size > maxSize * 1024 * 1024) {
       return `File size must be less than ${maxSize}MB`;
@@ -53,7 +53,7 @@ const FileUpload: React.FC<FileUploadProps> = ({
     }
 
     return null;
-  };
+  }, [maxSize, acceptedTypes]);
 
   const handleFiles = useCallback(
     (newFiles: FileList) => {

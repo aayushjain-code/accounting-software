@@ -28,7 +28,7 @@ export const AuthOverlay: React.FC<AuthOverlayProps> = ({
     if (!isAuthenticated) {
       checkAuthStatus();
     }
-  }, []);
+  }, [isAuthenticated, checkAuthStatus]);
 
   const checkAuthStatus = async () => {
     try {
@@ -43,20 +43,7 @@ export const AuthOverlay: React.FC<AuthOverlayProps> = ({
     }
   };
 
-  const startLockoutTimer = (time: number) => {
-    const timer = setInterval(() => {
-      setRemainingTime((prev) => {
-        if (prev <= 1) {
-          clearInterval(timer);
-          setIsLocked(false);
-          setMessage("");
-          setMessageType("");
-          return 0;
-        }
-        return prev - 1;
-      });
-    }, 1000);
-  };
+
 
   const handlePinSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -88,7 +75,7 @@ export const AuthOverlay: React.FC<AuthOverlayProps> = ({
         setMessageType("error");
         setCurrentPin("");
       }
-    } catch (error) {
+    } catch {
       setMessage("Authentication failed. Please try again.");
       setMessageType("error");
       setCurrentPin("");

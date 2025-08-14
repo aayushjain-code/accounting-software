@@ -43,7 +43,7 @@ export const Tooltip: React.FC<TooltipProps> = ({
     setIsVisible(false);
   };
 
-  const updatePosition = () => {
+  const updatePosition = useCallback(() => {
     if (!triggerRef.current || !tooltipRef.current) return;
 
     const triggerRect = triggerRef.current.getBoundingClientRect();
@@ -136,7 +136,7 @@ export const Tooltip: React.FC<TooltipProps> = ({
 
     setFinalPosition(bestPosition);
     setTooltipPosition({ x: clampedX, y: clampedY });
-  };
+  }, [position]);
 
   useEffect(() => {
     if (isVisible) {

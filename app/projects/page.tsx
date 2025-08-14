@@ -1,29 +1,18 @@
 "use client";
 
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo } from "react";
 import { useAccountingStore } from "@/store";
-import { Project, Client } from "@/types";
+import { Project } from "@/types";
 import { BuildingOfficeIcon } from "@heroicons/react/24/outline";
 import {
   PlusIcon,
-  PencilIcon,
-  TrashIcon,
-  UserIcon,
-  CalendarIcon,
-  CurrencyRupeeIcon,
-  TagIcon,
-  EyeIcon,
 } from "@heroicons/react/24/outline";
 import { format } from "date-fns";
 import toast from "react-hot-toast";
-import { Tooltip, ActionTooltip, IconTooltip } from "@/components/Tooltip";
-import { ConfirmationDialog } from "@/components/ConfirmationDialog";
+import { ActionTooltip } from "@/components/Tooltip";
 import React from "react";
 import Modal from "@/components/Modal";
 import { useSearch } from "@/hooks/useSearch";
-import { usePagination } from "@/hooks/usePagination";
-import { Pagination } from "@/components/Pagination";
-import { performanceMonitor } from "@/utils/performance";
 import { ProjectsTable } from "@/components/ProjectsTable";
 
 export default function ProjectsPage() {
@@ -32,8 +21,7 @@ export default function ProjectsPage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingProject, setEditingProject] = useState<Project | null>(null);
   const [statusFilter, setStatusFilter] = useState<string>("all");
-  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
-  const [projectToDelete, setProjectToDelete] = useState<string | null>(null);
+
   const [formData, setFormData] = useState({
     projectCode: "",
     name: "",
@@ -138,12 +126,7 @@ export default function ProjectsPage() {
     }
   };
 
-  const handleArchive = (id: string) => {
-    if (confirm("Are you sure you want to archive this project?")) {
-      updateProject(id, { status: "archived" });
-      toast.success("Project archived successfully");
-    }
-  };
+
 
   const [viewingProject, setViewingProject] = useState<Project | null>(null);
 

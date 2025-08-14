@@ -311,7 +311,7 @@ export default function ProfilePage() {
               className="bg-blue-600 text-white px-4 py-3 rounded-xl font-semibold hover:bg-blue-700 transition-colors duration-200 shadow-lg hover:shadow-xl flex items-center space-x-2"
             >
               <BellIcon className="h-5 w-5" />
-              <span>What's New</span>
+              <span>What&apos;s New</span>
             </button>
             <button
               onClick={() => setShowProfileUpdate(true)}

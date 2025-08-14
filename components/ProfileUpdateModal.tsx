@@ -68,7 +68,7 @@ export const ProfileUpdateModal: React.FC<ProfileUpdateModalProps> = ({
     }
   };
 
-  const handleChange = (
+    const handleChange = (
     field: string,
     value: string | boolean,
     subField?: string

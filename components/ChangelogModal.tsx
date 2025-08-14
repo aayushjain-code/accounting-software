@@ -105,7 +105,9 @@ export const ChangelogModal: React.FC<ChangelogModalProps> = ({
                   {/* Entry Header */}
                   <div className="flex items-start justify-between mb-4">
                     <div className="flex items-center space-x-3">
-                      <span className="text-2xl">{getTypeIcon(entry.type)}</span>
+                      <span className="text-2xl">
+                        {getTypeIcon(entry.type)}
+                      </span>
                       <div>
                         <h3 className="text-lg font-semibold text-gray-900">
                           {entry.title}
@@ -121,7 +123,8 @@ export const ChangelogModal: React.FC<ChangelogModalProps> = ({
                           entry.type
                         )}`}
                       >
-                        {entry.type.charAt(0).toUpperCase() + entry.type.slice(1)}
+                        {entry.type.charAt(0).toUpperCase() +
+                          entry.type.slice(1)}
                       </span>
                       <span className="text-sm text-gray-500">
                         {formatDate(entry.releaseDate)}
@@ -156,7 +159,8 @@ export const ChangelogModal: React.FC<ChangelogModalProps> = ({
         {/* Footer */}
         <div className="flex items-center justify-between p-6 border-t border-gray-200 bg-gray-50">
           <p className="text-sm text-gray-600">
-            {changelog.length} update{changelog.length !== 1 ? "s" : ""} available
+            {changelog.length} update{changelog.length !== 1 ? "s" : ""}{" "}
+            available
           </p>
           <button
             onClick={onClose}

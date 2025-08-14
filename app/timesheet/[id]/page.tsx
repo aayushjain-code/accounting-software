@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useMemo } from "react";
+import React, { useMemo } from "react";
 import { useAccountingStore } from "@/store";
 import {
   CheckIcon,
@@ -129,12 +129,10 @@ StatusChangeDropdown.displayName = "StatusChangeDropdown";
 const WorkCalculationCard = React.memo(
   ({
     timesheet,
-    project,
     onStatusChange,
     currentStatus,
   }: {
     timesheet: Timesheet;
-    project: Project | undefined;
     onStatusChange: (status: string) => void;
     currentStatus: string;
   }) => {
@@ -380,7 +378,6 @@ export default function TimesheetDetailPage({
     projects,
     updateTimesheet,
     reloadTimesheet,
-    generateInvoiceFromTimesheet,
     addTimesheetFile,
     removeTimesheetFile,
   } = useAccountingStore();
@@ -388,7 +385,6 @@ export default function TimesheetDetailPage({
   // Local state to track current status for immediate UI updates
   const [currentStatus, setCurrentStatus] = React.useState<string>("");
   const [uploadedFiles, setUploadedFiles] = React.useState<File[]>([]);
-  const [isUploading, setIsUploading] = React.useState(false);
 
   // Load timesheet data directly from database on page load
   React.useEffect(() => {
@@ -408,7 +404,7 @@ export default function TimesheetDetailPage({
       }
     };
     loadTimesheetFromDatabase();
-  }, [params.id, reloadTimesheet]); // Dependency array includes reloadTimesheet
+  }, [params.id, reloadTimesheet, timesheets]); // Dependency array includes reloadTimesheet
 
   // Get timesheet data
   const timesheet = useMemo(() => {
@@ -512,7 +508,7 @@ export default function TimesheetDetailPage({
             id: timesheet.id,
             status: newStatus,
           });
-          await updateTimesheet(timesheet.id, { status: newStatus as any });
+          await updateTimesheet(timesheet.id, { status: newStatus as "draft" | "submitted" | "approved" | "rejected" | "invoiced" });
           console.log("🔄 updateTimesheet completed");
 
           // Force reload from database to ensure UI shows correct data

@@ -98,6 +98,84 @@
   }
 
   /* Custom gradients */
+
+  /* Custom scrollbar classes for components */
+  .scrollbar-thin {
+    scrollbar-width: thin;
+  }
+
+  .scrollbar-thumb-gray-300 {
+    scrollbar-color: rgb(209 213 219) transparent;
+  }
+
+  .scrollbar-track-gray-100 {
+    scrollbar-color: transparent rgb(243 244 246);
+  }
+
+  .dark .scrollbar-thumb-gray-600 {
+    scrollbar-color: rgb(75 85 99) transparent;
+  }
+
+  .dark .scrollbar-track-gray-800 {
+    scrollbar-color: transparent rgb(31 41 55);
+  }
+
+  /* Invoice Template Print Styles */
+  @media print {
+    .invoice-template {
+      font-family: Arial, sans-serif !important;
+      font-size: 12px !important;
+      color: #000 !important;
+      width: 190mm !important;
+      margin: 0 auto !important;
+    }
+    
+    .invoice-template .container {
+      max-width: 190mm !important;
+      margin: auto !important;
+    }
+    
+    .invoice-template h2 {
+      text-align: center !important;
+      font-size: 14px !important;
+      margin: 0 0 6px 0 !important;
+    }
+    
+    .invoice-template table {
+      border-collapse: collapse !important;
+      width: 100% !important;
+      page-break-inside: avoid !important;
+    }
+    
+    .invoice-template td, 
+    .invoice-template th {
+      border: 1px solid #000 !important;
+      padding: 4px 6px !important;
+      vertical-align: top !important;
+    }
+    
+    .invoice-template .signature-table td {
+      border: none !important;
+      height: 80px !important;
+      vertical-align: bottom !important;
+      text-align: center !important;
+      font-size: 11px !important;
+      position: relative !important;
+    }
+    
+    .invoice-template .stamp {
+      position: absolute !important;
+      bottom: 15px !important;
+      right: 50px !important;
+      opacity: 0.85 !important;
+      width: 100px !important;
+    }
+    
+    @page {
+      size: A4;
+      margin: 15mm 10mm;
+    }
+  }
   .gradient-primary {
     @apply bg-gradient-to-r from-primary-500 to-primary-600;
   }

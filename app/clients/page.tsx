@@ -8,7 +8,6 @@ import {
   PlusIcon,
   PencilIcon,
   TrashIcon,
-  BuildingOfficeIcon,
   EnvelopeIcon,
   PhoneIcon,
   GlobeAltIcon,
@@ -31,6 +30,7 @@ import { Pagination } from "@/components/Pagination";
 import { performanceMonitor } from "@/utils/performance";
 import { ViewToggle } from "@/components/ViewToggle";
 import { ClientsTable } from "@/components/ClientsTable";
+import { ClientViewModal } from "@/components/ClientViewModal";
 
 // Enhanced Client Card Component
 const ClientCard = React.memo(
@@ -38,10 +38,12 @@ const ClientCard = React.memo(
     client,
     onEdit,
     onDelete,
+    onView,
   }: {
     client: Client;
     onEdit: (client: Client) => void;
     onDelete: (id: string) => void;
+    onView: (client: Client) => void;
   }) => {
     const getStatusColor = (status: string | undefined) => {
       const safeStatus = status || "active";
@@ -92,12 +94,9 @@ const ClientCard = React.memo(
         {/* Header */}
         <div className="flex items-start justify-between mb-4">
           <div className="flex items-center space-x-3">
-            <div className="w-12 h-12 bg-gradient-to-br from-primary-500 to-primary-600 rounded-xl flex items-center justify-center">
-              <BuildingOfficeIcon className="h-6 w-6 text-white" />
-            </div>
             <div>
-              <div className="flex items-center space-x-2 mb-1">
-                <span className="font-mono font-semibold text-primary-700 bg-primary-50 dark:bg-primary-900 px-2 py-1 rounded-md border border-primary-200 dark:border-primary-800 text-xs">
+              <div className="mb-2">
+                <span className="font-mono font-semibold text-primary-700 bg-primary-50 dark:bg-primary-900/20 px-2 py-1 rounded-md border border-primary-200 dark:border-primary-700 text-xs">
                   {client.clientCode}
                 </span>
               </div>
@@ -114,7 +113,10 @@ const ClientCard = React.memo(
               content="View details"
               action="Click to see full profile"
             >
-              <button className="p-2 text-gray-400 hover:text-primary-600 hover:bg-primary-50 rounded-lg transition-all duration-200">
+              <button
+                onClick={() => onView(client)}
+                className="p-2 text-gray-400 hover:text-primary-600 hover:bg-primary-50 rounded-lg transition-all duration-200"
+              >
                 <EyeIcon className="h-4 w-4" />
               </button>
             </ActionTooltip>
@@ -164,49 +166,65 @@ const ClientCard = React.memo(
         </div>
 
         {/* Contact Information */}
-        <div className="space-y-2 mb-4">
+        <div className="space-y-2 mb-4 max-h-32 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100 dark:scrollbar-thumb-gray-600 dark:scrollbar-track-gray-800">
           <div className="flex items-center space-x-2 text-sm text-gray-600">
-            <EnvelopeIcon className="h-4 w-4 text-gray-400" />
+            <EnvelopeIcon className="h-4 w-4 text-gray-400 flex-shrink-0" />
             <span>{client.email}</span>
           </div>
           {client.phone && (
             <div className="flex items-center space-x-2 text-sm text-gray-600">
-              <PhoneIcon className="h-4 w-4 text-gray-400" />
+              <PhoneIcon className="h-4 w-4 text-gray-400 flex-shrink-0" />
               <span>{client.phone}</span>
             </div>
           )}
           {client.companyWebsite && (
             <div className="flex items-center space-x-2 text-sm text-gray-600">
-              <GlobeAltIcon className="h-4 w-4 text-gray-400" />
-              <span className="text-primary-600 hover:text-primary-800 transition-colors">
+              <GlobeAltIcon className="h-4 w-4 text-gray-400 flex-shrink-0" />
+              <a
+                href={
+                  client.companyWebsite.startsWith("http")
+                    ? client.companyWebsite
+                    : `https://${client.companyWebsite}`
+                }
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-primary-600 hover:text-primary-800 dark:text-primary-400 dark:hover:text-primary-300 underline transition-colors"
+                onClick={(e) => e.stopPropagation()}
+              >
                 {client.companyWebsite}
-              </span>
+              </a>
             </div>
           )}
           {client.companyAddress && (
-            <div className="flex items-center space-x-2 text-sm text-gray-600">
-              <MapPinIcon className="h-4 w-4 text-gray-400" />
-              <span className="truncate">{client.companyAddress}</span>
+            <div className="flex items-start space-x-2 text-sm text-gray-600">
+              <MapPinIcon className="h-4 w-4 text-gray-400 flex-shrink-0 mt-0.5" />
+              <span className="break-words">{client.companyAddress}</span>
             </div>
           )}
         </div>
 
         {/* POC Information */}
         {client.pocName && (
-          <div className="bg-gray-50 rounded-lg p-3 mb-4">
+          <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-3 mb-4 max-h-32 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100 dark:scrollbar-thumb-gray-600 dark:scrollbar-track-gray-800">
             <div className="flex items-center space-x-2 mb-2">
               <UserIcon className="h-4 w-4 text-gray-500" />
-              <span className="text-sm font-medium text-gray-700">
+              <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
                 Point of Contact
               </span>
             </div>
             <div className="space-y-1">
-              <div className="text-sm text-gray-600">{client.pocName}</div>
+              <div className="text-sm text-gray-600 dark:text-gray-400">
+                {client.pocName}
+              </div>
               {client.pocEmail && (
-                <div className="text-sm text-gray-600">{client.pocEmail}</div>
+                <div className="text-sm text-gray-600 dark:text-gray-400">
+                  {client.pocEmail}
+                </div>
               )}
               {client.pocContact && (
-                <div className="text-sm text-gray-600">{client.pocContact}</div>
+                <div className="text-sm text-gray-600 dark:text-gray-400">
+                  {client.pocContact}
+                </div>
               )}
             </div>
           </div>
@@ -214,14 +232,16 @@ const ClientCard = React.memo(
 
         {/* GST Information */}
         {client.gstId && (
-          <div className="bg-blue-50 rounded-lg p-3 mb-4">
+          <div className="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-3 mb-4 max-h-32 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100 dark:scrollbar-thumb-gray-600 dark:scrollbar-track-gray-800">
             <div className="flex items-center space-x-2 mb-2">
               <ReceiptRefundIcon className="h-4 w-4 text-blue-600" />
-              <span className="text-sm font-medium text-blue-700">
+              <span className="text-sm font-medium text-blue-700 dark:text-blue-300">
                 GST Number
               </span>
             </div>
-            <div className="text-sm text-blue-800">{client.gstId}</div>
+            <div className="text-sm text-blue-800 dark:text-blue-200 font-mono">
+              {client.gstId}
+            </div>
           </div>
         )}
 
@@ -251,6 +271,8 @@ export default function ClientsPage() {
   const [clientToDelete, setClientToDelete] = useState<string | null>(null);
   const [viewMode, setViewMode] = useState<"cards" | "table">("cards");
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [viewingClient, setViewingClient] = useState<Client | null>(null);
+  const [isViewModalOpen, setIsViewModalOpen] = useState(false);
 
   // Performance monitoring
   const renderStart = performance.now();
@@ -402,31 +424,8 @@ export default function ClientsPage() {
   };
 
   const handleView = (client: Client) => {
-    // For now, just open the edit modal to view details
-    // You can implement a separate view modal later if needed
-    setEditingClient(client);
-    setFormData({
-      name: client.name,
-      email: client.email,
-      phone: client.phone || "",
-      company: client.company || "",
-      address: client.address || "",
-      gstId: client.gstId || "",
-      companyAddress: client.companyAddress || "",
-      companyWebsite: client.companyWebsite || "",
-      companyLinkedin: client.companyLinkedin || "",
-      companyOwner: client.companyOwner || "",
-      pocName: client.pocName || "",
-      pocEmail: client.pocEmail || "",
-      pocContact: client.pocContact || "",
-      companyLogo: client.companyLogo || "",
-      industry: client.industry || "",
-      companySize: client.companySize || "small",
-      status: client.status || "active",
-      source: client.source || "",
-      notes: client.notes || "",
-    });
-    setIsModalOpen(true);
+    setViewingClient(client);
+    setIsViewModalOpen(true);
   };
 
   const confirmDelete = () => {
@@ -533,6 +532,7 @@ export default function ClientsPage() {
                 client={client}
                 onEdit={handleEdit}
                 onDelete={handleDelete}
+                onView={handleView}
               />
             ))}
           </div>
@@ -566,7 +566,9 @@ export default function ClientsPage() {
       {clientsByStatus.length === 0 && (
         <div className="text-center py-12">
           <div className="mx-auto h-16 w-16 text-gray-400 mb-4">
-            <BuildingOfficeIcon className="h-16 w-16" />
+            <div className="h-16 w-16 bg-gray-200 rounded-lg flex items-center justify-center">
+              <span className="text-2xl">🏢</span>
+            </div>
           </div>
           <p className="text-gray-500 text-lg font-medium mb-4">
             {searchTerm || statusFilter !== "all"
@@ -987,6 +989,16 @@ export default function ClientsPage() {
         confirmText="Delete"
         cancelText="Cancel"
         variant="danger"
+      />
+
+      {/* Client View Modal */}
+      <ClientViewModal
+        isOpen={isViewModalOpen}
+        onClose={() => {
+          setIsViewModalOpen(false);
+          setViewingClient(null);
+        }}
+        client={viewingClient}
       />
     </div>
   );

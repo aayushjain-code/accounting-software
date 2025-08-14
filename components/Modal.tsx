@@ -8,6 +8,17 @@ interface ModalProps {
   title: string;
   children: React.ReactNode;
   footer?: React.ReactNode;
+  size?:
+    | "sm"
+    | "md"
+    | "lg"
+    | "xl"
+    | "2xl"
+    | "3xl"
+    | "4xl"
+    | "5xl"
+    | "6xl"
+    | "7xl";
 }
 
 const Modal: React.FC<ModalProps> = ({
@@ -16,6 +27,7 @@ const Modal: React.FC<ModalProps> = ({
   title,
   children,
   footer,
+  size = "md",
 }) => {
   const modalRef = useRef<HTMLDivElement>(null);
 
@@ -38,6 +50,19 @@ const Modal: React.FC<ModalProps> = ({
 
   if (!isOpen) return null;
 
+  const sizeClasses = {
+    sm: "max-w-sm",
+    md: "max-w-2xl",
+    lg: "max-w-4xl",
+    xl: "max-w-5xl",
+    "2xl": "max-w-6xl",
+    "3xl": "max-w-7xl",
+    "4xl": "max-w-7xl",
+    "5xl": "max-w-7xl",
+    "6xl": "max-w-7xl",
+    "7xl": "max-w-7xl",
+  };
+
   return (
     <div
       className="fixed inset-0 z-50 flex items-center justify-center bg-black/60"
@@ -47,7 +72,7 @@ const Modal: React.FC<ModalProps> = ({
       onClick={onClose}
     >
       <div
-        className="relative bg-white dark:bg-gray-900 rounded-2xl shadow-2xl w-full max-w-2xl mx-auto p-0 focus:outline-none"
+        className={`relative bg-white dark:bg-gray-900 rounded-2xl shadow-2xl w-full ${sizeClasses[size]} mx-auto p-0 focus:outline-none`}
         ref={modalRef}
         tabIndex={0}
         onClick={(e) => e.stopPropagation()}

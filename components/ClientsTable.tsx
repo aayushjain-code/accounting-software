@@ -11,10 +11,8 @@ import {
   ArrowUpIcon,
   ArrowDownIcon,
 } from "@heroicons/react/24/outline";
-import { useAccountingStore } from "@/store";
 import { Client } from "@/types";
 import { ConfirmationDialog } from "./ConfirmationDialog";
-import { toast } from "react-hot-toast";
 
 interface ClientsTableProps {
   clients: Client[];
@@ -32,15 +30,11 @@ export const ClientsTable: React.FC<ClientsTableProps> = ({
   const [searchTerm, setSearchTerm] = useState("");
   const [sortField, setSortField] = useState<keyof Client>("name");
   const [sortDirection, setSortDirection] = useState<"asc" | "desc">("asc");
-  const [editingClient, setEditingClient] = useState<Client | null>(null);
-  const [editingField, setEditingField] = useState<keyof Client | null>(null);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [clientToDelete, setClientToDelete] = useState<string | null>(null);
   const [showFilters, setShowFilters] = useState(false);
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [industryFilter, setIndustryFilter] = useState<string>("all");
-
-  const { updateClient } = useAccountingStore();
 
   // Excel-like sorting
   const handleSort = (field: keyof Client) => {
@@ -58,7 +52,9 @@ export const ClientsTable: React.FC<ClientsTableProps> = ({
       const matchesSearch =
         client.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
         client.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        client.company.toLowerCase().includes(searchTerm.toLowerCase());
+        client.company.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (client.industry &&
+          client.industry.toLowerCase().includes(searchTerm.toLowerCase()));
 
       const matchesStatus =
         statusFilter === "all" || client.status === statusFilter;
@@ -84,19 +80,6 @@ export const ClientsTable: React.FC<ClientsTableProps> = ({
       return 0;
     });
 
-  // Excel-like inline editing
-  const handleInlineEdit = (
-    client: Client,
-    field: keyof Client,
-    value: string | number | boolean
-  ) => {
-    const updatedClient = { ...client, [field]: value };
-    updateClient(client.id, updatedClient);
-    setEditingClient(null);
-    setEditingField(null);
-    toast.success("Client updated successfully!");
-  };
-
   const renderSortIcon = (field: keyof Client) => {
     if (sortField !== field) return null;
     return sortDirection === "asc" ? (
@@ -106,57 +89,12 @@ export const ClientsTable: React.FC<ClientsTableProps> = ({
     );
   };
 
-  const renderEditableCell = (
+  const renderReadOnlyCell = (
     client: Client,
     field: keyof Client,
     value: string | number | boolean
   ) => {
-    // Only allow editing of string fields for now
-    if (typeof value !== 'string') {
-      return (
-        <div className="px-2 py-1">
-          {value?.toString() || "-"}
-        </div>
-      );
-    }
-    const isEditing = editingClient?.id === client.id && editingField === field;
-
-    if (isEditing) {
-      return (
-        <input
-          type="text"
-          value={value || ""}
-          onChange={(e) => {
-            const updatedClient = { ...client, [field]: e.target.value };
-            setEditingClient(updatedClient);
-          }}
-          onBlur={() => handleInlineEdit(client, field, value)}
-          onKeyDown={(e) => {
-            if (e.key === "Enter") {
-              handleInlineEdit(client, field, value);
-            } else if (e.key === "Escape") {
-              setEditingClient(null);
-              setEditingField(null);
-            }
-          }}
-          className="w-full px-2 py-1 border border-blue-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
-          autoFocus
-        />
-      );
-    }
-
-    return (
-      <div
-        className="cursor-pointer hover:bg-blue-50 dark:hover:bg-blue-900/20 px-2 py-1 rounded"
-        onClick={() => {
-          setEditingClient(client);
-          setEditingField(field);
-        }}
-        title="Click to edit"
-      >
-        {value || "-"}
-      </div>
-    );
+    return <div className="px-2 py-1">{value?.toString() || "-"}</div>;
   };
 
   const getStatusColor = (status: string) => {
@@ -165,7 +103,9 @@ export const ClientsTable: React.FC<ClientsTableProps> = ({
         return "bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400";
       case "inactive":
         return "bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-400";
-      case "pending":
+      case "prospect":
+        return "bg-blue-100 text-blue-800 dark:bg-blue-900/20 dark:text-blue-400";
+      case "lead":
         return "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-400";
       default:
         return "bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300";
@@ -224,7 +164,8 @@ export const ClientsTable: React.FC<ClientsTableProps> = ({
                 <option value="all">All Statuses</option>
                 <option value="active">Active</option>
                 <option value="inactive">Inactive</option>
-                <option value="pending">Pending</option>
+                <option value="prospect">Prospect</option>
+                <option value="lead">Lead</option>
               </select>
             </div>
 
@@ -256,11 +197,11 @@ export const ClientsTable: React.FC<ClientsTableProps> = ({
           <thead className="bg-gray-50 dark:bg-gray-700/50">
             <tr>
               {[
+                { key: "clientCode", label: "Client ID", sortable: true },
                 { key: "name", label: "Client Name", sortable: true },
                 { key: "company", label: "Company", sortable: true },
                 { key: "email", label: "Email", sortable: true },
                 { key: "phone", label: "Phone", sortable: false },
-                { key: "gstId", label: "GST Number", sortable: false },
                 { key: "status", label: "Status", sortable: true },
                 { key: "industry", label: "Industry", sortable: true },
                 { key: "createdAt", label: "Created", sortable: true },
@@ -293,19 +234,21 @@ export const ClientsTable: React.FC<ClientsTableProps> = ({
                 className="hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors"
               >
                 <td className="px-6 py-4 whitespace-nowrap">
-                  {renderEditableCell(client, "name", client.name)}
+                  <span className="font-mono font-semibold text-primary-700 bg-primary-50 dark:bg-primary-900 px-2 py-1 rounded-md border border-primary-200 dark:border-primary-800 text-xs">
+                    {client.clientCode}
+                  </span>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">
-                  {renderEditableCell(client, "company", client.company)}
+                  {renderReadOnlyCell(client, "name", client.name)}
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">
-                  {renderEditableCell(client, "email", client.email)}
+                  {renderReadOnlyCell(client, "company", client.company)}
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">
-                  {renderEditableCell(client, "phone", client.phone)}
+                  {renderReadOnlyCell(client, "email", client.email)}
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">
-                  {renderEditableCell(client, "gstId", client.gstId)}
+                  {renderReadOnlyCell(client, "phone", client.phone)}
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">
                   <span
@@ -317,7 +260,7 @@ export const ClientsTable: React.FC<ClientsTableProps> = ({
                   </span>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">
-                  {renderEditableCell(client, "industry", client.industry)}
+                  {renderReadOnlyCell(client, "industry", client.industry)}
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
                   {format(new Date(client.createdAt), "MMM dd, yyyy")}

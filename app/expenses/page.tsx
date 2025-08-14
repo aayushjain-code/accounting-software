@@ -179,7 +179,7 @@ export default function ExpensesPage() {
 
   // Filter and sort expenses
   const filteredAndSortedExpenses = useMemo(() => {
-    let filtered = expenses.filter((expense) => {
+    const filtered = expenses.filter((expense) => {
       const matchesSearch =
         expense.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
         expense.category.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -199,7 +199,7 @@ export default function ExpensesPage() {
 
     // Sort expenses
     filtered.sort((a, b) => {
-      let aValue: any, bValue: any;
+      let aValue: number | string, bValue: number | string;
 
       switch (sortBy) {
         case "amount":
@@ -403,7 +403,7 @@ export default function ExpensesPage() {
               <span>Active filters:</span>
               {searchTerm && (
                 <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-primary-100 text-primary-800">
-                  Search: "{searchTerm}"
+                  Search: &quot;{searchTerm}&quot;
                 </span>
               )}
               {selectedCategory !== "all" && (

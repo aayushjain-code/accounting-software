@@ -565,29 +565,7 @@ export const InvoiceEditor: React.FC<InvoiceEditorProps> = ({
     updatedAt: new Date(),
   };
 
-  // Create a mock project for preview if none exists
-  const previewProject: Project = project || {
-    id: "preview",
-    projectCode: "BST-01",
-    name: items[0]?.description || "IT Design and Development",
-    clientId: "preview",
-    description: "Project description",
-    startDate: new Date(),
-    status: "active",
-    budget: 1000000,
-    billingTerms: 30,
-    billingRate: 1000,
-    gstRate: 18,
-    gstInclusive: false,
-    totalCost: 1000000,
-    costBreakdown: {
-      subtotal: 847457,
-      gstAmount: 152543,
-      total: 1000000,
-    },
-    createdAt: new Date(),
-    updatedAt: new Date(),
-  };
+
 
   return (
     <>

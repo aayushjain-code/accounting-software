@@ -99,8 +99,6 @@ export const Directory: React.FC<DirectoryProps> = ({
     value: string | number | boolean
   ) => {
     // Here you would typically call an update function
-    // For now, we'll just update the local state
-    const updatedContact = { ...contact, [field]: value };
     // TODO: Integrate with store update function
     setEditingContact(null);
     setEditingField(null);

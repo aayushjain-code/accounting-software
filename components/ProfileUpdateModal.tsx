@@ -61,7 +61,7 @@ export const ProfileUpdateModal: React.FC<ProfileUpdateModalProps> = ({
         onClose();
         setMessage("");
       }, 1500);
-    } catch (error) {
+    } catch {
       setMessage("Error updating profile. Please try again.");
     } finally {
       setIsLoading(false);
@@ -77,7 +77,7 @@ export const ProfileUpdateModal: React.FC<ProfileUpdateModalProps> = ({
       setFormData((prev) => ({
         ...prev,
         [field]: {
-          ...(prev[field as keyof typeof prev] as any),
+          ...(prev[field as keyof typeof prev] as Record<string, unknown>),
           [subField]: value,
         },
       }));

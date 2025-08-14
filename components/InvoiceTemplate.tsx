@@ -163,7 +163,7 @@ export const InvoiceTemplate: React.FC<InvoiceTemplateProps> = ({
 
   // Use provided item details or fallback to defaults
   const technology = itemDetails?.technology || ".Net + Angular";
-  const poNumber = itemDetails?.poNumber || clientPoNumber;
+
   const workingDays = itemDetails?.workingDays || "23";
   const leave = itemDetails?.leave || "0";
   const hsnCode = itemDetails?.hsnCode || "998314";

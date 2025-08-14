@@ -19,8 +19,8 @@ export const AuthOverlay: React.FC<AuthOverlayProps> = ({
     "success" | "error" | "warning" | ""
   >("");
   const [isLoading, setIsLoading] = useState(false);
-  const [isLocked, setIsLocked] = useState(false);
-  const [remainingTime, setRemainingTime] = useState(0);
+  const [isLocked] = useState(false);
+  const [remainingTime] = useState(0);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
 
   useEffect(() => {

@@ -318,6 +318,45 @@ export interface AccountingData {
   companyProfile: CompanyProfile;
 }
 
+export interface ChangelogEntry {
+  id: string;
+  version: string;
+  title: string;
+  description: string;
+  changes: string[];
+  releaseDate: Date;
+  type: "feature" | "bugfix" | "improvement" | "breaking";
+  isPublished: boolean;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface UserProfile {
+  id: string;
+  userId: string;
+  firstName: string;
+  lastName: string;
+  email: string;
+  phone?: string;
+  avatar?: string;
+  role: "admin" | "user" | "manager";
+  department?: string;
+  position?: string;
+  bio?: string;
+  preferences: {
+    theme: "light" | "dark" | "auto";
+    notifications: {
+      email: boolean;
+      push: boolean;
+      sms: boolean;
+    };
+    language: "en" | "hi" | "es";
+  };
+  lastLogin?: Date;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
 // Global window interface for web-based app
 declare global {
   interface Window {

@@ -5,6 +5,7 @@ import { Toaster } from "react-hot-toast";
 import Layout from "@/components/Layout";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { PerformanceMonitor } from "@/components/PerformanceMonitor";
+import { UpdateNotificationWrapper } from "@/components/UpdateNotificationWrapper";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -27,6 +28,7 @@ export default function RootLayout({
         <ErrorBoundary>
           <DatabaseLoader>
             <Layout>{children}</Layout>
+            <UpdateNotificationWrapper />
             <Toaster position="top-right" />
             <PerformanceMonitor
               showDetails={process.env.NODE_ENV === "development"}

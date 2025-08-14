@@ -12,6 +12,8 @@ import {
   ChartBarIcon,
   UsersIcon,
   CurrencyDollarIcon,
+  BellIcon,
+  CogIcon,
 } from "@heroicons/react/24/outline";
 import toast from "react-hot-toast";
 import { Card } from "@/components/Card";
@@ -20,11 +22,16 @@ import {
   EyeIcon,
   EyeSlashIcon,
 } from "@heroicons/react/24/outline";
+import { ProfileUpdateModal } from "@/components/ProfileUpdateModal";
+import { ChangelogModal } from "@/components/ChangelogModal";
+import { UserProfile, ChangelogEntry } from "@/types";
 
 export default function ProfilePage() {
   const { companyProfile, updateCompanyProfile } = useAccountingStore();
   const [isEditing, setIsEditing] = useState(false);
   const [showPinChange, setShowPinChange] = useState(false);
+  const [showProfileUpdate, setShowProfileUpdate] = useState(false);
+  const [showChangelog, setShowChangelog] = useState(false);
   const [pinData, setPinData] = useState({
     currentPin: "",
     newPin: "",
@@ -33,6 +40,94 @@ export default function ProfilePage() {
   const [showCurrentPin, setShowCurrentPin] = useState(false);
   const [showNewPin, setShowNewPin] = useState(false);
   const [showConfirmPin, setShowConfirmPin] = useState(false);
+  
+  // Mock user profile data
+  const [userProfile, setUserProfile] = useState<UserProfile>({
+    id: "1",
+    userId: "user1",
+    firstName: "John",
+    lastName: "Doe",
+    email: "john.doe@company.com",
+    phone: "+91 98765 43210",
+    avatar: "",
+    role: "manager",
+    department: "Finance",
+    position: "Senior Manager",
+    bio: "Experienced finance professional with expertise in accounting and financial management.",
+    preferences: {
+      theme: "light",
+      notifications: {
+        email: true,
+        push: true,
+        sms: false,
+      },
+      language: "en",
+    },
+    lastLogin: new Date(),
+    createdAt: new Date("2024-01-01"),
+    updatedAt: new Date(),
+  });
+
+  // Mock changelog data
+  const [changelog] = useState<ChangelogEntry[]>([
+    {
+      id: "1",
+      version: "2.1.0",
+      title: "Invoice Generator Complete",
+      description: "Major update to the invoice generation system with enhanced features and improved user experience.",
+      changes: [
+        "Added professional invoice template matching exact design requirements",
+        "Implemented working print functionality with 3 different options",
+        "Added high-quality PDF generation using jsPDF and html2canvas",
+        "Fixed all TypeScript errors and linter issues",
+        "Added comprehensive form validation and user feedback",
+        "Enhanced UI with loading states and success messages",
+        "Improved print styles for professional output",
+        "Added client selection and auto-population features"
+      ],
+      releaseDate: new Date("2024-01-15"),
+      type: "feature",
+      isPublished: true,
+      createdAt: new Date("2024-01-15"),
+      updatedAt: new Date("2024-01-15"),
+    },
+    {
+      id: "2",
+      version: "2.0.5",
+      title: "Performance Improvements",
+      description: "Various performance optimizations and bug fixes to improve system stability.",
+      changes: [
+        "Optimized database queries for faster data loading",
+        "Fixed memory leaks in the dashboard components",
+        "Improved error handling across the application",
+        "Enhanced mobile responsiveness for better user experience"
+      ],
+      releaseDate: new Date("2024-01-10"),
+      type: "improvement",
+      isPublished: true,
+      createdAt: new Date("2024-01-10"),
+      updatedAt: new Date("2024-01-10"),
+    },
+    {
+      id: "3",
+      version: "2.0.0",
+      title: "Major UI Overhaul",
+      description: "Complete redesign of the user interface with modern design principles and improved usability.",
+      changes: [
+        "Redesigned entire application with modern UI/UX",
+        "Added dark mode support",
+        "Implemented responsive design for all screen sizes",
+        "Added new dashboard with enhanced analytics",
+        "Improved navigation and user flow"
+      ],
+      releaseDate: new Date("2024-01-01"),
+      type: "feature",
+      isPublished: true,
+      createdAt: new Date("2024-01-01"),
+      updatedAt: new Date("2024-01-01"),
+    }
+  ]);
+
   const [formData, setFormData] = useState({
     name: companyProfile.name,
     legalName: companyProfile.legalName,
@@ -79,6 +174,21 @@ export default function ProfilePage() {
       style: "currency",
       currency: "INR",
     }).format(amount);
+  };
+
+  const handleProfileUpdate = async (updatedProfile: Partial<UserProfile>) => {
+    try {
+      // In a real app, this would be an API call
+      setUserProfile(prev => ({
+        ...prev,
+        ...updatedProfile,
+        updatedAt: new Date(),
+      }));
+      toast.success("Profile updated successfully!");
+    } catch (error) {
+      toast.error("Failed to update profile");
+      throw error;
+    }
   };
 
   const handleSubmit = useCallback(
@@ -195,14 +305,80 @@ export default function ProfilePage() {
               Manage your company information and settings
             </p>
           </div>
-          <button
-            onClick={() => setIsEditing(!isEditing)}
-            className="bg-primary-600 text-white px-6 py-3 rounded-xl font-semibold hover:bg-primary-700 transition-colors duration-200 shadow-lg hover:shadow-xl"
-          >
-            {isEditing ? "Cancel" : "Edit Profile"}
-          </button>
+          <div className="flex items-center space-x-3">
+            <button
+              onClick={() => setShowChangelog(true)}
+              className="bg-blue-600 text-white px-4 py-3 rounded-xl font-semibold hover:bg-blue-700 transition-colors duration-200 shadow-lg hover:shadow-xl flex items-center space-x-2"
+            >
+              <BellIcon className="h-5 w-5" />
+              <span>What's New</span>
+            </button>
+            <button
+              onClick={() => setShowProfileUpdate(true)}
+              className="bg-green-600 text-white px-4 py-3 rounded-xl font-semibold hover:bg-green-700 transition-colors duration-200 shadow-lg hover:shadow-xl flex items-center space-x-2"
+            >
+              <CogIcon className="h-5 w-5" />
+              <span>Update Profile</span>
+            </button>
+            <button
+              onClick={() => setIsEditing(!isEditing)}
+              className="bg-primary-600 text-white px-6 py-3 rounded-xl font-semibold hover:bg-primary-700 transition-colors duration-200 shadow-lg hover:shadow-xl"
+            >
+              {isEditing ? "Cancel" : "Edit Profile"}
+            </button>
+          </div>
         </div>
       </div>
+
+      {/* User Profile Summary */}
+      <Card>
+        <div className="flex items-center space-x-4 mb-6">
+          <UserIcon className="h-8 w-8 text-primary-600" />
+          <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
+            User Profile
+          </h2>
+        </div>
+        
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="text-center">
+            <div className="w-20 h-20 bg-primary-100 rounded-full flex items-center justify-center mx-auto mb-3">
+              <UserIcon className="h-10 w-10 text-primary-600" />
+            </div>
+            <h3 className="text-lg font-semibold text-gray-900">
+              {userProfile.firstName} {userProfile.lastName}
+            </h3>
+            <p className="text-gray-600">{userProfile.position}</p>
+            <p className="text-sm text-gray-500">{userProfile.department}</p>
+          </div>
+          
+          <div className="md:col-span-2">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
+                <p className="text-gray-900">{userProfile.email}</p>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Phone</label>
+                <p className="text-gray-900">{userProfile.phone}</p>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Role</label>
+                <p className="text-gray-900 capitalize">{userProfile.role}</p>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Theme</label>
+                <p className="text-gray-900 capitalize">{userProfile.preferences.theme}</p>
+              </div>
+            </div>
+            {userProfile.bio && (
+              <div className="mt-4">
+                <label className="block text-sm font-medium text-gray-700 mb-1">Bio</label>
+                <p className="text-gray-900">{userProfile.bio}</p>
+              </div>
+            )}
+          </div>
+        </div>
+      </Card>
 
       {/* PIN Change Section */}
       <Card>
@@ -1055,6 +1231,20 @@ export default function ProfilePage() {
           </div>
         </Card>
       )}
+
+      {/* Modals */}
+      <ProfileUpdateModal
+        isOpen={showProfileUpdate}
+        onClose={() => setShowProfileUpdate(false)}
+        profile={userProfile}
+        onUpdate={handleProfileUpdate}
+      />
+
+      <ChangelogModal
+        isOpen={showChangelog}
+        onClose={() => setShowChangelog(false)}
+        changelog={changelog}
+      />
     </div>
   );
 }

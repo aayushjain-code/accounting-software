@@ -145,27 +145,10 @@ export default function ProjectsPage() {
     }
   };
 
+  const [viewingProject, setViewingProject] = useState<Project | null>(null);
+
   const handleView = (project: Project) => {
-    // For now, just open the edit modal to view details
-    // You can implement a separate view modal later if needed
-    setEditingProject(project);
-    setFormData({
-      projectCode: project.projectCode,
-      name: project.name,
-      description: project.description,
-      clientId: project.clientId,
-      startDate: project.startDate
-        ? format(new Date(project.startDate), "yyyy-MM-dd")
-        : "",
-      status: project.status,
-      budget: project.budget?.toString() || "",
-      billingTerms: project.billingTerms?.toString() || "",
-      billingRate: project.billingRate?.toString() || "",
-      estimatedHours: project.estimatedHours?.toString() || "",
-      gstRate: project.gstRate?.toString() || "",
-      gstInclusive: project.gstInclusive,
-    });
-    setIsModalOpen(true);
+    setViewingProject(project);
   };
 
   const getStatusColor = (status: string) => {
@@ -181,6 +164,11 @@ export default function ProjectsPage() {
       default:
         return "text-gray-600 bg-gray-100";
     }
+  };
+
+  const getClientName = (clientId: string) => {
+    const client = clients.find(c => c.id === clientId);
+    return client ? `${client.name} - ${client.company}` : "Client not found";
   };
 
   // Search and filter functionality
@@ -589,6 +577,167 @@ export default function ProjectsPage() {
           </div>
         </form>
       </Modal>
+
+      {/* View Project Modal */}
+      {viewingProject && (
+        <Modal
+          isOpen={!!viewingProject}
+          onClose={() => setViewingProject(null)}
+          title="Project Details"
+          footer={
+            <button
+              type="button"
+              onClick={() => setViewingProject(null)}
+              className="btn-secondary"
+            >
+              Close
+            </button>
+          }
+        >
+          <div className="space-y-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  Project Code
+                </label>
+                <p className="text-lg font-semibold text-gray-900 dark:text-white">
+                  {viewingProject.projectCode}
+                </p>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  Status
+                </label>
+                <span
+                  className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium border ${getStatusColor(
+                    viewingProject.status
+                  )}`}
+                >
+                  {viewingProject.status}
+                </span>
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                Project Name
+              </label>
+              <p className="text-xl font-semibold text-gray-900 dark:text-white">
+                {viewingProject.name}
+              </p>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                Client
+              </label>
+              <p className="text-gray-900 dark:text-white">
+                {getClientName(viewingProject.clientId)}
+              </p>
+            </div>
+
+            {viewingProject.description && (
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  Description
+                </label>
+                <p className="text-gray-900 dark:text-white whitespace-pre-wrap">
+                  {viewingProject.description}
+                </p>
+              </div>
+            )}
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  Budget
+                </label>
+                <p className="text-lg font-semibold text-green-600 dark:text-green-400">
+                  ₹{viewingProject.budget?.toLocaleString() || "0"}
+                </p>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  Billing Rate
+                </label>
+                <p className="text-gray-900 dark:text-white">
+                  ₹{viewingProject.billingRate?.toLocaleString() || "0"}/hr
+                </p>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  Estimated Hours
+                </label>
+                <p className="text-gray-900 dark:text-white">
+                  {viewingProject.estimatedHours || "Not specified"}
+                </p>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  Start Date
+                </label>
+                <p className="text-gray-900 dark:text-white">
+                  {viewingProject.startDate
+                    ? format(new Date(viewingProject.startDate), "MMM dd, yyyy")
+                    : "Not specified"}
+                </p>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  GST Rate
+                </label>
+                <p className="text-gray-900 dark:text-white">
+                  {viewingProject.gstRate}%
+                </p>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  GST Inclusive
+                </label>
+                <p className="text-gray-900 dark:text-white">
+                  {viewingProject.gstInclusive ? "Yes" : "No"}
+                </p>
+              </div>
+            </div>
+
+            {viewingProject.billingTerms && (
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  Billing Terms
+                </label>
+                <p className="text-gray-900 dark:text-white">
+                  {viewingProject.billingTerms} days
+                </p>
+              </div>
+            )}
+
+            {viewingProject.costBreakdown && (
+              <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-4">
+                <h4 className="font-medium text-gray-900 dark:text-white mb-3">
+                  Cost Breakdown
+                </h4>
+                <div className="space-y-2">
+                  <div className="flex justify-between">
+                    <span className="text-gray-600 dark:text-gray-400">Subtotal:</span>
+                    <span className="font-medium">₹{viewingProject.costBreakdown.subtotal?.toLocaleString()}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-gray-600 dark:text-gray-400">GST Amount:</span>
+                    <span className="font-medium">₹{viewingProject.costBreakdown.gstAmount?.toLocaleString()}</span>
+                  </div>
+                  <div className="flex justify-between text-lg font-semibold border-t pt-2">
+                    <span className="text-gray-900 dark:text-white">Total:</span>
+                    <span className="text-green-600 dark:text-green-400">₹{viewingProject.costBreakdown.total?.toLocaleString()}</span>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+        </Modal>
+      )}
     </div>
   );
 }

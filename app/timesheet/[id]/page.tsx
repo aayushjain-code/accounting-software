@@ -581,7 +581,7 @@ export default function TimesheetDetailPage({
       {/* Work Calculations */}
       <WorkCalculationCard
         timesheet={timesheet}
-        project={project}
+
         onStatusChange={handleStatusChange}
         currentStatus={currentStatus}
       />
@@ -748,10 +748,10 @@ export default function TimesheetDetailPage({
           <div className="mt-4 flex justify-end">
             <button
               onClick={handleFileUpload}
-              disabled={isUploading}
+              disabled={false}
               className="btn-primary flex items-center space-x-2"
             >
-              {isUploading ? (
+              {false ? (
                 <>
                   <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
                   <span>Uploading...</span>

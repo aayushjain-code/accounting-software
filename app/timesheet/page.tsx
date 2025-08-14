@@ -266,24 +266,6 @@ const TimesheetModal = React.memo(
     onSubmit: (data: any) => void;
     formId: string;
       }) => {
-
-
-
-
-        case "invoiced":
-          return {
-            color: "bg-purple-100 text-purple-800 border-purple-200",
-            icon: CurrencyRupeeIcon,
-            bg: "bg-purple-50",
-          };
-        default:
-          return {
-            color: "bg-gray-100 text-gray-800 border-gray-200",
-            icon: DocumentTextIcon,
-            bg: "bg-gray-50",
-          };
-      }
-    };
     const { projects, addTimesheetFile, removeTimesheetFile } =
       useAccountingStore();
     const [formData, setFormData] = useState({
@@ -1000,14 +982,9 @@ export default function TimesheetPage() {
       >
         <TimesheetModal
           isOpen={isModalOpen}
-          onClose={() => {
-            setIsModalOpen(false);
-            setEditingTimesheet(null);
-          }}
           editingTimesheet={editingTimesheet}
           onSubmit={handleSubmit}
           formId="timesheet-form"
-          hideHeaderAndFooter={true}
         />
       </Modal>
 

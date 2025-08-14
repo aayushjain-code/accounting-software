@@ -74,13 +74,27 @@ export const ProfileUpdateModal: React.FC<ProfileUpdateModalProps> = ({
     subField?: string
   ) => {
     if (subField) {
-      setFormData((prev) => ({
-        ...prev,
-        [field]: {
-          ...(prev[field as keyof typeof prev] as unknown),
-          [subField]: value,
-        },
-      }));
+      setFormData((prev) => {
+        const currentValue = prev[field as keyof typeof prev];
+        // Only spread if the current value is an object
+        if (currentValue && typeof currentValue === 'object' && !Array.isArray(currentValue)) {
+          return {
+            ...prev,
+            [field]: {
+              ...currentValue,
+              [subField]: value,
+            },
+          };
+        } else {
+          // If not an object, create a new object with the subField
+          return {
+            ...prev,
+            [field]: {
+              [subField]: value,
+            },
+          };
+        }
+      });
     } else {
       setFormData((prev) => ({
         ...prev,

@@ -267,24 +267,9 @@ const TimesheetModal = React.memo(
     formId: string;
       }) => {
 
-        case "submitted":
-          return {
-            color: "bg-blue-100 text-blue-800 border-blue-200",
-            icon: ClockIcon,
-            bg: "bg-blue-50",
-          };
-        case "approved":
-          return {
-            color: "bg-green-100 text-green-800 border-green-200",
-            icon: CheckIcon,
-            bg: "bg-green-50",
-          };
-        case "rejected":
-          return {
-            color: "bg-red-100 text-red-800 border-red-200",
-            icon: XMarkIcon,
-            bg: "bg-red-50",
-          };
+
+
+
         case "invoiced":
           return {
             color: "bg-purple-100 text-purple-800 border-purple-200",

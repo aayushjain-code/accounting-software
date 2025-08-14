@@ -3,6 +3,8 @@
 import React, { useState, useEffect, useRef } from "react";
 import { Invoice, InvoiceItem, Client, Project } from "@/types";
 import { InvoiceTemplate } from "./InvoiceTemplate";
+import { useAccountingStore } from "@/store";
+import { useRouter } from "next/navigation";
 
 // Import jsPDF and html2canvas for PDF generation
 import jsPDF from "jspdf";
@@ -22,6 +24,8 @@ export const InvoiceEditor: React.FC<InvoiceEditorProps> = ({
   project,
   onSave,
 }) => {
+  const { addInvoice, addInvoiceItem } = useAccountingStore();
+  const router = useRouter();
   const [isEditing, setIsEditing] = useState(true);
   const [formData, setFormData] = useState({
     invoiceNumber: invoice?.invoiceNumber || "BST/25-26/A0053",
@@ -468,6 +472,47 @@ export const InvoiceEditor: React.FC<InvoiceEditorProps> = ({
     setIsSaving(true);
 
     try {
+      // Create the invoice data
+      const invoiceData = {
+        timesheetId: invoice?.timesheetId || "temp",
+        clientId: invoice?.clientId || "temp",
+        projectId: invoice?.projectId || "temp",
+        issueDate: new Date(formData.issueDate),
+        dueDate: new Date(formData.dueDate),
+        status: "draft" as const,
+        subtotal: calculateSubtotal(),
+        taxRate: 18,
+        taxAmount: calculateTax(),
+        total: calculateTotal(),
+        poNumber: clientInfo.poNumber,
+        deliveryNote: formData.deliveryNote,
+        paymentTerms: formData.paymentTerms,
+        referenceNo: formData.referenceNo,
+        buyerOrderNo: formData.buyerOrderNo,
+        buyerOrderDate: formData.buyerOrderDate,
+        dispatchDocNo: formData.dispatchDocNo,
+        deliveryNoteDate: formData.deliveryNoteDate,
+        dispatchedThrough: formData.dispatchedThrough,
+        destination: formData.destination,
+        termsOfDelivery: formData.termsOfDelivery,
+        notes: `Invoice for ${clientInfo.company}`,
+      };
+
+      // Add invoice to store
+      addInvoice(invoiceData);
+
+      // Add invoice items to store
+      items.forEach((item) => {
+        addInvoiceItem({
+          invoiceId: "temp", // This will be updated when we get the actual invoice ID
+          description: item.description,
+          quantity: item.quantity,
+          unitPrice: item.unitPrice,
+          total: item.total,
+        });
+      });
+
+      // Call onSave if provided (for backward compatibility)
       if (onSave) {
         const updatedInvoice: Invoice = {
           ...invoice!,
@@ -494,9 +539,14 @@ export const InvoiceEditor: React.FC<InvoiceEditorProps> = ({
       }
 
       // Show success message
-      setSaveMessage("Invoice saved successfully!");
-      setTimeout(() => setSaveMessage(""), 3000);
-    } catch {
+      setSaveMessage("Invoice saved successfully! Redirecting to invoices...");
+      
+      // Redirect to invoices page after a short delay
+      setTimeout(() => {
+        router.push('/invoices');
+      }, 1500);
+    } catch (error) {
+      console.error('Error saving invoice:', error);
       setSaveMessage("Error saving invoice. Please try again.");
       setTimeout(() => setSaveMessage(""), 3000);
     } finally {

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import {
   LockClosedIcon,
   EyeIcon,
@@ -23,14 +23,7 @@ export const AuthOverlay: React.FC<AuthOverlayProps> = ({
   const [remainingTime] = useState(0);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
 
-  useEffect(() => {
-    // Only check auth status if not already authenticated
-    if (!isAuthenticated) {
-      checkAuthStatus();
-    }
-  }, [isAuthenticated, checkAuthStatus]);
-
-  const checkAuthStatus = async () => {
+  const checkAuthStatus = useCallback(async () => {
     try {
       // For web-based app, check if user is already authenticated
       const isAuth = localStorage.getItem("isAuthenticated") === "true";
@@ -41,7 +34,14 @@ export const AuthOverlay: React.FC<AuthOverlayProps> = ({
     } catch (error) {
       console.error("Error checking auth status:", error);
     }
-  };
+  }, [onAuthenticated]);
+
+  useEffect(() => {
+    // Only check auth status if not already authenticated
+    if (!isAuthenticated) {
+      checkAuthStatus();
+    }
+  }, [isAuthenticated, checkAuthStatus]);
 
   const handlePinSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

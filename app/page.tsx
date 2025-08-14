@@ -4,9 +4,8 @@ import React, { useMemo } from "react";
 import { useAccountingStore } from "@/store";
 import { Invoice, Project } from "@/types";
 import { Card } from "@/components/Card";
-import { StatusBadge } from "@/components/ui/StatusBadge";
-import { formatCurrency, formatDate } from "@/utils/formatters";
-import { format } from "date-fns";
+import { formatCurrency } from "@/utils/formatters";
+
 import {
   ChartBarIcon,
   CurrencyDollarIcon,
@@ -60,50 +59,7 @@ const StatCard = React.memo(
 );
 StatCard.displayName = "StatCard";
 
-const InvoiceItem = React.memo(({ invoice }: { invoice: Invoice }) => (
-  <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700 last:border-b-0">
-    <div>
-      <p className="font-medium text-gray-900 dark:text-white">
-        {invoice.invoiceNumber}
-      </p>
-      <p className="text-sm text-gray-500 dark:text-gray-400">
-        {formatDate(invoice.issueDate)}
-      </p>
-    </div>
-    <div className="text-right">
-      <p className="font-medium text-gray-900 dark:text-white">
-        {formatCurrency(invoice.total)}
-      </p>
-      <StatusBadge status={invoice.status} />
-    </div>
-  </div>
-));
-InvoiceItem.displayName = "InvoiceItem";
 
-const ProjectItem = React.memo(({ project }: { project: Project }) => {
-  const { clients } = useAccountingStore();
-  const client = clients.find((c) => c.id === project.clientId);
-
-  return (
-    <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700 last:border-b-0">
-      <div>
-        <p className="font-medium text-gray-900 dark:text-white">
-          {project.name}
-        </p>
-        <p className="text-sm text-gray-500 dark:text-gray-400">
-          {client?.name || "Unknown Client"}
-        </p>
-      </div>
-      <div className="text-right">
-        <p className="font-medium text-gray-900 dark:text-white">
-          {formatCurrency(project.budget)}
-        </p>
-        <StatusBadge status={project.status} />
-      </div>
-    </div>
-  );
-});
-ProjectItem.displayName = "ProjectItem";
 
 const getCategoryColor = (category: string) => {
   const colors = {
@@ -123,18 +79,7 @@ const getCategoryColor = (category: string) => {
   );
 };
 
-const getStatusColor = (status: string) => {
-  switch (status) {
-    case "paid":
-      return "text-green-600 bg-green-100";
-    case "sent":
-      return "text-yellow-600 bg-yellow-100";
-    case "draft":
-      return "text-gray-600 bg-gray-100";
-    default:
-      return "text-gray-600 bg-gray-100";
-  }
-};
+
 
 export default function Home() {
   const { clients, projects, invoices, timesheets, expenses } = useAccountingStore();
@@ -176,32 +121,7 @@ export default function Home() {
     };
   }, [clients, projects, invoices, timesheets, expenses]);
 
-  const recentInvoices = useMemo(() => {
-    return invoices
-      .sort(
-        (a: Invoice, b: Invoice) =>
-          new Date(b.issueDate).getTime() - new Date(a.issueDate).getTime()
-      )
-      .slice(0, 5);
-  }, [invoices]);
 
-  const recentProjects = useMemo(() => {
-    return projects
-      .sort(
-        (a: Project, b: Project) =>
-          new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-      )
-      .slice(0, 5);
-  }, [projects]);
-
-  const recentActivity = useMemo(() => {
-    return invoices
-      .sort(
-        (a, b) =>
-          new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-      )
-      .slice(0, 10);
-  }, [invoices]);
 
   const expensesByCategory = useMemo(() => {
     return Object.entries(
@@ -402,84 +322,7 @@ export default function Home() {
         </div>
       </Card>
 
-      {/* Recent Activity and Projects */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <Card className="p-6">
-          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
-            Recent Invoices
-          </h3>
-          <div className="space-y-2">
-            {recentInvoices.length > 0 ? (
-              recentInvoices.map((invoice: Invoice) => (
-                <InvoiceItem key={invoice.id} invoice={invoice} />
-              ))
-            ) : (
-              <p className="text-gray-500 dark:text-gray-400 text-center py-4">
-                No invoices yet
-              </p>
-            )}
-          </div>
-        </Card>
 
-        <Card className="p-6">
-          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
-            Recent Projects
-          </h3>
-          <div className="space-y-2">
-            {recentProjects.length > 0 ? (
-              recentProjects.map((project: Project) => (
-                <ProjectItem key={project.id} project={project} />
-              ))
-            ) : (
-              <p className="text-gray-500 dark:text-gray-400 text-center py-4">
-                No projects yet
-              </p>
-            )}
-          </div>
-        </Card>
-      </div>
-
-      {/* Recent Activity Timeline */}
-      <Card className="p-6">
-        <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">
-          Recent Activity
-        </h3>
-        <div className="space-y-4">
-          {recentActivity.length > 0 ? (
-            recentActivity.map((invoice) => (
-              <div
-                key={invoice.id}
-                className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-800 rounded-lg"
-              >
-                <div>
-                  <p className="font-medium text-gray-900 dark:text-white">
-                    {invoice.invoiceNumber}
-                  </p>
-                  <p className="text-sm text-gray-600 dark:text-gray-400">
-                    {format(new Date(invoice.issueDate), "MMM dd, yyyy")}
-                  </p>
-                </div>
-                <div className="text-right">
-                  <p className="font-medium text-gray-900 dark:text-white">
-                    {formatCurrency(invoice.total)}
-                  </p>
-                  <span
-                    className={`inline-block px-2 py-1 rounded text-xs ${getStatusColor(
-                      invoice.status
-                    )}`}
-                  >
-                    {invoice.status}
-                  </span>
-                </div>
-              </div>
-            ))
-          ) : (
-            <p className="text-gray-500 dark:text-gray-400 text-center py-4">
-              No recent activity
-            </p>
-          )}
-        </div>
-      </Card>
     </div>
   );
 }

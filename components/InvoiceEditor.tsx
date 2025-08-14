@@ -4,6 +4,10 @@ import React, { useState, useEffect, useRef } from "react";
 import { Invoice, InvoiceItem, Client, Project } from "@/types";
 import { InvoiceTemplate } from "./InvoiceTemplate";
 
+// Import jsPDF and html2canvas for PDF generation
+import jsPDF from "jspdf";
+import html2canvas from "html2canvas";
+
 interface InvoiceEditorProps {
   invoice?: Invoice;
   client?: Client;
@@ -31,14 +35,15 @@ export const InvoiceEditor: React.FC<InvoiceEditorProps> = ({
           .toISOString()
           .split("T")[0],
     deliveryNote: "",
-    paymentTerms: "",
+    paymentTerms: "Net 30",
     referenceNo: "",
     buyerOrderNo: "",
+    buyerOrderDate: "",
     dispatchDocNo: "",
     deliveryNoteDate: "",
-    dispatchedThrough: "",
-    destination: "",
-    termsOfDelivery: "",
+    dispatchedThrough: "Email",
+    destination: "Client Location",
+    termsOfDelivery: "FOB Destination",
   });
 
   const [items, setItems] = useState<InvoiceItem[]>([
@@ -55,8 +60,8 @@ export const InvoiceEditor: React.FC<InvoiceEditorProps> = ({
   const [itemDetails, setItemDetails] = useState({
     technology: ".Net + Angular",
     poNumber: "PO/GSPL/202526/000496",
-    workingDays: "23/23",
-    leave: "00",
+    workingDays: "23",
+    leave: "0",
     hsnCode: "998314",
     unit: "Nos",
   });
@@ -79,7 +84,7 @@ export const InvoiceEditor: React.FC<InvoiceEditorProps> = ({
     state: client?.companyAddress || "Rajasthan - 300004, India",
     gstin: client?.gstId || "08AACCG7277J1Z6",
     stateCode: "Rajasthan, Code: 08",
-    poNumber: "PO/GSPL/202526/000496",
+    poNumber: client?.poNumber || "PO/GSPL/202526/000496",
   });
 
   const [signatureInfo, setSignatureInfo] = useState({
@@ -87,72 +92,217 @@ export const InvoiceEditor: React.FC<InvoiceEditorProps> = ({
     company: "BRANDSMASHERS TECH",
   });
 
-  const [clients, setClients] = useState<Client[]>([]);
+  // Mock clients data since API doesn't exist
+  const [clients] = useState<Client[]>([
+    {
+      id: "clt-001",
+      clientCode: "CLT-2025-0001",
+      name: "John Smith",
+      email: "john.smith@techcorp.com",
+      phone: "+91-98765-43210",
+      company: "TechCorp Solutions",
+      address: "123 Tech Street, Bangalore, Karnataka",
+      gstId: "29AABCT1234Z1Z5",
+      companyAddress:
+        "456 Innovation Drive, Electronic City, Bangalore, Karnataka 560100",
+      companyWebsite: "https://techcorp-solutions.com",
+      companyLinkedin: "https://linkedin.com/company/techcorp-solutions",
+      companyOwner: "Sarah Johnson",
+      pocName: "John Smith",
+      pocEmail: "john.smith@techcorp.com",
+      pocContact: "+91-98765-43210",
+      companyLogo:
+        "https://via.placeholder.com/150x50/3B82F6/FFFFFF?text=TechCorp",
+      poNumber: "PO/TCS/2025/001",
+      industry: "Technology",
+      companySize: "medium",
+      status: "active",
+      source: "Referral",
+      notes: "High-value client with ongoing projects",
+      createdAt: new Date("2025-01-15"),
+      updatedAt: new Date("2025-01-15"),
+    },
+    {
+      id: "clt-002",
+      clientCode: "CLT-2025-0002",
+      name: "Priya Patel",
+      email: "priya.patel@innovateindia.com",
+      phone: "+91-87654-32109",
+      company: "Innovate India Ltd",
+      address: "789 Startup Lane, Mumbai, Maharashtra",
+      gstId: "27AABCI5678Z2Z6",
+      companyAddress:
+        "321 Business Park, Andheri West, Mumbai, Maharashtra 400058",
+      companyWebsite: "https://innovate-india.com",
+      companyLinkedin: "https://linkedin.com/company/innovate-india",
+      companyOwner: "Rajesh Kumar",
+      pocName: "Priya Patel",
+      pocEmail: "priya.patel@innovateindia.com",
+      pocContact: "+91-87654-32109",
+      companyLogo:
+        "https://via.placeholder.com/150x50/10B981/FFFFFF?text=Innovate",
+      poNumber: "PO/IIL/2025/002",
+      industry: "E-commerce",
+      companySize: "startup",
+      status: "active",
+      source: "Website",
+      notes: "New client, potential for long-term partnership",
+      createdAt: new Date("2025-01-20"),
+      updatedAt: new Date("2025-01-20"),
+    },
+    {
+      id: "clt-003",
+      clientCode: "CLT-2025-0003",
+      name: "Amit Kumar",
+      email: "amit.kumar@girnarsoftware.com",
+      phone: "+91-76543-21098",
+      company: "Girnar Software Prvt. Ltd.",
+      address: "21, Girnar, Govind Marg, Moti Dongri Road, Jaipur Rajsthan",
+      gstId: "08AACCG7277J1Z6",
+      companyAddress: "Rajasthan - 300004, India",
+      companyWebsite: "https://girnarsoftware.com",
+      companyLinkedin: "https://linkedin.com/company/girnar-software",
+      companyOwner: "Amit Kumar",
+      pocName: "Amit Kumar",
+      pocEmail: "amit.kumar@girnarsoftware.com",
+      pocContact: "+91-76543-21098",
+      companyLogo:
+        "https://via.placeholder.com/150x50/EF4444/FFFFFF?text=Girnar",
+      poNumber: "PO/GSPL/202526/000496",
+      industry: "Software Development",
+      companySize: "medium",
+      status: "active",
+      source: "Direct",
+      notes: "Long-term client with multiple projects",
+      createdAt: new Date("2025-01-25"),
+      updatedAt: new Date("2025-01-25"),
+    },
+  ]);
+
   const [selectedClientId, setSelectedClientId] = useState<string | "">("");
-  
+  const [saveMessage, setSaveMessage] = useState<string>("");
+  const [validationMessage, setValidationMessage] = useState<string>("");
+  const [isSaving, setIsSaving] = useState<boolean>(false);
+  const [isGeneratingPDF, setIsGeneratingPDF] = useState<boolean>(false);
+
   // Ref for printing
   const invoiceRef = useRef<HTMLDivElement>(null);
 
-  // Print handler
+  // Custom print handler that only prints the invoice
   const handlePrint = () => {
-    // Hide editor interface before printing
-    const editorElements = document.querySelectorAll(".editor-interface");
-    editorElements.forEach((element) => {
-      (element as HTMLElement).style.display = "none";
-    });
+    // Create a new window for printing
+    const printWindow = window.open("", "_blank");
+    if (!printWindow) return;
 
-    // Print the page
-    window.print();
+    // Get the invoice content
+    const invoiceContent = invoiceRef.current?.innerHTML;
+    if (!invoiceContent) return;
 
-    // Restore editor interface after printing
+    // Create the print document with better styling
+    const printDocument = `
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <title>Invoice - ${formData.invoiceNumber}</title>
+          <script src="https://cdn.tailwindcss.com"></script>
+          <style>
+            @media print {
+              body { margin: 0; padding: 20px; }
+              * { -webkit-print-color-adjust: exact !important; color-adjust: exact !important; }
+            }
+            body { font-family: Arial, sans-serif; }
+            .invoice-content { margin: 0; padding: 20px; }
+            @page { margin: 0.5in; }
+            table { border-collapse: collapse; }
+            th, td { border: 2px solid #1f2937; padding: 8px; }
+            .bg-gray-100 { background-color: #f3f4f6 !important; }
+            .bg-gray-50 { background-color: #f9fafb !important; }
+            .text-gray-800 { color: #1f2937 !important; }
+            .text-gray-600 { color: #4b5563 !important; }
+            .font-bold { font-weight: bold !important; }
+            .font-semibold { font-weight: 600 !important; }
+          </style>
+        </head>
+        <body>
+          ${invoiceContent}
+        </body>
+      </html>
+    `;
+
+    // Write content to the new window
+    printWindow.document.write(printDocument);
+    printWindow.document.close();
+
+    // Wait for content to load then print
     setTimeout(() => {
-      editorElements.forEach((element) => {
-        (element as HTMLElement).style.display = "";
+      printWindow.print();
+      printWindow.close();
+    }, 500);
+  };
+
+  // PDF download handler
+  const handleDownloadPDF = async () => {
+    if (!invoiceRef.current) return;
+
+    setIsGeneratingPDF(true);
+
+    try {
+      // Convert HTML to canvas
+      const canvas = await html2canvas(invoiceRef.current, {
+        scale: 2,
+        useCORS: true,
+        allowTaint: true,
+        backgroundColor: "#ffffff",
       });
-    }, 100);
+
+      // Get canvas dimensions
+      const imgWidth = 210; // A4 width in mm
+      const pageHeight = 295; // A4 height in mm
+      const imgHeight = (canvas.height * imgWidth) / canvas.width;
+      let heightLeft = imgHeight;
+
+      // Create PDF
+      const pdf = new jsPDF("p", "mm", "a4");
+      let position = 0;
+
+      // Add first page
+      pdf.addImage(canvas, "JPEG", 0, position, imgWidth, imgHeight);
+      heightLeft -= pageHeight;
+
+      // Add additional pages if needed
+      while (heightLeft >= 0) {
+        position = heightLeft - imgHeight;
+        pdf.addPage();
+        pdf.addImage(canvas, "JPEG", 0, position, imgWidth, imgHeight);
+        heightLeft -= pageHeight;
+      }
+
+      // Save PDF
+      pdf.save(`Invoice-${formData.invoiceNumber}.pdf`);
+      setSaveMessage("PDF downloaded successfully!");
+      setTimeout(() => setSaveMessage(""), 3000);
+    } catch (error) {
+      console.error("Error generating PDF:", error);
+      setSaveMessage("Error generating PDF. Please try again.");
+      setTimeout(() => setSaveMessage(""), 3000);
+    } finally {
+      setIsGeneratingPDF(false);
+    }
   };
 
   useEffect(() => {
-    // Fetch clients from the backend
-    const fetchClients = async () => {
-      try {
-        const response = await fetch("/api/clients");
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        const data: Client[] = await response.json();
-        setClients(data);
-        
-        // If there's a client prop, set it as selected and populate clientInfo
-        if (client) {
-          setSelectedClientId(client.id);
-          setClientInfo({
-            company: client.company,
-            address: client.address,
-            state: client.companyAddress,
-            gstin: client.gstId,
-            stateCode: "Rajasthan, Code: 08", // Default value
-            poNumber: client.poNumber || "PO/GSPL/202526/000496", // Default PO Number
-          });
-        }
-      } catch (error) {
-        console.error("Failed to fetch clients:", error);
-        // Fallback: use the client prop if available
-        if (client) {
-          setSelectedClientId(client.id);
-          setClientInfo({
-            company: client.company,
-            address: client.address,
-            state: client.companyAddress,
-            gstin: client.gstId,
-            stateCode: "Rajasthan, Code: 08",
-            poNumber: "PO/GSPL/202526/000496",
-          });
-        }
-      }
-    };
-
-    fetchClients();
+    // If there's a client prop, set it as selected and populate clientInfo
+    if (client) {
+      setSelectedClientId(client.id);
+      setClientInfo({
+        company: client.company,
+        address: client.address,
+        state: client.companyAddress,
+        gstin: client.gstId,
+        stateCode: "Rajasthan, Code: 08", // Default value
+        poNumber: client.poNumber || "PO/GSPL/202526/000496", // Default PO Number
+      });
+    }
   }, [client]);
 
   const handleItemChange = (
@@ -202,19 +352,157 @@ export const InvoiceEditor: React.FC<InvoiceEditorProps> = ({
     return calculateSubtotal() + calculateTax();
   };
 
-  const handleSave = () => {
-    if (onSave) {
-      const updatedInvoice: Invoice = {
-        ...invoice!,
-        invoiceNumber: formData.invoiceNumber,
-        issueDate: new Date(formData.issueDate),
-        dueDate: new Date(formData.dueDate),
-        subtotal: calculateSubtotal(),
-        taxAmount: calculateTax(),
-        total: calculateTotal(),
-        updatedAt: new Date(),
-      };
-      onSave(updatedInvoice, items);
+  const calculateWorkingDays = (workingDays: string, leave: string) => {
+    const workingDaysNum = parseInt(workingDays) || 0;
+    const leaveNum = parseInt(leave) || 0;
+    if (workingDaysNum === 0) return "Enter Working Days";
+    const calculated = workingDaysNum - leaveNum;
+    return `${calculated} / ${workingDaysNum}`;
+  };
+
+  const formatCurrency = (amount: number) => {
+    return new Intl.NumberFormat("en-IN", {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    }).format(amount);
+  };
+
+  const generateInvoiceNumber = () => {
+    const currentYear = new Date().getFullYear();
+    const currentMonth = new Date().getMonth() + 1;
+    const monthStr = currentMonth.toString().padStart(2, "0");
+    const randomNum = Math.floor(Math.random() * 1000)
+      .toString()
+      .padStart(3, "0");
+    return `BST/${currentYear}-${monthStr}/A${randomNum}`;
+  };
+
+  const getAmountInWords = (amount: number): string => {
+    const ones = [
+      "",
+      "One",
+      "Two",
+      "Three",
+      "Four",
+      "Five",
+      "Six",
+      "Seven",
+      "Eight",
+      "Nine",
+    ];
+    const tens = [
+      "",
+      "",
+      "Twenty",
+      "Thirty",
+      "Forty",
+      "Fifty",
+      "Sixty",
+      "Seventy",
+      "Eighty",
+      "Ninety",
+    ];
+    const teens = [
+      "Ten",
+      "Eleven",
+      "Twelve",
+      "Thirteen",
+      "Fourteen",
+      "Fifteen",
+      "Sixteen",
+      "Seventeen",
+      "Eighteen",
+      "Nineteen",
+    ];
+
+    if (amount === 0) return "Zero";
+    if (amount < 10) return ones[amount];
+    if (amount < 20) return teens[amount - 10];
+    if (amount < 100) {
+      if (amount % 10 === 0) return tens[Math.floor(amount / 10)];
+      return tens[Math.floor(amount / 10)] + " " + ones[amount % 10];
+    }
+    if (amount < 1000) {
+      if (amount % 100 === 0)
+        return ones[Math.floor(amount / 100)] + " Hundred";
+      return (
+        ones[Math.floor(amount / 100)] +
+        " Hundred " +
+        getAmountInWords(amount % 100)
+      );
+    }
+    if (amount < 100000) {
+      if (amount % 1000 === 0)
+        return getAmountInWords(Math.floor(amount / 1000)) + " Thousand";
+      return (
+        getAmountInWords(Math.floor(amount / 1000)) +
+        " Thousand " +
+        getAmountInWords(amount % 1000)
+      );
+    }
+    if (amount < 10000000) {
+      if (amount % 100000 === 0)
+        return getAmountInWords(Math.floor(amount / 100000)) + " Lakh";
+      return (
+        getAmountInWords(Math.floor(amount / 100000)) +
+        " Lakh " +
+        getAmountInWords(amount % 100000)
+      );
+    }
+    return "Amount too large";
+  };
+
+  // Validate working days and leave
+  useEffect(() => {
+    const workingDaysNum = parseInt(itemDetails.workingDays) || 0;
+    const leaveNum = parseInt(itemDetails.leave) || 0;
+
+    if (workingDaysNum > 0 && leaveNum > workingDaysNum) {
+      setValidationMessage("Leave days cannot exceed working days!");
+    } else if (workingDaysNum === 0) {
+      setValidationMessage("Please enter working days");
+    } else {
+      setValidationMessage("");
+    }
+  }, [itemDetails.workingDays, itemDetails.leave]);
+
+  const handleSave = async () => {
+    setIsSaving(true);
+
+    try {
+      if (onSave) {
+        const updatedInvoice: Invoice = {
+          ...invoice!,
+          invoiceNumber: formData.invoiceNumber,
+          issueDate: new Date(formData.issueDate),
+          dueDate: new Date(formData.dueDate),
+          subtotal: calculateSubtotal(),
+          taxAmount: calculateTax(),
+          total: calculateTotal(),
+          poNumber: clientInfo.poNumber,
+          deliveryNote: formData.deliveryNote,
+          paymentTerms: formData.paymentTerms,
+          referenceNo: formData.referenceNo,
+          buyerOrderNo: formData.buyerOrderNo,
+          buyerOrderDate: formData.buyerOrderDate,
+          dispatchDocNo: formData.dispatchDocNo,
+          deliveryNoteDate: formData.deliveryNoteDate,
+          dispatchedThrough: formData.dispatchedThrough,
+          destination: formData.destination,
+          termsOfDelivery: formData.termsOfDelivery,
+          updatedAt: new Date(),
+        };
+        await onSave(updatedInvoice, items);
+      }
+
+      // Show success message
+      setSaveMessage("Invoice saved successfully!");
+      setTimeout(() => setSaveMessage(""), 3000);
+    } catch (error) {
+      setSaveMessage("Error saving invoice. Please try again.");
+      setTimeout(() => setSaveMessage(""), 3000);
+    } finally {
+      setIsSaving(false);
     }
   };
 
@@ -237,20 +525,70 @@ export const InvoiceEditor: React.FC<InvoiceEditorProps> = ({
     taxAmount: calculateTax(),
     total: calculateTotal(),
     poNumber: clientInfo.poNumber,
+    deliveryNote: formData.deliveryNote,
+    paymentTerms: formData.paymentTerms,
+    referenceNo: formData.referenceNo,
+    buyerOrderNo: formData.buyerOrderNo,
+    buyerOrderDate: formData.buyerOrderDate,
+    dispatchDocNo: formData.dispatchDocNo,
+    deliveryNoteDate: formData.deliveryNoteDate,
+    dispatchedThrough: formData.dispatchedThrough,
+    destination: formData.destination,
+    termsOfDelivery: formData.termsOfDelivery,
     createdAt: new Date(),
     updatedAt: new Date(),
   };
 
-  const previewClient: Client = {
-    ...client!,
+  // Create a mock client for preview if none exists
+  const previewClient: Client = client || {
+    id: "preview",
+    clientCode: "CLT-2025-0000",
+    name: "Preview Client",
+    email: "preview@example.com",
+    phone: "+91-00000-00000",
     company: clientInfo.company,
-    companyAddress: clientInfo.address,
+    address: clientInfo.address,
     gstId: clientInfo.gstin,
+    companyAddress: clientInfo.state,
+    companyWebsite: "https://example.com",
+    companyLinkedin: "https://linkedin.com/company/example",
+    companyOwner: "Owner Name",
+    pocName: "POC Name",
+    pocEmail: "poc@example.com",
+    pocContact: "+91-00000-00000",
+    companyLogo: "",
+    poNumber: clientInfo.poNumber,
+    industry: "Technology",
+    companySize: "medium",
+    status: "active",
+    source: "Direct",
+    notes: "",
+    createdAt: new Date(),
+    updatedAt: new Date(),
   };
 
-  const previewProject: Project = {
-    ...project!,
+  // Create a mock project for preview if none exists
+  const previewProject: Project = project || {
+    id: "preview",
+    projectCode: "BST-01",
     name: items[0]?.description || "IT Design and Development",
+    clientId: "preview",
+    description: "Project description",
+    startDate: new Date(),
+    status: "active",
+    budget: 1000000,
+    billingTerms: 30,
+    billingRate: 1000,
+    gstRate: 18,
+    gstInclusive: false,
+    totalCost: 1000000,
+    costBreakdown: {
+      subtotal: 847457,
+      gstAmount: 152543,
+      total: 1000000,
+    },
+    createdAt: new Date(),
+    updatedAt: new Date(),
   };
 
   return (
@@ -275,7 +613,7 @@ export const InvoiceEditor: React.FC<InvoiceEditorProps> = ({
             -webkit-print-color-adjust: exact !important;
             color-adjust: exact !important;
           }
-          
+
           /* Better print formatting */
           .invoice-content {
             page-break-inside: avoid !important;
@@ -285,28 +623,112 @@ export const InvoiceEditor: React.FC<InvoiceEditorProps> = ({
             page-break-inside: avoid !important;
             break-inside: avoid !important;
           }
+
+          /* Ensure tables print properly */
+          table {
+            border-collapse: collapse !important;
+            width: 100% !important;
+          }
+          th,
+          td {
+            border: 2px solid #1f2937 !important;
+            padding: 8px !important;
+          }
+          .bg-gray-100 {
+            background-color: #f3f4f6 !important;
+          }
+          .bg-gray-50 {
+            background-color: #f9fafb !important;
+          }
         }
       `}</style>
       <div className="bg-white p-8 max-w-7xl mx-auto">
         {/* Editor Interface - Hidden when printing */}
         <div className="editor-interface">
+          {/* Success Message */}
+          {saveMessage && (
+            <div className="mb-4 p-3 bg-green-100 border border-green-400 text-green-700 rounded-md">
+              {saveMessage}
+            </div>
+          )}
+
+          {/* Invoice Summary Card */}
+          <div className="mb-6 bg-gradient-to-r from-blue-50 to-indigo-50 p-4 rounded-lg border border-blue-200">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
+              <div>
+                <p className="text-sm text-gray-600">Subtotal</p>
+                <p className="text-lg font-bold text-blue-800">
+                  ₹{formatCurrency(calculateSubtotal())}
+                </p>
+              </div>
+              <div>
+                <p className="text-sm text-gray-600">IGST (18%)</p>
+                <p className="text-lg font-bold text-blue-800">
+                  ₹{formatCurrency(calculateTax())}
+                </p>
+              </div>
+              <div>
+                <p className="text-sm text-gray-600">Total</p>
+                <p className="text-lg font-bold text-blue-800">
+                  ₹{formatCurrency(calculateTotal())}
+                </p>
+              </div>
+              <div>
+                <p className="text-sm text-gray-600">Items</p>
+                <p className="text-lg font-bold text-blue-800">
+                  {items.length}
+                </p>
+              </div>
+            </div>
+          </div>
+
           <div className="flex justify-between items-center mb-4">
-            <h2 className="text-lg font-semibold text-gray-800">
-              Invoice Preview
-            </h2>
+            <div>
+              <h2 className="text-lg font-semibold text-gray-800">
+                {isEditing ? "Edit Invoice" : "Invoice Preview"}
+              </h2>
+              <p className="text-sm text-gray-600 mt-1">
+                Invoice: {formData.invoiceNumber}
+              </p>
+            </div>
             <div className="space-x-2">
               <button
-                onClick={() => setIsEditing(true)}
+                onClick={toggleEditMode}
                 className="px-3 py-1.5 text-sm text-gray-600 hover:text-gray-800 transition-colors"
               >
-                Edit Invoice
+                {isEditing ? "View Preview" : "Edit Invoice"}
               </button>
+
+              {isEditing && (
+                <button
+                  onClick={handleSave}
+                  disabled={isSaving}
+                  className="px-3 py-1.5 text-sm bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {isSaving ? "Saving..." : "Save Invoice"}
+                </button>
+              )}
 
               <button
                 onClick={handlePrint}
                 className="px-3 py-1.5 text-sm bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
               >
                 Print
+              </button>
+
+              <button
+                onClick={() => window.print()}
+                className="px-3 py-1.5 text-sm bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors"
+              >
+                Quick Print
+              </button>
+
+              <button
+                onClick={handleDownloadPDF}
+                disabled={isGeneratingPDF}
+                className="px-3 py-1.5 text-sm bg-purple-600 text-white rounded-md hover:bg-purple-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {isGeneratingPDF ? "Generating..." : "Download PDF"}
               </button>
             </div>
           </div>
@@ -324,17 +746,31 @@ export const InvoiceEditor: React.FC<InvoiceEditorProps> = ({
                     <label className="block text-sm font-medium text-gray-700 mb-2">
                       Invoice Number
                     </label>
-                    <input
-                      type="text"
-                      value={formData.invoiceNumber}
-                      onChange={(e) =>
-                        setFormData({
-                          ...formData,
-                          invoiceNumber: e.target.value,
-                        })
-                      }
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    />
+                    <div className="flex gap-2">
+                      <input
+                        type="text"
+                        value={formData.invoiceNumber}
+                        onChange={(e) =>
+                          setFormData({
+                            ...formData,
+                            invoiceNumber: e.target.value,
+                          })
+                        }
+                        className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      />
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setFormData({
+                            ...formData,
+                            invoiceNumber: generateInvoiceNumber(),
+                          })
+                        }
+                        className="px-3 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700 transition-colors text-sm"
+                      >
+                        Generate
+                      </button>
+                    </div>
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -367,6 +803,30 @@ export const InvoiceEditor: React.FC<InvoiceEditorProps> = ({
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Invoice Status
+                    </label>
+                    <select
+                      value={invoice?.status || "draft"}
+                      onChange={(e) => {
+                        if (invoice) {
+                          // Update the invoice status
+                          const updatedInvoice = {
+                            ...invoice,
+                            status: e.target.value as "draft" | "sent" | "paid",
+                          };
+                          // This would typically call an API to update the status
+                          console.log("Status updated to:", e.target.value);
+                        }
+                      }}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    >
+                      <option value="draft">Draft</option>
+                      <option value="sent">Sent</option>
+                      <option value="paid">Paid</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
                       Payment Terms
                     </label>
                     <input
@@ -380,6 +840,90 @@ export const InvoiceEditor: React.FC<InvoiceEditorProps> = ({
                       }
                       className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                       placeholder="e.g., Net 30"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Delivery Note
+                    </label>
+                    <input
+                      type="text"
+                      value={formData.deliveryNote}
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          deliveryNote: e.target.value,
+                        })
+                      }
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      placeholder="e.g., DN-001"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Dispatched Through
+                    </label>
+                    <input
+                      type="text"
+                      value={formData.dispatchedThrough}
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          dispatchedThrough: e.target.value,
+                        })
+                      }
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      placeholder="e.g., Email"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Destination
+                    </label>
+                    <input
+                      type="text"
+                      value={formData.destination}
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          destination: e.target.value,
+                        })
+                      }
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      placeholder="e.g., Client Location"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Terms of Delivery
+                    </label>
+                    <input
+                      type="text"
+                      value={formData.termsOfDelivery}
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          termsOfDelivery: e.target.value,
+                        })
+                      }
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      placeholder="e.g., FOB Destination"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Buyer Order Date
+                    </label>
+                    <input
+                      type="date"
+                      value={formData.buyerOrderDate}
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          buyerOrderDate: e.target.value,
+                        })
+                      }
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                     />
                   </div>
                 </div>
@@ -481,7 +1025,7 @@ export const InvoiceEditor: React.FC<InvoiceEditorProps> = ({
                 <h3 className="text-lg font-semibold text-gray-800 mb-4">
                   Client Information
                 </h3>
-                
+
                 {/* Client Selection Dropdown */}
                 <div className="mb-4">
                   <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -490,7 +1034,9 @@ export const InvoiceEditor: React.FC<InvoiceEditorProps> = ({
                   <select
                     value={selectedClientId || ""}
                     onChange={(e) => {
-                      const selectedClient = clients.find(c => c.id === e.target.value);
+                      const selectedClient = clients.find(
+                        (c) => c.id === e.target.value
+                      );
                       if (selectedClient) {
                         setSelectedClientId(selectedClient.id);
                         setClientInfo({
@@ -499,8 +1045,16 @@ export const InvoiceEditor: React.FC<InvoiceEditorProps> = ({
                           state: selectedClient.companyAddress,
                           gstin: selectedClient.gstId,
                           stateCode: "Rajasthan, Code: 08",
-                          poNumber: selectedClient.poNumber || "PO/GSPL/202526/000496", // Use client's PO Number or default
+                          poNumber:
+                            selectedClient.poNumber || "PO/GSPL/202526/000496", // Use client's PO Number or default
                         });
+
+                        // Also update the item details PO number
+                        setItemDetails((prev) => ({
+                          ...prev,
+                          poNumber:
+                            selectedClient.poNumber || "PO/GSPL/202526/000496",
+                        }));
                       }
                     }}
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -513,7 +1067,7 @@ export const InvoiceEditor: React.FC<InvoiceEditorProps> = ({
                     ))}
                   </select>
                 </div>
-                
+
                 {/* Company Name */}
                 <div className="mb-4">
                   <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -720,7 +1274,7 @@ export const InvoiceEditor: React.FC<InvoiceEditorProps> = ({
                             Total
                           </label>
                           <div className="px-3 py-2 bg-gray-100 rounded-md text-gray-800 font-medium">
-                            ₹{item.total.toLocaleString("en-IN")}
+                            ₹{formatCurrency(item.total)}
                           </div>
                         </div>
                       </div>
@@ -734,6 +1288,13 @@ export const InvoiceEditor: React.FC<InvoiceEditorProps> = ({
                 <h3 className="text-lg font-semibold text-gray-800 mb-4">
                   Item Details
                 </h3>
+
+                {/* Validation Message */}
+                {validationMessage && (
+                  <div className="mb-4 p-3 bg-yellow-100 border border-yellow-400 text-yellow-700 rounded-md">
+                    {validationMessage}
+                  </div>
+                )}
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -756,15 +1317,24 @@ export const InvoiceEditor: React.FC<InvoiceEditorProps> = ({
                       Working Days
                     </label>
                     <input
-                      type="text"
+                      type="number"
+                      min="0"
+                      max="31"
                       value={itemDetails.workingDays}
-                      onChange={(e) =>
-                        setItemDetails({
-                          ...itemDetails,
-                          workingDays: e.target.value,
-                        })
-                      }
+                      onChange={(e) => {
+                        const value = e.target.value;
+                        if (
+                          value === "" ||
+                          (parseInt(value) >= 0 && parseInt(value) <= 31)
+                        ) {
+                          setItemDetails({
+                            ...itemDetails,
+                            workingDays: value,
+                          });
+                        }
+                      }}
                       className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      placeholder="23"
                     />
                   </div>
                   <div>
@@ -772,15 +1342,27 @@ export const InvoiceEditor: React.FC<InvoiceEditorProps> = ({
                       Leave
                     </label>
                     <input
-                      type="text"
+                      type="number"
+                      min="0"
+                      max="31"
                       value={itemDetails.leave}
-                      onChange={(e) =>
-                        setItemDetails({
-                          ...itemDetails,
-                          leave: e.target.value,
-                        })
-                      }
+                      onChange={(e) => {
+                        const value = e.target.value;
+                        const workingDaysNum =
+                          parseInt(itemDetails.workingDays) || 0;
+                        if (
+                          value === "" ||
+                          (parseInt(value) >= 0 &&
+                            parseInt(value) <= workingDaysNum)
+                        ) {
+                          setItemDetails({
+                            ...itemDetails,
+                            leave: value,
+                          });
+                        }
+                      }}
                       className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      placeholder="0"
                     />
                   </div>
                   <div>
@@ -788,14 +1370,10 @@ export const InvoiceEditor: React.FC<InvoiceEditorProps> = ({
                       Calculated Working Days
                     </label>
                     <div className="w-full px-3 py-2 bg-gray-100 border border-gray-300 rounded-md text-sm text-gray-700">
-                      {(() => {
-                        const workingDays =
-                          parseFloat(itemDetails.workingDays) || 0;
-                        const leave = parseFloat(itemDetails.leave) || 0;
-                        if (workingDays === 0) return "Enter Working Days";
-                        const calculated = workingDays - leave;
-                        return `${calculated} / ${workingDays}`;
-                      })()}
+                      {calculateWorkingDays(
+                        itemDetails.workingDays,
+                        itemDetails.leave
+                      )}
                     </div>
                   </div>
                 </div>
@@ -851,35 +1429,29 @@ export const InvoiceEditor: React.FC<InvoiceEditorProps> = ({
                   <div className="flex justify-between">
                     <span className="text-gray-600">Subtotal:</span>
                     <span className="font-medium">
-                      ₹{calculateSubtotal().toLocaleString("en-IN")}
+                      ₹{formatCurrency(calculateSubtotal())}
                     </span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-gray-600">IGST (18%):</span>
                     <span className="font-medium">
-                      ₹{calculateTax().toLocaleString("en-IN")}
+                      ₹{formatCurrency(calculateTax())}
                     </span>
                   </div>
                   <div className="flex justify-between border-t border-blue-200 pt-2">
                     <span className="text-blue-800 font-semibold">Total:</span>
                     <span className="text-blue-800 font-bold text-lg">
-                      ₹{calculateTotal().toLocaleString("en-IN")}
+                      ₹{formatCurrency(calculateTotal())}
                     </span>
+                  </div>
+                  <div className="mt-3 p-3 bg-blue-50 rounded-md">
+                    <p className="text-sm text-blue-700">
+                      <span className="font-semibold">Amount in words:</span>{" "}
+                      INR {getAmountInWords(calculateTotal())} Only
+                    </p>
                   </div>
                 </div>
               </div>
-            </div>
-          )}
-
-          {/* Preview Mode */}
-          {!isEditing && (
-            <div className="text-center">
-              <button
-                onClick={() => setIsEditing(false)}
-                className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-              >
-                View Preview
-              </button>
             </div>
           )}
         </div>
@@ -898,8 +1470,6 @@ export const InvoiceEditor: React.FC<InvoiceEditorProps> = ({
           />
         </div>
       </div>
-
-
     </>
   );
 };

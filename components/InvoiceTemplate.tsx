@@ -22,6 +22,7 @@ interface InvoiceTemplateProps {
     state: string;
     gstin: string;
     stateCode: string;
+    poNumber: string;
   };
   signatureInfo?: {
     department: string;
@@ -142,6 +143,34 @@ export const InvoiceTemplate: React.FC<InvoiceTemplateProps> = ({
     return "Amount too large";
   };
 
+  // Use provided company info or fallback to defaults
+  const companyName = companyInfo?.name || "Brandsmashers Tech";
+  const companyAddress =
+    companyInfo?.address ||
+    "1st Floor, JAP Tower, Raisen RD, Ward 44, Govindpura, Madhya Pradesh 462023";
+  const companyState = companyInfo?.state || "Madhya Pradesh - 462023, India";
+  const companyGstin = companyInfo?.gstin || "23COBPJ6565E1Z4";
+  const companyStateCode = companyInfo?.stateCode || "Madhya Pradesh, Code: 23";
+  const companyEmail = companyInfo?.email || "accounting@brandsmashers.com";
+  const companyWebsite =
+    companyInfo?.website || "https://www.brandsmashers.com/";
+
+  // Use provided client info or fallback to client object
+  const clientCompany = clientInfo?.company || client.company;
+  const clientAddress = clientInfo?.address || client.address;
+  const clientState = clientInfo?.state || client.companyAddress;
+  const clientGstin = clientInfo?.gstin || client.gstId;
+  const clientStateCode = clientInfo?.stateCode || "Rajasthan, Code: 08";
+  const clientPoNumber = clientInfo?.poNumber || invoice.poNumber || "";
+
+  // Use provided item details or fallback to defaults
+  const technology = itemDetails?.technology || ".Net + Angular";
+  const poNumber = itemDetails?.poNumber || clientPoNumber;
+  const workingDays = itemDetails?.workingDays || "23";
+  const leave = itemDetails?.leave || "0";
+  const hsnCode = itemDetails?.hsnCode || "998314";
+  const unit = itemDetails?.unit || "Nos";
+
   return (
     <div className="max-w-4xl mx-auto bg-white p-8 shadow-lg">
       {/* Header */}
@@ -156,18 +185,15 @@ export const InvoiceTemplate: React.FC<InvoiceTemplateProps> = ({
           {/* Seller/Supplier Details */}
           <div className="border-2 border-gray-800 p-4">
             <h4 className="text-md font-semibold text-gray-800 mb-2">
-              Brandsmashers Tech
+              {companyName}
             </h4>
             <div className="text-gray-600 text-sm space-y-1">
-              <p>
-                1st Floor, JAP Tower, Raisen RD, Ward 44, Govindpura, Madhya
-                Pradesh 462023
-              </p>
-              <p>Madhya Pradesh - 462023, India</p>
-              <p>GSTIN/UIN: 23COBPJ6565E1Z4</p>
-              <p>State Name and Code: Madhya Pradesh, Code: 23</p>
-              <p>E-Mail: accounting@brandsmashers.com</p>
-              <p>Website: https://www.brandsmashers.com/</p>
+              <p>{companyAddress}</p>
+              <p>{companyState}</p>
+              <p>GSTIN/UIN: {companyGstin}</p>
+              <p>State Name and Code: {companyStateCode}</p>
+              <p>E-Mail: {companyEmail}</p>
+              <p>Website: {companyWebsite}</p>
             </div>
           </div>
 
@@ -177,13 +203,13 @@ export const InvoiceTemplate: React.FC<InvoiceTemplateProps> = ({
               Buyer (Bill to)
             </h4>
             <div className="text-gray-600 text-sm space-y-1">
-              <p className="font-semibold">{client.company}</p>
-              <p>{client.address}</p>
-              <p>{client.companyAddress}</p>
-              <p>GSTIN/UIN: {client.gstId}</p>
-              <p>State Name and Code: Rajasthan, Code: 08</p>
-              {invoice.poNumber && (
-                <p>Buyer&apos;s Order No.: {invoice.poNumber}</p>
+              <p className="font-semibold">{clientCompany}</p>
+              <p>{clientAddress}</p>
+              <p>{clientState}</p>
+              <p>GSTIN/UIN: {clientGstin}</p>
+              <p>State Name and Code: {clientStateCode}</p>
+              {clientPoNumber && (
+                <p>Buyer&apos;s Order No.: {clientPoNumber}</p>
               )}
             </div>
           </div>
@@ -206,43 +232,47 @@ export const InvoiceTemplate: React.FC<InvoiceTemplateProps> = ({
             </div>
 
             <div className="text-gray-600 font-medium">Delivery Note:</div>
-            <div className="text-gray-800 border-b border-gray-300 min-h-[1.2rem]"></div>
+            <div className="text-gray-800">{invoice.deliveryNote || ""}</div>
 
             <div className="text-gray-600 font-medium">
               Mode/Terms of Payment:
             </div>
-            <div className="text-gray-800 border-b border-gray-300 min-h-[1.2rem]"></div>
+            <div className="text-gray-800">{invoice.paymentTerms || ""}</div>
 
             <div className="text-gray-600 font-medium">
               Reference No. & Date:
             </div>
-            <div className="text-gray-800 border-b border-gray-300 min-h-[1.2rem]"></div>
+            <div className="text-gray-800">{invoice.referenceNo || ""}</div>
 
             <div className="text-gray-600 font-medium">Other References:</div>
-            <div className="text-gray-800 border-b border-gray-300 min-h-[1.2rem]"></div>
+            <div className="text-gray-800">{invoice.buyerOrderNo || ""}</div>
 
             <div className="text-gray-600 font-medium">
               Buyer&apos;s Order No.:
             </div>
-            <div className="text-gray-800">{invoice.poNumber || ""}</div>
+            <div className="text-gray-800">{clientPoNumber}</div>
 
             <div className="text-gray-600 font-medium">Dated:</div>
-            <div className="text-gray-800 border-b border-gray-300 min-h-[1.2rem]"></div>
+            <div className="text-gray-800">{invoice.buyerOrderDate || ""}</div>
 
             <div className="text-gray-600 font-medium">Dispatch Doc No.:</div>
-            <div className="text-gray-800 border-b border-gray-300 min-h-[1.2rem]"></div>
+            <div className="text-gray-800">{invoice.dispatchDocNo || ""}</div>
 
             <div className="text-gray-600 font-medium">Delivery Note Date:</div>
-            <div className="text-gray-800 border-b border-gray-300 min-h-[1.2rem]"></div>
+            <div className="text-gray-800">
+              {invoice.deliveryNoteDate || ""}
+            </div>
 
             <div className="text-gray-600 font-medium">Dispatched through:</div>
-            <div className="text-gray-800 border-b border-gray-300 min-h-[1.2rem]"></div>
+            <div className="text-gray-800">
+              {invoice.dispatchedThrough || ""}
+            </div>
 
             <div className="text-gray-600 font-medium">Destination:</div>
-            <div className="text-gray-800 border-b border-gray-300 min-h-[1.2rem]"></div>
+            <div className="text-gray-800">{invoice.destination || ""}</div>
 
             <div className="text-gray-600 font-medium">Terms of Delivery:</div>
-            <div className="text-gray-800 border-b border-gray-300 min-h-[1.2rem]"></div>
+            <div className="text-gray-800">{invoice.termsOfDelivery || ""}</div>
           </div>
         </div>
       </div>
@@ -285,36 +315,32 @@ export const InvoiceTemplate: React.FC<InvoiceTemplateProps> = ({
                 <td className="border border-gray-800 px-4 py-3 text-gray-800">
                   <div className="font-semibold">{item.description}</div>
                   <div className="text-sm text-gray-600 mt-1">
-                    <div>• {itemDetails?.technology || ".Net + Angular"}</div>
                     <div>• {client.name}</div>
-                    <div>
-                      • PO Number: {invoice.poNumber || "PO/GSPL/202526/000496"}
-                    </div>
+                    <div>• {technology}</div>
                     <div>
                       • No. of Working Days ={" "}
                       {(() => {
-                        const workingDays = parseFloat(
-                          itemDetails?.workingDays || "23"
-                        );
-                        const leave = parseFloat(itemDetails?.leave || "0");
-                        const calculated = workingDays - leave;
-                        return `${calculated}/${workingDays}`;
+                        const workingDaysNum =
+                          parseInt(workingDays.toString()) || 23;
+                        const leaveNum = parseInt(leave.toString()) || 0;
+                        const calculated = workingDaysNum - leaveNum;
+                        return `${calculated}/${workingDaysNum}`;
                       })()}
                     </div>
-                    <div>• Leave = {itemDetails?.leave || "00"}</div>
+                    <div>• Leave = {leave}</div>
                   </div>
                 </td>
                 <td className="border border-gray-800 px-4 py-3 text-center text-gray-800">
-                  {itemDetails?.hsnCode || "998314"}
+                  {hsnCode}
                 </td>
                 <td className="border border-gray-800 px-4 py-3 text-center text-gray-800">
-                  1 Nos
+                  {item.quantity} {unit}
                 </td>
                 <td className="border border-gray-800 px-4 py-3 text-center text-gray-800">
                   ₹{formatCurrency(item.unitPrice)}
                 </td>
                 <td className="border border-gray-800 px-4 py-3 text-center text-gray-800">
-                  {itemDetails?.unit || "Nos"}
+                  {unit}
                 </td>
                 <td className="border border-gray-800 px-4 py-3 text-center font-bold text-gray-800">
                   ₹{formatCurrency(item.total)}
@@ -347,7 +373,7 @@ export const InvoiceTemplate: React.FC<InvoiceTemplateProps> = ({
               </td>
               <td className="border border-gray-800 px-4 py-3"></td>
               <td className="border border-gray-800 px-4 py-3 text-center font-bold text-gray-800">
-                1 Nos
+                {items.reduce((sum, item) => sum + item.quantity, 0)} {unit}
               </td>
               <td className="border border-gray-800 px-4 py-3"></td>
               <td className="border border-gray-800 px-4 py-3"></td>
@@ -428,7 +454,7 @@ export const InvoiceTemplate: React.FC<InvoiceTemplateProps> = ({
               <tbody>
                 <tr>
                   <td className="border border-gray-800 px-2 py-2 text-center text-xs text-gray-800">
-                    998314
+                    {hsnCode}
                   </td>
                   <td className="border border-gray-800 px-2 py-2 text-center text-xs text-gray-800">
                     {formatCurrency(calculateSubtotal())}

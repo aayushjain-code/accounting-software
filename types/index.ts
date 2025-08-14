@@ -145,6 +145,18 @@ export interface Invoice {
   poNumber?: string; // Purchase Order Number
   notes?: string;
 
+  // Additional invoice details
+  deliveryNote?: string;
+  paymentTerms?: string;
+  referenceNo?: string;
+  buyerOrderNo?: string;
+  buyerOrderDate?: string;
+  dispatchDocNo?: string;
+  deliveryNoteDate?: string;
+  dispatchedThrough?: string;
+  destination?: string;
+  termsOfDelivery?: string;
+
   // File attachments
   files?: InvoiceFile[];
 

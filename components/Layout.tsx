@@ -27,7 +27,7 @@ import clsx from "clsx";
 import { ErrorBoundary } from "./ErrorBoundary";
 import { LogoutButton } from "./LogoutButton";
 import { AuthOverlay } from "./AuthOverlay";
-import { StorageManager } from "./StorageManager";
+
 
 const navigation = [
   { name: "Dashboard", href: "/", icon: HomeIcon },

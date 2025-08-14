@@ -1,11 +1,10 @@
 import React from "react";
-import { Invoice, InvoiceItem, Client, Project } from "@/types";
+import { Invoice, InvoiceItem, Client } from "@/types";
 import { format } from "date-fns";
 
 interface InvoiceTemplateProps {
   invoice: Invoice;
   client: Client;
-  project: Project;
   items: InvoiceItem[];
   companyInfo?: {
     name: string;
@@ -41,7 +40,6 @@ interface InvoiceTemplateProps {
 export const InvoiceTemplate: React.FC<InvoiceTemplateProps> = ({
   invoice,
   client,
-  project,
   items,
   companyInfo,
   clientInfo,

@@ -14,7 +14,7 @@ import {
 import { useAccountingStore } from "@/store";
 import { Project } from "@/types";
 import Modal from "./Modal";
-import { Button } from "./Button";
+
 import { ConfirmationDialog } from "./ConfirmationDialog";
 import { toast } from "react-hot-toast";
 import { formatCurrency } from "@/utils/formatters";
@@ -57,7 +57,7 @@ export const ProjectsTable: React.FC<ProjectsTableProps> = ({
   const handleInlineEdit = (
     project: Project,
     field: keyof Project,
-    value: any
+    value: string | number | boolean
   ) => {
     const updatedProject = { ...project, [field]: value };
     updateProject(project.id, updatedProject);
@@ -78,7 +78,7 @@ export const ProjectsTable: React.FC<ProjectsTableProps> = ({
   const renderEditableCell = (
     project: Project,
     field: keyof Project,
-    value: any
+    value: string | number | boolean
   ) => {
     const isEditing =
       editingProject?.id === project.id && editingField === field;

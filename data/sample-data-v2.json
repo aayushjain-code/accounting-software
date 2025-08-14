@@ -466,6 +466,34 @@
       "category": "accounting",
       "priority": "high",
       "tags": ["GST", "tax-filing", "compliance"],
+      "files": [
+        {
+          "id": "file1",
+          "dailyLogId": "log1",
+          "fileName": "gst_return_feb_2024.pdf",
+          "originalName": "GST_Return_February_2024.pdf",
+          "fileSize": 245760,
+          "fileType": "application/pdf",
+          "uploadDate": "2024-03-15T00:00:00.000Z",
+          "uploadedBy": "Admin User",
+          "filePath": "/uploads/dailylogs/gst_return_feb_2024.pdf",
+          "createdAt": "2024-03-15T00:00:00.000Z",
+          "updatedAt": "2024-03-15T00:00:00.000Z"
+        },
+        {
+          "id": "file2",
+          "dailyLogId": "log1",
+          "fileName": "payment_receipt_feb_2024.pdf",
+          "originalName": "Payment_Receipt_February_2024.pdf",
+          "fileSize": 156789,
+          "fileType": "application/pdf",
+          "uploadDate": "2024-03-15T00:00:00.000Z",
+          "uploadedBy": "Admin User",
+          "filePath": "/uploads/dailylogs/payment_receipt_feb_2024.pdf",
+          "createdAt": "2024-03-15T00:00:00.000Z",
+          "updatedAt": "2024-03-15T00:00:00.000Z"
+        }
+      ],
       "createdAt": "2024-03-15T00:00:00.000Z",
       "updatedAt": "2024-03-15T00:00:00.000Z"
     },
@@ -477,6 +505,21 @@
       "category": "important",
       "priority": "high",
       "tags": ["new-client", "contract", "payment"],
+      "files": [
+        {
+          "id": "file3",
+          "dailyLogId": "log2",
+          "fileName": "techcorp_contract.pdf",
+          "originalName": "TechCorp_Solutions_Contract.pdf",
+          "fileSize": 512000,
+          "fileType": "application/pdf",
+          "uploadDate": "2024-03-14T00:00:00.000Z",
+          "uploadedBy": "Admin User",
+          "filePath": "/uploads/dailylogs/techcorp_contract.pdf",
+          "createdAt": "2024-03-14T00:00:00.000Z",
+          "updatedAt": "2024-03-14T00:00:00.000Z"
+        }
+      ],
       "createdAt": "2024-03-14T00:00:00.000Z",
       "updatedAt": "2024-03-14T00:00:00.000Z"
     },

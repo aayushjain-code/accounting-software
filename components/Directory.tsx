@@ -16,7 +16,6 @@ import {
   UserIcon,
 } from "@heroicons/react/24/outline";
 import { ConfirmationDialog } from "./ConfirmationDialog";
-import { toast } from "react-hot-toast";
 import { DirectoryContact } from "@/types";
 
 interface DirectoryProps {
@@ -38,12 +37,7 @@ export const Directory: React.FC<DirectoryProps> = ({
   const [searchTerm, setSearchTerm] = useState("");
   const [sortField, setSortField] = useState<keyof DirectoryContact>("name");
   const [sortDirection, setSortDirection] = useState<"asc" | "desc">("asc");
-  const [editingContact, setEditingContact] = useState<DirectoryContact | null>(
-    null
-  );
-  const [editingField, setEditingField] = useState<
-    keyof DirectoryContact | null
-  >(null);
+  // Removed inline editing state variables
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [contactToDelete, setContactToDelete] = useState<string | null>(null);
   const [showFilters, setShowFilters] = useState(false);
@@ -92,18 +86,7 @@ export const Directory: React.FC<DirectoryProps> = ({
       return 0;
     });
 
-  // Excel-like inline editing
-  const handleInlineEdit = (
-    contact: DirectoryContact,
-    field: keyof DirectoryContact,
-    value: string | number | boolean
-  ) => {
-    // Here you would typically call an update function
-    // TODO: Integrate with store update function
-    setEditingContact(null);
-    setEditingField(null);
-    toast.success("Contact updated successfully!");
-  };
+  // Removed inline editing functionality - users must use explicit edit button
 
   const renderSortIcon = (field: keyof DirectoryContact) => {
     if (sortField !== field) return null;
@@ -114,53 +97,13 @@ export const Directory: React.FC<DirectoryProps> = ({
     );
   };
 
-  const renderEditableCell = (
+  const renderReadOnlyCell = (
     contact: DirectoryContact,
     field: keyof DirectoryContact,
     value: string | number | boolean
   ) => {
-    // Only allow editing of string fields for now
-    if (typeof value !== 'string') {
-      return (
-        <div className="px-2 py-1">
-          {value?.toString() || "-"}
-        </div>
-      );
-    }
-    const isEditing =
-      editingContact?.id === contact.id && editingField === field;
-
-    if (isEditing) {
-      return (
-        <input
-          type="text"
-          defaultValue={value}
-          className="w-full px-2 py-1 border border-gray-300 rounded focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-          onBlur={(e) => handleInlineEdit(contact, field, e.target.value)}
-          onKeyPress={(e) => {
-            if (e.key === "Enter") {
-              handleInlineEdit(contact, field, e.currentTarget.value);
-            }
-          }}
-          autoFocus
-        />
-      );
-    }
-
-    return (
-      <div
-        className="cursor-pointer hover:bg-gray-50 px-2 py-1 rounded"
-        onDoubleClick={() => {
-          setEditingContact(contact);
-          setEditingField(field);
-        }}
-      >
-        {value || "-"}
-      </div>
-    );
+    return <div className="px-2 py-1">{value?.toString() || "-"}</div>;
   };
-
-
 
   const columns = [
     { key: "name", label: "Name", sortable: true },
@@ -292,7 +235,7 @@ export const Directory: React.FC<DirectoryProps> = ({
                     </div>
                     <div className="ml-2">
                       <div className="text-sm font-medium text-gray-900 dark:text-white">
-                        {renderEditableCell(contact, "name", contact.name)}
+                        {renderReadOnlyCell(contact, "name", contact.name)}
                       </div>
                       {contact.isPrimary && (
                         <span className="inline-flex items-center px-1.5 py-0.5 rounded-full text-xs font-medium bg-primary-100 text-primary-800">
@@ -304,7 +247,7 @@ export const Directory: React.FC<DirectoryProps> = ({
                 </td>
                 <td className="px-3 py-2 whitespace-nowrap">
                   <div className="text-sm text-gray-900 dark:text-white">
-                    {renderEditableCell(contact, "role", contact.role)}
+                    {renderReadOnlyCell(contact, "role", contact.role)}
                   </div>
                 </td>
                 <td className="px-3 py-2 whitespace-nowrap max-w-48">
@@ -314,7 +257,7 @@ export const Directory: React.FC<DirectoryProps> = ({
                       className="text-sm text-gray-900 dark:text-white truncate"
                       title={contact.email}
                     >
-                      {renderEditableCell(contact, "email", contact.email)}
+                      {renderReadOnlyCell(contact, "email", contact.email)}
                     </div>
                   </div>
                 </td>
@@ -322,7 +265,7 @@ export const Directory: React.FC<DirectoryProps> = ({
                   <div className="flex items-center">
                     <PhoneIcon className="h-4 w-4 text-gray-400 mr-1 flex-shrink-0" />
                     <div className="text-sm text-gray-900 dark:text-white">
-                      {renderEditableCell(contact, "phone", contact.phone)}
+                      {renderReadOnlyCell(contact, "phone", contact.phone)}
                     </div>
                   </div>
                 </td>
@@ -333,7 +276,7 @@ export const Directory: React.FC<DirectoryProps> = ({
                       className="text-sm text-gray-900 dark:text-white truncate"
                       title={contact.company}
                     >
-                      {renderEditableCell(contact, "company", contact.company)}
+                      {renderReadOnlyCell(contact, "company", contact.company)}
                     </div>
                   </div>
                 </td>

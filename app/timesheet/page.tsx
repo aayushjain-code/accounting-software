@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useMemo } from "react";
+import React, { useState } from "react";
 import { useAccountingStore } from "@/store";
 import {
   PlusIcon,
@@ -163,8 +163,6 @@ const TimesheetRow = React.memo(
     onEdit: (timesheet: Timesheet) => void;
     onDelete: (id: string) => void;
   }) => {
-
-
     return (
       <tr
         key={timesheet.id}
@@ -265,7 +263,7 @@ const TimesheetModal = React.memo(
     editingTimesheet: Timesheet | null;
     onSubmit: (data: Record<string, unknown>) => void;
     formId: string;
-      }) => {
+  }) => {
     const { projects, addTimesheetFile, removeTimesheetFile } =
       useAccountingStore();
     const [formData, setFormData] = useState({
@@ -342,8 +340,6 @@ const TimesheetModal = React.memo(
         setSelectedProject(null);
       }
     }, [formData.projectId, projects]);
-
-
 
     const validateForm = React.useCallback(() => {
       const newErrors: Record<string, string> = {};
@@ -700,7 +696,6 @@ export default function TimesheetPage() {
     addTimesheet,
     updateTimesheet,
     deleteTimesheet,
-
   } = useAccountingStore();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingTimesheet, setEditingTimesheet] = useState<Timesheet | null>(
@@ -719,8 +714,6 @@ export default function TimesheetPage() {
     handleSearchChange,
     isSearching,
   } = useSearch(timesheets, ["month", "status"]);
-
-
 
   const handleSubmit = React.useCallback(
     async (formData: Record<string, unknown>) => {

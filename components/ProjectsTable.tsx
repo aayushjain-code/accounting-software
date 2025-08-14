@@ -16,7 +16,6 @@ import { Project } from "@/types";
 import Modal from "./Modal";
 
 import { ConfirmationDialog } from "./ConfirmationDialog";
-import { toast } from "react-hot-toast";
 import { formatCurrency } from "@/utils/formatters";
 
 interface ProjectsTableProps {
@@ -32,13 +31,9 @@ export const ProjectsTable: React.FC<ProjectsTableProps> = ({
   onDelete,
   onView,
 }) => {
-  const { updateProject } = useAccountingStore();
-
-  // State for Excel-like features
+  // State for table features
   const [sortField, setSortField] = useState<keyof Project>("name");
   const [sortDirection, setSortDirection] = useState<"asc" | "desc">("asc");
-  const [editingProject, setEditingProject] = useState<Project | null>(null);
-  const [editingField, setEditingField] = useState<keyof Project | null>(null);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [projectToDelete, setProjectToDelete] = useState<string | null>(null);
   const [viewProject, setViewProject] = useState<Project | null>(null);
@@ -53,18 +48,7 @@ export const ProjectsTable: React.FC<ProjectsTableProps> = ({
     }
   };
 
-  // Excel-like inline editing
-  const handleInlineEdit = (
-    project: Project,
-    field: keyof Project,
-    value: string | number | boolean
-  ) => {
-    const updatedProject = { ...project, [field]: value };
-    updateProject(project.id, updatedProject);
-    setEditingProject(null);
-    setEditingField(null);
-    toast.success("Project updated successfully!");
-  };
+  // Removed inline editing functionality - users must use explicit edit button
 
   const renderSortIcon = (field: keyof Project) => {
     if (sortField !== field) return null;
@@ -75,50 +59,12 @@ export const ProjectsTable: React.FC<ProjectsTableProps> = ({
     );
   };
 
-  const renderEditableCell = (
+  const renderReadOnlyCell = (
     project: Project,
     field: keyof Project,
     value: string | number | boolean
   ) => {
-    // Only allow editing of string fields for now
-    if (typeof value !== 'string') {
-      return (
-        <div className="px-2 py-1">
-          {value?.toString() || "-"}
-        </div>
-      );
-    }
-    const isEditing =
-      editingProject?.id === project.id && editingField === field;
-
-    if (isEditing) {
-      return (
-        <input
-          type="text"
-          defaultValue={value}
-          className="w-full px-2 py-1 border border-gray-300 rounded focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-          onBlur={(e) => handleInlineEdit(project, field, e.target.value)}
-          onKeyPress={(e) => {
-            if (e.key === "Enter") {
-              handleInlineEdit(project, field, e.currentTarget.value);
-            }
-          }}
-          autoFocus
-        />
-      );
-    }
-
-    return (
-      <div
-        className="cursor-pointer hover:bg-gray-50 px-2 py-1 rounded"
-        onDoubleClick={() => {
-          setEditingProject(project);
-          setEditingField(field);
-        }}
-      >
-        {value || "-"}
-      </div>
-    );
+    return <div className="px-2 py-1">{value?.toString() || "-"}</div>;
   };
 
   const getStatusColor = (status: string) => {
@@ -135,8 +81,6 @@ export const ProjectsTable: React.FC<ProjectsTableProps> = ({
         return "bg-gray-100 text-gray-800";
     }
   };
-
-
 
   const columns = [
     { key: "projectCode", label: "Code", sortable: true },
@@ -209,13 +153,13 @@ export const ProjectsTable: React.FC<ProjectsTableProps> = ({
                       className="text-sm font-medium text-gray-900 dark:text-white truncate"
                       title={project.name}
                     >
-                      {renderEditableCell(project, "name", project.name)}
+                      {renderReadOnlyCell(project, "name", project.name)}
                     </div>
                   </td>
                   <td className="px-3 py-2 max-w-48">
                     <div className="text-sm text-gray-900 dark:text-white">
                       <div className="truncate" title={project.description}>
-                        {renderEditableCell(
+                        {renderReadOnlyCell(
                           project,
                           "description",
                           project.description
@@ -235,7 +179,7 @@ export const ProjectsTable: React.FC<ProjectsTableProps> = ({
                   <td className="px-3 py-2 whitespace-nowrap">
                     <div className="flex items-center">
                       <CurrencyRupeeIcon className="h-4 w-4 text-gray-400 mr-1 flex-shrink-0" />
-                      {renderEditableCell(
+                      {renderReadOnlyCell(
                         project,
                         "budget",
                         formatCurrency(project.budget || 0)

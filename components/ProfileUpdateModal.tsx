@@ -68,7 +68,7 @@ export const ProfileUpdateModal: React.FC<ProfileUpdateModalProps> = ({
     }
   };
 
-    const handleChange = (
+  const handleChange = (
     field: string,
     value: string | boolean,
     subField?: string
@@ -77,7 +77,7 @@ export const ProfileUpdateModal: React.FC<ProfileUpdateModalProps> = ({
       setFormData((prev) => ({
         ...prev,
         [field]: {
-          ...(prev[field as keyof typeof prev] as Record<string, unknown>),
+          ...(prev[field as keyof typeof prev] as unknown),
           [subField]: value,
         },
       }));
@@ -123,7 +123,10 @@ export const ProfileUpdateModal: React.FC<ProfileUpdateModalProps> = ({
         </div>
 
         {/* Content */}
-        <form onSubmit={handleSubmit} className="p-6 overflow-y-auto max-h-[calc(90vh-120px)]">
+        <form
+          onSubmit={handleSubmit}
+          className="p-6 overflow-y-auto max-h-[calc(90vh-120px)]"
+        >
           {message && (
             <div
               className={`mb-4 p-3 rounded-md ${
@@ -264,28 +267,40 @@ export const ProfileUpdateModal: React.FC<ProfileUpdateModalProps> = ({
                   <input
                     type="checkbox"
                     checked={formData.emailNotifications}
-                    onChange={(e) => handleChange("emailNotifications", e.target.checked)}
+                    onChange={(e) =>
+                      handleChange("emailNotifications", e.target.checked)
+                    }
                     className="mr-3 h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
                   />
-                  <span className="text-sm text-gray-700">Email notifications</span>
+                  <span className="text-sm text-gray-700">
+                    Email notifications
+                  </span>
                 </label>
                 <label className="flex items-center">
                   <input
                     type="checkbox"
                     checked={formData.pushNotifications}
-                    onChange={(e) => handleChange("pushNotifications", e.target.checked)}
+                    onChange={(e) =>
+                      handleChange("pushNotifications", e.target.checked)
+                    }
                     className="mr-3 h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
                   />
-                  <span className="text-sm text-gray-700">Push notifications</span>
+                  <span className="text-sm text-gray-700">
+                    Push notifications
+                  </span>
                 </label>
                 <label className="flex items-center">
                   <input
                     type="checkbox"
                     checked={formData.smsNotifications}
-                    onChange={(e) => handleChange("smsNotifications", e.target.checked)}
+                    onChange={(e) =>
+                      handleChange("smsNotifications", e.target.checked)
+                    }
                     className="mr-3 h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
                   />
-                  <span className="text-sm text-gray-700">SMS notifications</span>
+                  <span className="text-sm text-gray-700">
+                    SMS notifications
+                  </span>
                 </label>
               </div>
             </div>

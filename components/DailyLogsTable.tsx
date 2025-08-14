@@ -1,14 +1,16 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import { DailyLog } from "@/types";
 import {
   PencilIcon,
   TrashIcon,
   EyeIcon,
   CalendarIcon,
+  PaperClipIcon,
 } from "@heroicons/react/24/outline";
 import { format } from "date-fns";
+import { ConfirmationDialog } from "./ConfirmationDialog";
 
 interface DailyLogsTableProps {
   dailyLogs: DailyLog[];
@@ -23,6 +25,30 @@ export const DailyLogsTable: React.FC<DailyLogsTableProps> = ({
   onDelete,
   onView,
 }) => {
+  const [deleteConfirm, setDeleteConfirm] = useState<{
+    isOpen: boolean;
+    logId: string | null;
+    logTitle: string;
+  }>({
+    isOpen: false,
+    logId: null,
+    logTitle: "",
+  });
+
+  const handleDeleteClick = (log: DailyLog) => {
+    setDeleteConfirm({
+      isOpen: true,
+      logId: log.id,
+      logTitle: log.title,
+    });
+  };
+
+  const handleDeleteConfirm = () => {
+    if (deleteConfirm.logId) {
+      onDelete(deleteConfirm.logId);
+    }
+  };
+
   const getCategoryColor = (category: string) => {
     switch (category.toLowerCase()) {
       case "accounting":
@@ -78,6 +104,9 @@ export const DailyLogsTable: React.FC<DailyLogsTableProps> = ({
               </th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
                 Priority
+              </th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                Files
               </th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
                 Actions
@@ -141,6 +170,21 @@ export const DailyLogsTable: React.FC<DailyLogsTableProps> = ({
                         {formatPriority(dailyLog.priority)}
                       </span>
                     </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      {dailyLog.files && dailyLog.files.length > 0 ? (
+                        <div className="flex items-center space-x-1">
+                          <PaperClipIcon className="h-4 w-4 text-primary-600" />
+                          <span className="text-sm text-gray-600 dark:text-gray-400">
+                            {dailyLog.files.length} file
+                            {dailyLog.files.length !== 1 ? "s" : ""}
+                          </span>
+                        </div>
+                      ) : (
+                        <span className="text-sm text-gray-400 dark:text-gray-500">
+                          No files
+                        </span>
+                      )}
+                    </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                       <div className="flex items-center space-x-2">
                         <button
@@ -158,7 +202,7 @@ export const DailyLogsTable: React.FC<DailyLogsTableProps> = ({
                           <PencilIcon className="h-4 w-4" />
                         </button>
                         <button
-                          onClick={() => onDelete(dailyLog.id)}
+                          onClick={() => handleDeleteClick(dailyLog)}
                           className="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300"
                           title="Delete Daily Log"
                         >
@@ -172,6 +216,13 @@ export const DailyLogsTable: React.FC<DailyLogsTableProps> = ({
           </tbody>
         </table>
       </div>
+      <ConfirmationDialog
+        isOpen={deleteConfirm.isOpen}
+        onClose={() => setDeleteConfirm({ ...deleteConfirm, isOpen: false })}
+        onConfirm={handleDeleteConfirm}
+        title="Confirm Deletion"
+        message={`Are you sure you want to delete "${deleteConfirm.logTitle}"? This action cannot be undone.`}
+      />
     </div>
   );
 };

@@ -273,6 +273,21 @@ export interface DailyLog {
   priority: "low" | "medium" | "high" | "critical";
   projectId?: string; // Optional reference to related project
   tags: string[];
+  files?: DailyLogFile[]; // Optional file attachments
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface DailyLogFile {
+  id: string;
+  dailyLogId: string;
+  fileName: string;
+  originalName: string;
+  fileSize: number;
+  fileType: string;
+  uploadDate: Date;
+  uploadedBy: string;
+  filePath: string;
   createdAt: Date;
   updatedAt: Date;
 }

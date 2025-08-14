@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect, useCallback } from "react";
 import { createPortal } from "react-dom";
 
 interface TooltipProps {
@@ -143,10 +143,10 @@ export const Tooltip: React.FC<TooltipProps> = ({
       updatePosition();
       const handleScroll = () => updatePosition();
       const handleResize = () => updatePosition();
-      
+
       window.addEventListener("scroll", handleScroll, true);
       window.addEventListener("resize", handleResize);
-      
+
       return () => {
         window.removeEventListener("scroll", handleScroll, true);
         window.removeEventListener("resize", handleResize);

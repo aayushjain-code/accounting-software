@@ -1,11 +1,15 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useAccountingStore } from "@/store";
 import { Expense, ExpenseFile } from "@/types";
 import {
   PlusIcon,
   CurrencyRupeeIcon,
+  MagnifyingGlassIcon,
+  FunnelIcon,
+  ChevronUpIcon,
+  ChevronDownIcon,
 } from "@heroicons/react/24/outline";
 import { format } from "date-fns";
 import toast from "react-hot-toast";
@@ -19,6 +23,11 @@ import { ExpensesTable } from "@/components/ExpensesTable";
 export default function ExpensesPage() {
   const [uploadedFiles, setUploadedFiles] = useState<File[]>([]);
   const [isUploading, setIsUploading] = useState(false);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState<string>("all");
+  const [selectedStatus, setSelectedStatus] = useState<string>("all");
+  const [sortBy, setSortBy] = useState<"amount" | "date" | "category">("date");
+  const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
 
   const {
     expenses,
@@ -168,32 +177,70 @@ export default function ExpensesPage() {
     }).format(amount);
   };
 
-  const getCategoryColor = (category: string) => {
-    const colors = {
-      "Office Supplies": "bg-blue-100 text-blue-800",
-      "Software & Tools": "bg-purple-100 text-purple-800",
-      "Travel & Transportation": "bg-green-100 text-green-800",
-      "Meals & Entertainment": "bg-yellow-100 text-yellow-800",
-      "Professional Services": "bg-indigo-100 text-indigo-800",
-      "Marketing & Advertising": "bg-pink-100 text-pink-800",
-      Utilities: "bg-gray-100 text-gray-800",
-      "Rent & Equipment": "bg-red-100 text-red-800",
-      Insurance: "bg-teal-100 text-teal-800",
-      Other: "bg-gray-100 text-gray-800",
-    };
-    return (
-      colors[category as keyof typeof colors] || "bg-gray-100 text-gray-800"
-    );
-  };
+  // Filter and sort expenses
+  const filteredAndSortedExpenses = useMemo(() => {
+    let filtered = expenses.filter((expense) => {
+      const matchesSearch =
+        expense.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        expense.category.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (expense.projectId &&
+          projects
+            .find((p) => p.id === expense.projectId)
+            ?.name.toLowerCase()
+            .includes(searchTerm.toLowerCase()));
+
+      const matchesCategory =
+        selectedCategory === "all" || expense.category === selectedCategory;
+      const matchesStatus =
+        selectedStatus === "all" || expense.status === selectedStatus;
+
+      return matchesSearch && matchesCategory && matchesStatus;
+    });
+
+    // Sort expenses
+    filtered.sort((a, b) => {
+      let aValue: any, bValue: any;
+
+      switch (sortBy) {
+        case "amount":
+          aValue = a.amount;
+          bValue = b.amount;
+          break;
+        case "date":
+          aValue = new Date(a.date).getTime();
+          bValue = new Date(b.date).getTime();
+          break;
+        case "category":
+          aValue = a.category.toLowerCase();
+          bValue = b.category.toLowerCase();
+          break;
+        default:
+          aValue = new Date(a.date).getTime();
+          bValue = new Date(b.date).getTime();
+      }
+
+      if (sortOrder === "asc") {
+        return aValue > bValue ? 1 : -1;
+      } else {
+        return aValue < bValue ? 1 : -1;
+      }
+    });
+
+    return filtered;
+  }, [
+    expenses,
+    projects,
+    searchTerm,
+    selectedCategory,
+    selectedStatus,
+    sortBy,
+    sortOrder,
+  ]);
 
   const totalExpenses = expenses.reduce(
     (sum, expense) => sum + expense.amount,
     0
   );
-  const expensesByCategory = expenses.reduce((acc, expense) => {
-    acc[expense.category] = (acc[expense.category] || 0) + expense.amount;
-    return acc;
-  }, {} as Record<string, number>);
 
   return (
     <div className="space-y-6">
@@ -251,69 +298,192 @@ export default function ExpensesPage() {
         </div>
         <div className="card">
           <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
-            Total Expenses
+            {filteredAndSortedExpenses.length === expenses.length
+              ? "Total Expenses"
+              : "Filtered Expenses"}
           </h3>
           <p className="text-3xl font-bold text-gray-600 dark:text-gray-400">
-            {expenses.length}
+            {filteredAndSortedExpenses.length}
+            {filteredAndSortedExpenses.length !== expenses.length && (
+              <span className="text-lg text-gray-400 ml-2">
+                / {expenses.length}
+              </span>
+            )}
           </p>
         </div>
+      </div>
+
+      {/* Search and Filters */}
+      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+        <div className="flex flex-col lg:flex-row lg:items-center space-y-4 lg:space-y-0 lg:space-x-6">
+          {/* Search */}
+          <div className="relative flex-1">
+            <MagnifyingGlassIcon className="absolute left-4 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+            <input
+              type="text"
+              placeholder="Search expenses by description, category, or project..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-full pl-12 pr-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200"
+            />
+          </div>
+
+          {/* Filters */}
+          <div className="flex items-center space-x-4">
+            {/* Category Filter */}
+            <div className="flex items-center space-x-2">
+              <FunnelIcon className="h-5 w-5 text-gray-400" />
+              <select
+                value={selectedCategory}
+                onChange={(e) => setSelectedCategory(e.target.value)}
+                className="px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200"
+              >
+                <option value="all">All Categories</option>
+                {expenseCategories.map((category) => (
+                  <option key={category} value={category}>
+                    {category}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            {/* Status Filter */}
+            <div className="flex items-center space-x-2">
+              <select
+                value={selectedStatus}
+                onChange={(e) => setSelectedStatus(e.target.value)}
+                className="px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200"
+              >
+                <option value="all">All Statuses</option>
+                <option value="pending">Pending</option>
+                <option value="approved">Approved</option>
+                <option value="rejected">Rejected</option>
+              </select>
+            </div>
+
+            {/* Sort By */}
+            <div className="flex items-center space-x-2">
+              <select
+                value={sortBy}
+                onChange={(e) =>
+                  setSortBy(e.target.value as "amount" | "date" | "category")
+                }
+                className="px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200"
+              >
+                <option value="date">Sort by Date</option>
+                <option value="amount">Sort by Amount</option>
+                <option value="category">Sort by Category</option>
+              </select>
+            </div>
+
+            {/* Sort Order */}
+            <button
+              onClick={() => setSortOrder(sortOrder === "asc" ? "desc" : "asc")}
+              className="px-4 py-3 border border-gray-300 rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200 flex items-center space-x-2"
+              title={sortOrder === "asc" ? "High to Low" : "Low to High"}
+            >
+              {sortOrder === "asc" ? (
+                <ChevronUpIcon className="h-5 w-5 text-gray-600" />
+              ) : (
+                <ChevronDownIcon className="h-5 w-5 text-gray-600" />
+              )}
+              <span className="text-sm font-medium">
+                {sortOrder === "asc" ? "Low to High" : "High to Low"}
+              </span>
+            </button>
+          </div>
+        </div>
+
+        {/* Active Filters Summary */}
+        {(searchTerm ||
+          selectedCategory !== "all" ||
+          selectedStatus !== "all") && (
+          <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
+            <div className="flex items-center space-x-2 text-sm text-gray-600 dark:text-gray-400">
+              <span>Active filters:</span>
+              {searchTerm && (
+                <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-primary-100 text-primary-800">
+                  Search: "{searchTerm}"
+                </span>
+              )}
+              {selectedCategory !== "all" && (
+                <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                  Category: {selectedCategory}
+                </span>
+              )}
+              {selectedStatus !== "all" && (
+                <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                  Status: {selectedStatus}
+                </span>
+              )}
+              <button
+                onClick={() => {
+                  setSearchTerm("");
+                  setSelectedCategory("all");
+                  setSelectedStatus("all");
+                }}
+                className="text-primary-600 hover:text-primary-700 text-xs font-medium underline"
+              >
+                Clear all
+              </button>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Content based on view mode */}
       {/* Table View */}
       <div className="space-y-6">
         <ExpensesTable
-          expenses={expenses}
+          expenses={filteredAndSortedExpenses}
           projects={projects}
           onEdit={handleEdit}
           onDelete={handleDelete}
+          sortBy={sortBy}
+          sortOrder={sortOrder}
+          onSort={(field) => {
+            if (sortBy === field) {
+              setSortOrder(sortOrder === "asc" ? "desc" : "asc");
+            } else {
+              setSortBy(field);
+              setSortOrder("desc");
+            }
+          }}
         />
       </div>
 
       {/* Empty State */}
-      {expenses.length === 0 && (
+      {filteredAndSortedExpenses.length === 0 && (
         <div className="text-center py-12">
           <div className="mx-auto h-16 w-16 text-gray-400 mb-4">
             <CurrencyRupeeIcon className="h-16 w-16" />
           </div>
           <p className="text-gray-500 text-lg font-medium mb-4">
-            No expenses found. Add your first expense to get started.
+            {expenses.length === 0
+              ? "No expenses found. Add your first expense to get started."
+              : "No expenses match your current filters. Try adjusting your search or filters."}
           </p>
-          <button
-            onClick={() => setIsModalOpen(true)}
-            className="bg-primary-600 text-white px-6 py-3 rounded-xl font-semibold hover:bg-primary-700 transition-colors duration-200"
-          >
-            Add Your First Expense
-          </button>
+          {expenses.length === 0 ? (
+            <button
+              onClick={() => setIsModalOpen(true)}
+              className="bg-primary-600 text-white px-6 py-3 rounded-xl font-semibold hover:bg-primary-700 transition-colors duration-200"
+            >
+              Add Your First Expense
+            </button>
+          ) : (
+            <button
+              onClick={() => {
+                setSearchTerm("");
+                setSelectedCategory("all");
+                setSelectedStatus("all");
+              }}
+              className="bg-primary-600 text-white px-6 py-3 rounded-xl font-semibold hover:bg-primary-700 transition-colors duration-200"
+            >
+              Clear All Filters
+            </button>
+          )}
         </div>
       )}
-
-      {/* Category Breakdown */}
-      <div className="card">
-        <h3 className="text-lg font-medium text-gray-900 mb-4">
-          Expenses by Category
-        </h3>
-        <div className="space-y-3">
-          {Object.entries(expensesByCategory)
-            .sort(([, a], [, b]) => b - a)
-            .map(([category, amount]) => (
-              <div key={category} className="flex items-center justify-between">
-                <div className="flex items-center">
-                  <span
-                    className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${getCategoryColor(
-                      category
-                    )}`}
-                  >
-                    {category}
-                  </span>
-                </div>
-                <span className="font-medium text-gray-900">
-                  {formatCurrency(amount)}
-                </span>
-              </div>
-            ))}
-        </div>
-      </div>
 
       {/* Modal */}
       <Modal

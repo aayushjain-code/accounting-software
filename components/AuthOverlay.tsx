@@ -28,7 +28,7 @@ export const AuthOverlay: React.FC<AuthOverlayProps> = ({
     if (!isAuthenticated) {
       checkAuthStatus();
     }
-  }, [isAuthenticated]);
+  }, [isAuthenticated, checkAuthStatus]);
 
   const checkAuthStatus = async () => {
     try {
@@ -42,8 +42,6 @@ export const AuthOverlay: React.FC<AuthOverlayProps> = ({
       console.error("Error checking auth status:", error);
     }
   };
-
-
 
   const handlePinSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

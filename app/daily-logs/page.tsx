@@ -20,6 +20,9 @@ import { IconTooltip } from "@/components/Tooltip";
 import Modal from "@/components/Modal";
 import toast from "react-hot-toast";
 import { DailyLogsTable } from "@/components/DailyLogsTable";
+import FileUpload from "@/components/FileUpload";
+import FileList from "@/components/FileList";
+import { DailyLogFile } from "@/types";
 
 // Helper functions for colors
 const getCategoryColor = (category: string) => {
@@ -75,6 +78,7 @@ const LogModal = React.memo(
       tags: "",
     });
 
+    const [uploadedFiles, setUploadedFiles] = useState<File[]>([]);
     const [errors, setErrors] = useState<Record<string, string>>({});
 
     React.useEffect(() => {
@@ -88,6 +92,7 @@ const LogModal = React.memo(
             priority: editingLog.priority,
             tags: editingLog.tags.join(", "),
           });
+          setUploadedFiles([]);
         } else {
           setFormData({
             title: "",
@@ -97,6 +102,7 @@ const LogModal = React.memo(
             priority: "medium",
             tags: "",
           });
+          setUploadedFiles([]);
         }
         setErrors({});
       }
@@ -121,6 +127,27 @@ const LogModal = React.memo(
         .map((tag) => tag.trim())
         .filter((tag) => tag.length > 0);
 
+      // Handle file uploads
+      const files: DailyLogFile[] = [];
+      if (uploadedFiles.length > 0) {
+        for (const file of uploadedFiles) {
+          const fileData: DailyLogFile = {
+            id: `file_${Date.now()}_${Math.random()}`,
+            dailyLogId: editingLog?.id || "new",
+            fileName: `dailylog_${editingLog?.id || "new"}_${file.name}`,
+            originalName: file.name,
+            fileSize: file.size,
+            fileType: file.type || `.${file.name.split(".").pop()}`,
+            uploadDate: new Date(),
+            uploadedBy: "Admin User",
+            filePath: `/uploads/dailylogs/${file.name}`,
+            createdAt: new Date(),
+            updatedAt: new Date(),
+          };
+          files.push(fileData);
+        }
+      }
+
       onSubmit({
         title: formData.title.trim(),
         description: formData.description.trim(),
@@ -128,6 +155,7 @@ const LogModal = React.memo(
         category: formData.category,
         priority: formData.priority,
         tags,
+        files,
       });
 
       onClose();
@@ -255,7 +283,14 @@ const LogModal = React.memo(
               <select
                 value={formData.category}
                 onChange={(e) =>
-                  setFormData({ ...formData, category: e.target.value as "accounting" | "important" | "reminder" | "milestone" })
+                  setFormData({
+                    ...formData,
+                    category: e.target.value as
+                      | "accounting"
+                      | "important"
+                      | "reminder"
+                      | "milestone",
+                  })
                 }
                 className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200"
               >
@@ -279,7 +314,14 @@ const LogModal = React.memo(
               <select
                 value={formData.priority}
                 onChange={(e) =>
-                  setFormData({ ...formData, priority: e.target.value as "low" | "medium" | "high" | "critical" })
+                  setFormData({
+                    ...formData,
+                    priority: e.target.value as
+                      | "low"
+                      | "medium"
+                      | "high"
+                      | "critical",
+                  })
                 }
                 className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200"
               >
@@ -310,6 +352,38 @@ const LogModal = React.memo(
                 placeholder="GST, tax-filing, payment"
               />
             </div>
+          </div>
+
+          {/* File Upload Section */}
+          <div>
+            <label className="block text-sm font-semibold text-gray-700 mb-3">
+              Attachments
+              <IconTooltip
+                content="Upload supporting documents, receipts, or other files for this log entry"
+                icon={InformationCircleIcon}
+                position="right"
+              >
+                <span></span>
+              </IconTooltip>
+            </label>
+            <FileUpload
+              files={uploadedFiles}
+              onFilesChange={setUploadedFiles}
+              maxFiles={5}
+              acceptedTypes={[
+                ".pdf",
+                ".doc",
+                ".docx",
+                ".xls",
+                ".xlsx",
+                ".jpg",
+                ".jpeg",
+                ".png",
+                ".txt",
+              ]}
+              title="Upload Files"
+              description="Upload supporting documents, receipts, or other files for this log entry"
+            />
           </div>
         </form>
       </Modal>
@@ -552,7 +626,7 @@ export default function DailyLogsPage() {
               <select
                 value={selectedCategory}
                 onChange={(e) => setSelectedCategory(e.target.value)}
-                className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                className="px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200"
               >
                 <option value="all">All Categories</option>
                 <option value="accounting">Accounting</option>
@@ -565,7 +639,7 @@ export default function DailyLogsPage() {
               <select
                 value={selectedPriority}
                 onChange={(e) => setSelectedPriority(e.target.value)}
-                className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                className="px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200"
               >
                 <option value="all">All Priorities</option>
                 <option value="low">Low</option>
@@ -709,6 +783,22 @@ export default function DailyLogsPage() {
                   {projects.find((p) => p.id === viewLog.projectId)?.name ||
                     "Unknown Project"}
                 </p>
+              </div>
+            )}
+
+            {viewLog.files && viewLog.files.length > 0 && (
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  Attached Files
+                </label>
+                <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-4">
+                  <FileList
+                    files={viewLog.files}
+                    onDelete={() => {}} // Read-only in view mode
+                    title=""
+                    showActions={false}
+                  />
+                </div>
               </div>
             )}
 

@@ -1,9 +1,9 @@
 import React from "react";
 import { TrashIcon, EyeIcon } from "@heroicons/react/24/outline";
-import { TimesheetFile, InvoiceFile, ExpenseFile } from "@/types";
+import { TimesheetFile, InvoiceFile, ExpenseFile, DailyLogFile } from "@/types";
 
 interface FileListProps {
-  files: (TimesheetFile | InvoiceFile | ExpenseFile)[];
+  files: (TimesheetFile | InvoiceFile | ExpenseFile | DailyLogFile)[];
   onDelete?: (fileId: string) => void;
   title?: string;
   showActions?: boolean;

@@ -15,6 +15,24 @@ export default function ReportsPage() {
     }).format(amount);
   };
 
+  const getCategoryColor = (category: string) => {
+    const colors = {
+      "Office Supplies": "bg-blue-100 text-blue-800",
+      "Software & Tools": "bg-purple-100 text-purple-800",
+      "Travel & Transportation": "bg-green-100 text-green-800",
+      "Meals & Entertainment": "bg-yellow-100 text-yellow-800",
+      "Professional Services": "bg-indigo-100 text-indigo-800",
+      "Marketing & Advertising": "bg-pink-100 text-pink-800",
+      Utilities: "bg-gray-100 text-gray-800",
+      "Rent & Equipment": "bg-red-100 text-red-800",
+      Insurance: "bg-teal-100 text-teal-800",
+      Other: "bg-gray-100 text-gray-800",
+    };
+    return (
+      colors[category as keyof typeof colors] || "bg-gray-100 text-gray-800"
+    );
+  };
+
   const getStatusColor = (status: string) => {
     switch (status) {
       case "paid":
@@ -161,6 +179,39 @@ export default function ReportsPage() {
               </span>
             </div>
           </div>
+        </div>
+      </div>
+
+      {/* Expenses by Category */}
+      <div className="card">
+        <h3 className="text-lg font-medium text-gray-900 mb-4">
+          Expenses by Category
+        </h3>
+        <div className="space-y-3">
+          {Object.entries(
+            expenses.reduce((acc, expense) => {
+              acc[expense.category] =
+                (acc[expense.category] || 0) + expense.amount;
+              return acc;
+            }, {} as Record<string, number>)
+          )
+            .sort(([, a], [, b]) => b - a)
+            .map(([category, amount]) => (
+              <div key={category} className="flex items-center justify-between">
+                <div className="flex items-center">
+                  <span
+                    className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${getCategoryColor(
+                      category
+                    )}`}
+                  >
+                    {category}
+                  </span>
+                </div>
+                <span className="font-medium text-gray-900">
+                  {formatCurrency(amount)}
+                </span>
+              </div>
+            ))}
         </div>
       </div>
 

@@ -2,7 +2,7 @@
 
 import React from "react";
 import { InvoiceTemplate } from "@/components/InvoiceTemplate";
-import { Invoice, InvoiceItem, Client, Project } from "@/types";
+import { Invoice, InvoiceItem, Client } from "@/types";
 
 export default function InvoiceDemoPage() {
   // Sample data to demonstrate the invoice template
@@ -102,7 +102,6 @@ export default function InvoiceDemoPage() {
           <InvoiceTemplate
             invoice={sampleInvoice}
             client={sampleClient}
-
             items={sampleItems}
           />
         </div>

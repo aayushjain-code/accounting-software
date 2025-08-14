@@ -30,7 +30,7 @@ import { AuthOverlay } from "./AuthOverlay";
 
 
 const navigation = [
-  { name: "Dashboard", href: "/", icon: HomeIcon },
+  { name: "Home", href: "/", icon: HomeIcon },
   { name: "Clients", href: "/clients", icon: UsersIcon },
   { name: "Projects", href: "/projects", icon: FolderIcon },
   { name: "Invoices", href: "/invoices", icon: DocumentTextIcon },
@@ -39,7 +39,6 @@ const navigation = [
   { name: "Daily Logs", href: "/daily-logs", icon: CalendarIcon },
   { name: "Timesheets", href: "/timesheet", icon: ClockIcon },
   { name: "Directory", href: "/directory", icon: UserGroupIcon },
-  { name: "Reports", href: "/reports", icon: ChartBarIcon },
 ];
 
 export default function Layout({ children }: { children: React.ReactNode }) {

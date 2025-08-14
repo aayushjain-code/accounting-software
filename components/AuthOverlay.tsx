@@ -28,7 +28,7 @@ export const AuthOverlay: React.FC<AuthOverlayProps> = ({
     if (!isAuthenticated) {
       checkAuthStatus();
     }
-  }, [isAuthenticated, checkAuthStatus]);
+  }, [isAuthenticated]);
 
   const checkAuthStatus = async () => {
     try {

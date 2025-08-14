@@ -32,29 +32,29 @@ export default function InvoiceDemoPage() {
     updatedAt: new Date(),
   };
 
-  const sampleProject: Project = {
-    id: "project1",
-    projectCode: "BST-01",
-    name: "IT Design and Development",
-    clientId: "client1",
-    description: ".Net + Angular Development Project",
-    startDate: new Date("2024-01-01"),
-    status: "active",
-    budget: 100000,
-    billingTerms: 30,
-    billingRate: 100000,
-    estimatedHours: 184,
-    gstRate: 18,
-    gstInclusive: false,
-    totalCost: 118000,
-    costBreakdown: {
-      subtotal: 100000,
-      gstAmount: 18000,
-      total: 118000,
-    },
-    createdAt: new Date(),
-    updatedAt: new Date(),
-  };
+  // const sampleProject: Project = {
+  //   id: "project1",
+  //   projectCode: "BST-01",
+  //   name: "IT Design and Development",
+  //   clientId: "client1",
+  //   description: ".Net + Angular Development Project",
+  //   startDate: new Date("2024-01-01"),
+  //   status: "active",
+  //   budget: 100000,
+  //   billingTerms: 30,
+  //   billingRate: 100000,
+  //   estimatedHours: 184,
+  //   gstRate: 18,
+  //   gstInclusive: false,
+  //   totalCost: 118000,
+  //   costBreakdown: {
+  //     subtotal: 100000,
+  //     gstAmount: 18000,
+  //     total: 118000,
+  //   },
+  //   createdAt: new Date(),
+  //   updatedAt: new Date(),
+  // };
 
   const sampleInvoice: Invoice = {
     id: "invoice1",

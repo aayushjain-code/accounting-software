@@ -17,7 +17,7 @@ import {
 } from "@heroicons/react/24/outline";
 import { format } from "date-fns";
 import toast from "react-hot-toast";
-import { Timesheet, Project, TimesheetFile } from "@/types";
+import { Timesheet, TimesheetFile } from "@/types";
 import { formatCurrency } from "@/utils/helpers";
 import { ActionTooltip, IconTooltip } from "@/components/Tooltip";
 import Link from "next/link";

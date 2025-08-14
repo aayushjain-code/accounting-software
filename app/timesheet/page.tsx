@@ -263,7 +263,7 @@ const TimesheetModal = React.memo(
   }: {
     isOpen: boolean;
     editingTimesheet: Timesheet | null;
-    onSubmit: (data: any) => void;
+    onSubmit: (data: Record<string, unknown>) => void;
     formId: string;
       }) => {
     const { projects, addTimesheetFile, removeTimesheetFile } =
@@ -343,21 +343,7 @@ const TimesheetModal = React.memo(
       }
     }, [formData.projectId, projects]);
 
-    // Calculate real-time amount for timesheet
-    const calculatedAmount = React.useMemo(() => {
-      if (selectedProject && formData.daysWorked && formData.totalWorkingDays) {
-        const daysWorked = parseInt(formData.daysWorked);
-        const totalWorkingDays = parseInt(formData.totalWorkingDays);
 
-        // Calculate monthly rate: (Project Budget without GST) ÷ (Total Working Days)
-        const projectBudgetWithoutGST = selectedProject.budget; // Budget is already without GST
-        const monthlyRate = projectBudgetWithoutGST / totalWorkingDays;
-
-        // Calculate amount: Monthly Rate × Days Worked
-        return monthlyRate * daysWorked;
-      }
-      return 0;
-    }, [selectedProject, formData.daysWorked, formData.totalWorkingDays]);
 
     const validateForm = React.useCallback(() => {
       const newErrors: Record<string, string> = {};
@@ -427,7 +413,7 @@ const TimesheetModal = React.memo(
         }
         setUploadedFiles([]);
         toast.success("Files uploaded successfully!");
-      } catch (error) {
+      } catch {
         toast.error("Failed to upload files");
       } finally {
         setIsUploading(false);
@@ -714,7 +700,7 @@ export default function TimesheetPage() {
     addTimesheet,
     updateTimesheet,
     deleteTimesheet,
-    generateInvoiceFromTimesheet,
+
   } = useAccountingStore();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingTimesheet, setEditingTimesheet] = useState<Timesheet | null>(
@@ -724,7 +710,7 @@ export default function TimesheetPage() {
   const [timesheetToDelete, setTimesheetToDelete] = useState<string | null>(
     null
   );
-  const [viewMode, setViewMode] = useState<"cards" | "table">("cards");
+  const [viewMode] = useState<"cards" | "table">("cards");
 
   // Use the search hook
   const {
@@ -734,40 +720,7 @@ export default function TimesheetPage() {
     isSearching,
   } = useSearch(timesheets, ["month", "status"]);
 
-  // Memoized stats
-  const stats = useMemo(() => {
-    const totalTimesheets = timesheets.length;
-    const draftTimesheets = timesheets.filter(
-      (t) => t.status === "draft"
-    ).length;
-    const submittedTimesheets = timesheets.filter(
-      (t) => t.status === "submitted"
-    ).length;
-    const approvedTimesheets = timesheets.filter(
-      (t) => t.status === "approved"
-    ).length;
-    const invoicedTimesheets = timesheets.filter(
-      (t) => t.status === "invoiced"
-    ).length;
-    const totalAmount = timesheets.reduce(
-      (sum, t) => sum + (t.totalAmount || 0),
-      0
-    );
-    const totalHours = timesheets.reduce(
-      (sum, t) => sum + (t.totalHours || 0),
-      0
-    );
 
-    return {
-      totalTimesheets,
-      draftTimesheets,
-      submittedTimesheets,
-      approvedTimesheets,
-      invoicedTimesheets,
-      totalAmount,
-      totalHours,
-    };
-  }, [timesheets]);
 
   const handleSubmit = React.useCallback(
     async (formData: Record<string, unknown>) => {

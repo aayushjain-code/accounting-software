@@ -163,9 +163,7 @@ const TimesheetRow = React.memo(
     onEdit: (timesheet: Timesheet) => void;
     onDelete: (id: string) => void;
   }) => {
-    const formatDate = React.useCallback((date: Date) => {
-      return format(new Date(date), "MMM dd, yyyy");
-    }, []);
+
 
     return (
       <tr
@@ -259,27 +257,16 @@ const calculateWorkingDays = (year: number, month: number) => {
 const TimesheetModal = React.memo(
   ({
     isOpen,
-    onClose,
     editingTimesheet,
     onSubmit,
     formId,
-    hideHeaderAndFooter,
   }: {
     isOpen: boolean;
-    onClose: () => void;
     editingTimesheet: Timesheet | null;
     onSubmit: (data: any) => void;
     formId: string;
-    hideHeaderAndFooter: boolean;
-  }) => {
-    const getStatusConfig = (status: string) => {
-      switch (status) {
-        case "draft":
-          return {
-            color: "bg-gray-100 text-gray-800 border-gray-200",
-            icon: DocumentTextIcon,
-            bg: "bg-gray-50",
-          };
+      }) => {
+
         case "submitted":
           return {
             color: "bg-blue-100 text-blue-800 border-blue-200",

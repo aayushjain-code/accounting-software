@@ -5,8 +5,6 @@ import { useAccountingStore } from "@/store";
 import { Expense, ExpenseFile } from "@/types";
 import {
   PlusIcon,
-  PencilIcon,
-  TrashIcon,
   CurrencyRupeeIcon,
 } from "@heroicons/react/24/outline";
 import { format } from "date-fns";

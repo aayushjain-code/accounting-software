@@ -47,8 +47,7 @@ export default function InvoiceUploadPage() {
     // Simulate file upload
     setTimeout(() => {
       Array.from(files).forEach((file) => {
-        const year = parseInt(selectedMonth.split("-")[0]);
-        const month = selectedMonth.split("-")[1];
+
 
         addInvoiceFile("", {
           id: `file_${Date.now()}_${Math.random()}`,

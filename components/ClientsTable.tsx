@@ -6,7 +6,6 @@ import {
   PencilIcon,
   TrashIcon,
   EyeIcon,
-  PlusIcon,
   MagnifyingGlassIcon,
   FunnelIcon,
   ArrowUpIcon,
@@ -14,8 +13,6 @@ import {
 } from "@heroicons/react/24/outline";
 import { useAccountingStore } from "@/store";
 import { Client } from "@/types";
-import Modal from "./Modal";
-import { Button } from "./Button";
 import { ConfirmationDialog } from "./ConfirmationDialog";
 import { toast } from "react-hot-toast";
 
@@ -91,7 +88,7 @@ export const ClientsTable: React.FC<ClientsTableProps> = ({
   const handleInlineEdit = (
     client: Client,
     field: keyof Client,
-    value: any
+    value: string | number | boolean
   ) => {
     const updatedClient = { ...client, [field]: value };
     updateClient(client.id, updatedClient);
@@ -112,7 +109,7 @@ export const ClientsTable: React.FC<ClientsTableProps> = ({
   const renderEditableCell = (
     client: Client,
     field: keyof Client,
-    value: any
+    value: string | number | boolean
   ) => {
     const isEditing = editingClient?.id === client.id && editingField === field;
 

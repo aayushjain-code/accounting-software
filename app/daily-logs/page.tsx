@@ -7,19 +7,16 @@ import {
   PlusIcon,
   MagnifyingGlassIcon,
   CalendarIcon,
-  TagIcon,
   ExclamationTriangleIcon,
   CheckCircleIcon,
   ClockIcon,
   StarIcon,
-  PencilIcon,
-  TrashIcon,
   InformationCircleIcon,
   FunnelIcon,
 } from "@heroicons/react/24/outline";
 import { format } from "date-fns";
 import { useSearch } from "@/hooks/useSearch";
-import { ActionTooltip, IconTooltip } from "@/components/Tooltip";
+import { IconTooltip } from "@/components/Tooltip";
 import Modal from "@/components/Modal";
 import toast from "react-hot-toast";
 import { DailyLogsTable } from "@/components/DailyLogsTable";
@@ -258,7 +255,7 @@ const LogModal = React.memo(
               <select
                 value={formData.category}
                 onChange={(e) =>
-                  setFormData({ ...formData, category: e.target.value as any })
+                  setFormData({ ...formData, category: e.target.value as "accounting" | "important" | "reminder" | "milestone" })
                 }
                 className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200"
               >
@@ -282,7 +279,7 @@ const LogModal = React.memo(
               <select
                 value={formData.priority}
                 onChange={(e) =>
-                  setFormData({ ...formData, priority: e.target.value as any })
+                  setFormData({ ...formData, priority: e.target.value as "low" | "medium" | "high" | "critical" })
                 }
                 className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200"
               >
@@ -401,7 +398,7 @@ export default function DailyLogsPage() {
     try {
       await deleteDailyLog(id);
       toast.success("Daily log deleted successfully");
-    } catch (error) {
+    } catch {
       toast.error("Failed to delete daily log");
     }
   };

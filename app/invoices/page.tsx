@@ -2,14 +2,10 @@
 
 import { useState, useMemo } from "react";
 import { useAccountingStore } from "@/store";
-import { Invoice, Client, Project } from "@/types";
+import { Invoice } from "@/types";
 import { DocumentTextIcon } from "@heroicons/react/24/outline";
 import {
   PlusIcon,
-  PencilIcon,
-  TrashIcon,
-  EyeIcon,
-  DocumentIcon,
 } from "@heroicons/react/24/outline";
 import { format } from "date-fns";
 import toast from "react-hot-toast";
@@ -135,29 +131,7 @@ export default function InvoicesPage() {
     }
   };
 
-  const getStatusColor = (status: string) => {
-    switch (status.toLowerCase()) {
-      case "paid":
-        return "bg-green-100 text-green-800 border-green-200";
-      case "sent":
-        return "bg-blue-100 text-blue-800 border-blue-200";
-      case "draft":
-        return "bg-gray-100 text-gray-800 border-gray-200";
-      default:
-        return "bg-gray-100 text-gray-800 border-gray-200";
-    }
-  };
 
-  const formatStatus = (status: string) => {
-    return status.charAt(0).toUpperCase() + status.slice(1);
-  };
-
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat("en-IN", {
-      style: "currency",
-      currency: "INR",
-    }).format(amount);
-  };
 
   return (
     <div className="space-y-6">

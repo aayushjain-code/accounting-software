@@ -77,11 +77,15 @@ export const ProfileUpdateModal: React.FC<ProfileUpdateModalProps> = ({
       setFormData((prev) => {
         const currentValue = prev[field as keyof typeof prev];
         // Only spread if the current value is an object
-        if (currentValue && typeof currentValue === 'object' && !Array.isArray(currentValue)) {
+        if (
+          currentValue &&
+          typeof currentValue === "object" &&
+          !Array.isArray(currentValue)
+        ) {
           return {
             ...prev,
             [field]: {
-              ...currentValue,
+              ...(currentValue as Record<string, string | boolean>),
               [subField]: value,
             },
           };

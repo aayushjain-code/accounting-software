@@ -540,12 +540,12 @@ export default function ClientsPage() {
       ) : (
         /* Table View */
         <div className="space-y-6">
-          <ClientsTable
-            clients={clientsByStatus}
-            onEdit={handleEdit}
-            onDelete={handleDelete}
-            onView={handleView}
-          />
+                  <ClientsTable
+          clients={clientsByStatus}
+          onEdit={handleEdit}
+          onDelete={handleDelete}
+          onView={handleView}
+        />
         </div>
       )}
 

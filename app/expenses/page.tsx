@@ -19,6 +19,7 @@ import FileList from "@/components/FileList";
 import { CloudArrowUpIcon } from "@heroicons/react/24/outline";
 import React from "react";
 import { ExpensesTable } from "@/components/ExpensesTable";
+import { EXPENSE_CATEGORIES } from "@/constants";
 
 export default function ExpensesPage() {
   const [uploadedFiles, setUploadedFiles] = useState<File[]>([]);
@@ -49,18 +50,7 @@ export default function ExpensesPage() {
     status: "pending" as "pending" | "approved" | "rejected",
   });
 
-  const expenseCategories = [
-    "Office Supplies",
-    "Software & Tools",
-    "Travel & Transportation",
-    "Meals & Entertainment",
-    "Professional Services",
-    "Marketing & Advertising",
-    "Utilities",
-    "Rent & Equipment",
-    "Insurance",
-    "Other",
-  ];
+  const expenseCategories = EXPENSE_CATEGORIES.map(cat => cat.label);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -441,7 +431,7 @@ export default function ExpensesPage() {
           onDelete={handleDelete}
           sortBy={sortBy}
           sortOrder={sortOrder}
-          onSort={(field) => {
+          onSort={(field: "amount" | "date" | "category") => {
             if (sortBy === field) {
               setSortOrder(sortOrder === "asc" ? "desc" : "asc");
             } else {

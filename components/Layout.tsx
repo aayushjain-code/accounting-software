@@ -27,6 +27,7 @@ import clsx from "clsx";
 import { ErrorBoundary } from "./ErrorBoundary";
 import { LogoutButton } from "./LogoutButton";
 import { AuthOverlay } from "./AuthOverlay";
+import { PerformanceDashboard } from "./PerformanceDashboard";
 
 
 const navigation = [
@@ -244,6 +245,9 @@ export default function Layout({ children }: { children: React.ReactNode }) {
           <ErrorBoundary>{children}</ErrorBoundary>
         </main>
       </div>
+      
+      {/* Performance Dashboard - Only show in development */}
+      {process.env.NODE_ENV === 'development' && <PerformanceDashboard />}
 
       {/* Click outside to close profile menu */}
       {profileMenuOpen && (

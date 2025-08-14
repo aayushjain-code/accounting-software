@@ -373,7 +373,11 @@ export const virtualization = {
 export const performanceMonitor = {
   // Track performance metrics
   metrics: {
-    renderTimes: [] as number[],
+    renderTimes: {} as Record<string, number[]>,
+    interactionTimes: {} as Record<string, number[]>,
+    dataLoadTimes: {} as Record<string, number[]>,
+    operationTimes: {} as Record<string, number[]>,
+    dataProcessingTimes: {} as Record<string, number[]>,
     memoryUsage: [] as number[],
     cacheHits: 0,
     cacheMisses: 0,
@@ -381,8 +385,58 @@ export const performanceMonitor = {
 
   // Record render time
   recordRenderTime: (componentName: string, renderTime: number) => {
-    performanceMonitor.metrics.renderTimes.push(renderTime);
+    if (!performanceMonitor.metrics.renderTimes[componentName]) {
+      performanceMonitor.metrics.renderTimes[componentName] = [];
+    }
+    performanceMonitor.metrics.renderTimes[componentName].push(renderTime);
     console.log(`${componentName} render time: ${renderTime}ms`);
+  },
+
+  // Track render performance
+  trackRender: (componentName: string, renderTime: number) => {
+    if (!performanceMonitor.metrics.renderTimes[componentName]) {
+      performanceMonitor.metrics.renderTimes[componentName] = [];
+    }
+    performanceMonitor.metrics.renderTimes[componentName].push(renderTime);
+  },
+
+  // Track interaction performance
+  trackInteraction: (componentName: string, interactionName: string, duration: number) => {
+    const key = `${componentName}-${interactionName}`;
+    if (!performanceMonitor.metrics.interactionTimes[key]) {
+      performanceMonitor.metrics.interactionTimes[key] = [];
+    }
+    performanceMonitor.metrics.interactionTimes[key].push(duration);
+  },
+
+  // Track data load performance
+  trackDataLoad: (componentName: string, dataSize: number, loadTime: number) => {
+    const key = `${componentName}-dataLoad`;
+    if (!performanceMonitor.metrics.dataLoadTimes[key]) {
+      performanceMonitor.metrics.dataLoadTimes[key] = [];
+    }
+    performanceMonitor.metrics.dataLoadTimes[key].push(loadTime);
+  },
+
+  // Track operation performance
+  trackOperation: (operationName: string, duration: number) => {
+    if (!performanceMonitor.metrics.operationTimes[operationName]) {
+      performanceMonitor.metrics.operationTimes[operationName] = [];
+    }
+    performanceMonitor.metrics.operationTimes[operationName].push(duration);
+  },
+
+  // Track data processing performance
+  trackDataProcessing: (processorName: string, dataSize: number, processingTime: number) => {
+    if (!performanceMonitor.metrics.dataProcessingTimes[processorName]) {
+      performanceMonitor.metrics.dataProcessingTimes[processorName] = [];
+    }
+    performanceMonitor.metrics.dataProcessingTimes[processorName].push(processingTime);
+  },
+
+  // Get all metrics
+  getMetrics: () => {
+    return performanceMonitor.metrics;
   },
 
   // Record memory usage
@@ -406,10 +460,10 @@ export const performanceMonitor = {
   // Get performance report
   getReport: () => {
     const avgRenderTime =
-      performanceMonitor.metrics.renderTimes.length > 0
-        ? performanceMonitor.metrics.renderTimes.reduce((a, b) => a + b, 0) /
-          performanceMonitor.metrics.renderTimes.length
-        : 0;
+      Object.values(performanceMonitor.metrics.renderTimes)
+        .flat()
+        .reduce((a, b) => a + b, 0) / 
+        Math.max(Object.values(performanceMonitor.metrics.renderTimes).flat().length, 1);
 
     const avgMemoryUsage =
       performanceMonitor.metrics.memoryUsage.length > 0
@@ -431,7 +485,7 @@ export const performanceMonitor = {
       avgRenderTime: `${avgRenderTime.toFixed(2)}ms`,
       avgMemoryUsage: `${(avgMemoryUsage * 100).toFixed(2)}%`,
       cacheHitRate: `${cacheHitRate.toFixed(2)}%`,
-      totalRenders: performanceMonitor.metrics.renderTimes.length,
+      totalRenders: Object.values(performanceMonitor.metrics.renderTimes).flat().length,
       cacheHits: performanceMonitor.metrics.cacheHits,
       cacheMisses: performanceMonitor.metrics.cacheMisses,
     };
@@ -440,7 +494,11 @@ export const performanceMonitor = {
   // Reset metrics
   reset: () => {
     performanceMonitor.metrics = {
-      renderTimes: [],
+      renderTimes: {},
+      interactionTimes: {},
+      dataLoadTimes: {},
+      operationTimes: {},
+      dataProcessingTimes: {},
       memoryUsage: [],
       cacheHits: 0,
       cacheMisses: 0,

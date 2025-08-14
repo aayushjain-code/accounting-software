@@ -1,19 +1,19 @@
 "use client";
 
-import React, { useMemo } from "react";
+import React, { useMemo, useCallback } from "react";
 import { useAccountingStore } from "@/store";
-import { Invoice, Project } from "@/types";
+import { Invoice } from "@/types";
 import { Card } from "@/components/Card";
 import { formatCurrency } from "@/utils/formatters";
 
 import {
-  ChartBarIcon,
   CurrencyDollarIcon,
   UserGroupIcon,
   DocumentTextIcon,
   ArrowTrendingUpIcon,
   ArrowTrendingDownIcon,
   ClockIcon,
+  FolderIcon,
 } from "@heroicons/react/24/outline";
 
 // Memoized components with display names
@@ -84,42 +84,57 @@ const getCategoryColor = (category: string) => {
 export default function Home() {
   const { clients, projects, invoices, timesheets, expenses } = useAccountingStore();
 
-  const stats = useMemo(() => {
-    const totalClients = clients.length;
-    const totalProjects = projects.length;
-    const totalInvoices = invoices.length;
-    const totalTimesheets = timesheets.length;
+  // Optimized memoized calculations - break down into smaller chunks for better performance
+  const totalClients = useMemo(() => clients.length, [clients]);
+  const totalProjects = useMemo(() => projects.length, [projects]);
+  const totalInvoices = useMemo(() => invoices.length, [invoices]);
+  const totalTimesheets = useMemo(() => timesheets.length, [timesheets]);
 
-    const totalRevenue = invoices.reduce(
-      (sum: number, invoice: Invoice) => sum + (invoice.total || 0),
-      0
-    );
-    const pendingInvoices = invoices.filter(
-      (invoice: Invoice) => invoice.status === "sent"
-    ).length;
-    const activeProjects = projects.filter(
-      (project: Project) => project.status === "active"
-    ).length;
+  const totalRevenue = useMemo(() => 
+    invoices.reduce((sum: number, invoice: Invoice) => sum + (invoice.total || 0), 0), 
+    [invoices]
+  );
 
-    const totalExpenses = expenses.reduce((sum, expense) => sum + expense.amount, 0);
-    const netProfit = totalRevenue - totalExpenses;
-    const outstandingAmount = invoices
+  const pendingInvoices = useMemo(() => 
+    invoices.filter((invoice: Invoice) => invoice.status === "sent").length, 
+    [invoices]
+  );
+
+  const activeProjects = useMemo(() => 
+    projects.filter((project: any) => project.status === "active").length, 
+    [projects]
+  );
+
+  const totalExpenses = useMemo(() => 
+    expenses.reduce((sum, expense) => sum + expense.amount, 0), 
+    [expenses]
+  );
+
+  const netProfit = useMemo(() => totalRevenue - totalExpenses, [totalRevenue, totalExpenses]);
+  
+  const outstandingAmount = useMemo(() => 
+    invoices
       .filter((invoice) => invoice.status === "sent")
-      .reduce((sum, invoice) => sum + invoice.total, 0);
+      .reduce((sum, invoice) => sum + invoice.total, 0), 
+    [invoices]
+  );
 
-    return {
-      totalClients,
-      totalProjects,
-      totalInvoices,
-      totalTimesheets,
-      totalRevenue,
-      totalExpenses,
-      netProfit,
-      outstandingAmount,
-      pendingInvoices,
-      activeProjects,
-    };
-  }, [clients, projects, invoices, timesheets, expenses]);
+  const stats = useMemo(() => ({
+    totalClients,
+    totalProjects,
+    totalInvoices,
+    totalTimesheets,
+    totalRevenue,
+    totalExpenses,
+    netProfit,
+    outstandingAmount,
+    pendingInvoices,
+    activeProjects,
+  }), [
+    totalClients, totalProjects, totalInvoices, totalTimesheets,
+    totalRevenue, totalExpenses, netProfit, outstandingAmount,
+    pendingInvoices, activeProjects
+  ]);
 
 
 
@@ -204,7 +219,7 @@ export default function Home() {
         <StatCard
           title="Active Projects"
           value={stats.activeProjects.toString()}
-          icon={ChartBarIcon}
+          icon={FolderIcon}
         />
         <StatCard
           title="Total Invoices"

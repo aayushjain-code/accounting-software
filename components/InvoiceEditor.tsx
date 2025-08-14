@@ -742,12 +742,7 @@ export const InvoiceEditor: React.FC<InvoiceEditorProps> = ({
                 Print
               </button>
 
-              <button
-                onClick={() => window.print()}
-                className="px-3 py-1.5 text-sm bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors"
-              >
-                Quick Print
-              </button>
+
 
               <button
                 onClick={handleDownloadPDF}

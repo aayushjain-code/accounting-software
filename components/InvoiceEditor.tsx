@@ -21,7 +21,6 @@ export const InvoiceEditor: React.FC<InvoiceEditorProps> = ({
   client,
   project,
   onSave,
-  onCancel,
 }) => {
   const [isEditing, setIsEditing] = useState(true);
   const [formData, setFormData] = useState({
@@ -281,8 +280,7 @@ export const InvoiceEditor: React.FC<InvoiceEditorProps> = ({
       pdf.save(`Invoice-${formData.invoiceNumber}.pdf`);
       setSaveMessage("PDF downloaded successfully!");
       setTimeout(() => setSaveMessage(""), 3000);
-    } catch (error) {
-      console.error("Error generating PDF:", error);
+    } catch {
       setSaveMessage("Error generating PDF. Please try again.");
       setTimeout(() => setSaveMessage(""), 3000);
     } finally {
@@ -308,7 +306,7 @@ export const InvoiceEditor: React.FC<InvoiceEditorProps> = ({
   const handleItemChange = (
     index: number,
     field: keyof InvoiceItem,
-    value: any
+    value: string | number
   ) => {
     const newItems = [...items];
     newItems[index] = { ...newItems[index], [field]: value };
@@ -498,7 +496,7 @@ export const InvoiceEditor: React.FC<InvoiceEditorProps> = ({
       // Show success message
       setSaveMessage("Invoice saved successfully!");
       setTimeout(() => setSaveMessage(""), 3000);
-    } catch (error) {
+    } catch {
       setSaveMessage("Error saving invoice. Please try again.");
       setTimeout(() => setSaveMessage(""), 3000);
     } finally {
@@ -809,11 +807,6 @@ export const InvoiceEditor: React.FC<InvoiceEditorProps> = ({
                       value={invoice?.status || "draft"}
                       onChange={(e) => {
                         if (invoice) {
-                          // Update the invoice status
-                          const updatedInvoice = {
-                            ...invoice,
-                            status: e.target.value as "draft" | "sent" | "paid",
-                          };
                           // This would typically call an API to update the status
                           console.log("Status updated to:", e.target.value);
                         }

@@ -1,7 +1,6 @@
 "use client";
 
 import React, { useState } from "react";
-import { format } from "date-fns";
 import {
   PencilIcon,
   TrashIcon,
@@ -15,12 +14,7 @@ import {
   EnvelopeIcon,
   BuildingOfficeIcon,
   UserIcon,
-  MapPinIcon,
-  GlobeAltIcon,
 } from "@heroicons/react/24/outline";
-import { useAccountingStore } from "@/store";
-import Modal from "./Modal";
-import { Button } from "./Button";
 import { ConfirmationDialog } from "./ConfirmationDialog";
 import { toast } from "react-hot-toast";
 import { DirectoryContact } from "@/types";
@@ -102,7 +96,7 @@ export const Directory: React.FC<DirectoryProps> = ({
   const handleInlineEdit = (
     contact: DirectoryContact,
     field: keyof DirectoryContact,
-    value: any
+    value: string | number | boolean
   ) => {
     // Here you would typically call an update function
     // For now, we'll just update the local state
@@ -125,7 +119,7 @@ export const Directory: React.FC<DirectoryProps> = ({
   const renderEditableCell = (
     contact: DirectoryContact,
     field: keyof DirectoryContact,
-    value: any
+    value: string | number | boolean
   ) => {
     const isEditing =
       editingContact?.id === contact.id && editingField === field;
@@ -160,39 +154,7 @@ export const Directory: React.FC<DirectoryProps> = ({
     );
   };
 
-  const getCompanySizeColor = (size: string) => {
-    switch (size) {
-      case "startup":
-        return "bg-purple-100 text-purple-800";
-      case "small":
-        return "bg-blue-100 text-blue-800";
-      case "medium":
-        return "bg-green-100 text-green-800";
-      case "large":
-        return "bg-orange-100 text-orange-800";
-      case "enterprise":
-        return "bg-red-100 text-red-800";
-      default:
-        return "bg-gray-100 text-gray-800";
-    }
-  };
 
-  const getIndustryColor = (industry: string) => {
-    switch (industry) {
-      case "technology":
-        return "bg-blue-100 text-blue-800";
-      case "healthcare":
-        return "bg-green-100 text-green-800";
-      case "finance":
-        return "bg-yellow-100 text-yellow-800";
-      case "retail":
-        return "bg-purple-100 text-purple-800";
-      case "manufacturing":
-        return "bg-orange-100 text-orange-800";
-      default:
-        return "bg-gray-100 text-gray-800";
-    }
-  };
 
   const columns = [
     { key: "name", label: "Name", sortable: true },

@@ -45,8 +45,16 @@ interface InvoiceTemplateProps {
 }
 
 export const InvoiceTemplate: React.FC<InvoiceTemplateProps> = (props) => {
-  const { invoice, client, items, companyInfo, clientInfo, itemDetails, formData, taxType = "igst" } =
-    props;
+  const {
+    invoice,
+    client,
+    items,
+    companyInfo,
+    clientInfo,
+    itemDetails,
+    formData,
+    taxType = "igst",
+  } = props;
 
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat("en-IN", {
@@ -239,7 +247,7 @@ export const InvoiceTemplate: React.FC<InvoiceTemplateProps> = (props) => {
   const leave = itemDetails?.leave || "0";
   const hsnCode = itemDetails?.hsnCode || "998314";
   const unit = itemDetails?.unit || "Nos";
-  
+
   const buyerOrderNo = formData?.buyerOrderNo || "";
   const buyerOrderDate = formData?.buyerOrderDate || "";
   const purchaseOrderNo = formData?.purchaseOrderNo || "";

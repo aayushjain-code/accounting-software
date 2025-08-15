@@ -18,12 +18,11 @@ import {
 import { format } from "date-fns";
 import toast from "react-hot-toast";
 import { Timesheet, TimesheetFile } from "@/types";
-import { formatCurrency } from "@/utils/helpers";
+import { formatCurrency, generateId } from "@/utils/helpers";
 import { ActionTooltip, IconTooltip } from "@/components/Tooltip";
 import Link from "next/link";
 import FileUpload from "@/components/FileUpload";
 import FileList from "@/components/FileList";
-import { generateId } from "@/utils/helpers";
 
 // Enhanced Status Badge Component
 const StatusBadge = React.memo(({ status }: { status: string }) => {

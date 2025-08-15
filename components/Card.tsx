@@ -6,11 +6,7 @@ interface CardProps {
   className?: string;
 }
 
-export function Card({
-  children,
-  className,
-  ...props
-}: CardProps): JSX.Element {
+export function Card({ children, className }: CardProps): JSX.Element {
   return (
     <div className={clsx("bg-white shadow rounded-lg p-6", className)}>
       {children}

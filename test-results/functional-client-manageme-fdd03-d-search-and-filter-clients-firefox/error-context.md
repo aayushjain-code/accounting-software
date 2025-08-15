@@ -1,0 +1,52 @@
+# Page snapshot
+
+```yaml
+- alert
+- heading "BST" [level=1]
+- paragraph: Accounting Management
+- button "Admin User admin@bst.com":
+  - paragraph: Admin User
+  - paragraph: admin@bst.com
+- heading "BST" [level=1]
+- paragraph: Accounting Management
+- navigation:
+  - link "Home":
+    - /url: /
+  - link "Clients":
+    - /url: /clients
+  - link "Projects":
+    - /url: /projects
+  - link "Invoice Editor":
+    - /url: /invoice-editor
+  - link "Invoice Management":
+    - /url: /invoice-management
+  - link "Expenses":
+    - /url: /expenses
+  - link "Daily Logs":
+    - /url: /daily-logs
+  - link "Directory":
+    - /url: /directory
+  - link "Timesheet Management":
+    - /url: /timesheet-management
+- button "Beta/Archive":
+  - text: Beta/Archive
+  - img
+- main:
+  - heading "Clients" [level=1]
+  - paragraph: Manage your client relationships and business partnerships
+  - text: 2 Invoices
+  - button "Card View"
+  - button "Table View"
+  - button "Add Client"
+  - textbox "Search clients by name, company, email, or industry...": Test
+  - combobox:
+    - option "All Status" [selected]
+    - option "Active"
+    - option "Inactive"
+    - option "Prospect"
+    - option "Lead"
+  - text: 🏢
+  - paragraph: No clients found matching your criteria.
+- button "Performance Dashboard"
+- button "Performance Monitor"
+```

@@ -2,7 +2,7 @@
 
 import { useState, useMemo } from "react";
 import { useAccountingStore } from "@/store";
-import { UserProfile } from "@/types";
+import { UserProfile, ChangelogEntry } from "@/types";
 import {
   UserIcon,
   BuildingOfficeIcon,
@@ -23,7 +23,6 @@ import toast from "react-hot-toast";
 import { Card } from "@/components/Card";
 import { ProfileUpdateModal } from "@/components/ProfileUpdateModal";
 import { ChangelogModal } from "@/components/ChangelogModal";
-import { ChangelogEntry } from "@/types";
 
 export default function ProfilePage(): JSX.Element {
   const { companyProfile, updateCompanyProfile } = useAccountingStore();

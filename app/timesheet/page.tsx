@@ -2,7 +2,7 @@
 
 import React, { useState, useMemo } from "react";
 import { useAccountingStore } from "@/store";
-import { Timesheet, Project } from "@/types";
+import { Timesheet, Project, TimesheetFile } from "@/types";
 import {
   PlusIcon,
   PencilIcon,
@@ -15,6 +15,7 @@ import {
   CurrencyRupeeIcon,
   CalculatorIcon,
   InformationCircleIcon,
+  CloudArrowUpIcon,
 } from "@heroicons/react/24/outline";
 import {
   format,
@@ -31,8 +32,6 @@ import { ActionTooltip, IconTooltip, Tooltip } from "@/components/Tooltip";
 import Modal from "@/components/Modal";
 import FileUpload from "@/components/FileUpload";
 import FileList from "@/components/FileList";
-import { CloudArrowUpIcon } from "@heroicons/react/24/outline";
-import { TimesheetFile } from "@/types";
 import { TimesheetsTable } from "@/components/TimesheetsTable";
 
 // Enhanced Status Badge Component

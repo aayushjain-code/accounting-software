@@ -1,0 +1,69 @@
+# Page snapshot
+
+```yaml
+- alert
+- heading "BST" [level=1]
+- paragraph: Accounting Management
+- button "Admin User admin@bst.com":
+  - paragraph: Admin User
+  - paragraph: admin@bst.com
+- heading "BST" [level=1]
+- paragraph: Accounting Management
+- navigation:
+  - link "Home":
+    - /url: /
+  - link "Clients":
+    - /url: /clients
+  - link "Projects":
+    - /url: /projects
+  - link "Invoice Editor":
+    - /url: /invoice-editor
+  - link "Invoice Management":
+    - /url: /invoice-management
+  - link "Expenses":
+    - /url: /expenses
+  - link "Daily Logs":
+    - /url: /daily-logs
+  - link "Directory":
+    - /url: /directory
+  - link "Timesheet Management":
+    - /url: /timesheet-management
+- button "Beta/Archive":
+  - text: Beta/Archive
+  - img
+- main:
+  - heading "Clients" [level=1]
+  - paragraph: Manage your client relationships and business partnerships
+  - text: 2 Invoices
+  - button "Card View"
+  - button "Table View"
+  - button "Add Client"
+  - textbox "Search clients by name, company, email, or industry..."
+  - combobox:
+    - option "All Status" [selected]
+    - option "Active"
+    - option "Inactive"
+    - option "Prospect"
+    - option "Lead"
+  - text: CLT-2025-0001
+  - heading "John Smith" [level=3]
+  - paragraph: TechCorp Solutions
+  - button
+  - button
+  - button
+  - text: Active Medium Technology CLT-2025-0002
+  - heading "Priya Patel" [level=3]
+  - paragraph: Innovate India Ltd
+  - button
+  - button
+  - button
+  - text: Active Startup E-commerce CLT-2025-0003
+  - heading "David Chen" [level=3]
+  - paragraph: Global Software Inc
+  - button
+  - button
+  - button
+  - text: Active Large Software Development
+- button "Performance Dashboard"
+- button "Performance Monitor"
+```

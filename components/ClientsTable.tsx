@@ -57,24 +57,24 @@ export const ClientsTable: React.FC<ClientsTableProps> = ({
     );
   };
 
-  const sortClients = (clients: Client[]) => {
-    if (!sortField) {
-      return clients;
-    }
+  // const sortClients = (clients: Client[]) => {
+  //   if (!sortField) {
+  //     return clients;
+  //   }
 
-    return [...clients].sort((a, b) => {
-      const aValue = a[sortField];
-      const bValue = b[sortField];
+  //   return [...clients].sort((a, b) => {
+  //     const aValue = a[sortField];
+  //     const bValue = b[sortField];
 
-      if (aValue < bValue) {
-        return sortDirection === "asc" ? -1 : 1;
-      }
-      if (aValue > bValue) {
-        return sortDirection === "asc" ? 1 : -1;
-      }
-      return 0;
-    });
-  };
+  //     if (aValue < bValue) {
+  //       return sortDirection === "asc" ? -1 : 1;
+  //     }
+  //     if (aValue > bValue) {
+  //       return sortDirection === "asc" ? 1 : -1;
+  //     }
+  //     return 0;
+  //   });
+  // };
 
   // Excel-like filtering and sorting
   const filteredAndSortedClients = clients

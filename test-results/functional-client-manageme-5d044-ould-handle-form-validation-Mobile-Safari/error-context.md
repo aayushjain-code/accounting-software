@@ -1,0 +1,85 @@
+# Page snapshot
+
+```yaml
+- alert
+- button
+- heading "BST" [level=1]
+- paragraph: Accounting Management
+- button
+- main:
+  - heading "Clients" [level=1]
+  - paragraph: Manage your client relationships and business partnerships
+  - text: 2 Invoices
+  - button "Card View"
+  - button "Table View"
+  - button "Add Client"
+  - textbox "Search clients by name, company, email, or industry..."
+  - combobox:
+    - option "All Status" [selected]
+    - option "Active"
+    - option "Inactive"
+    - option "Prospect"
+    - option "Lead"
+  - text: CLT-2025-0001
+  - heading "John Smith" [level=3]
+  - paragraph: TechCorp Solutions
+  - button
+  - button
+  - button
+  - text: Active Medium Technology CLT-2025-0002
+  - heading "Priya Patel" [level=3]
+  - paragraph: Innovate India Ltd
+  - button
+  - button
+  - button
+  - text: Active Startup E-commerce CLT-2025-0003
+  - heading "David Chen" [level=3]
+  - paragraph: Global Software Inc
+  - button
+  - button
+  - button
+  - text: Active Large Software Development
+  - dialog:
+    - heading "Add New Client" [level=3]
+    - button "Close modal":
+      - img
+    - text: Client Name *
+    - textbox
+    - text: Company *
+    - textbox
+    - text: Email *
+    - textbox
+    - text: Phone
+    - textbox
+    - text: Industry
+    - textbox
+    - text: Company Size
+    - combobox:
+      - option "Startup"
+      - option "Small" [selected]
+      - option "Medium"
+      - option "Large"
+      - option "Enterprise"
+    - text: Status
+    - combobox:
+      - option "Active" [selected]
+      - option "Inactive"
+      - option "Prospect"
+      - option "Lead"
+    - text: Company Website
+    - textbox
+    - text: Company Address
+    - textbox
+    - text: GST Number
+    - textbox "e.g., 27AABCT1234Z1Z5"
+    - text: POC Name
+    - textbox
+    - text: POC Email
+    - textbox
+    - text: Notes
+    - textbox "Additional notes about the client"
+    - button "Cancel"
+    - button "Add Client"
+- button "Performance Dashboard"
+- button "Performance Monitor"
+```

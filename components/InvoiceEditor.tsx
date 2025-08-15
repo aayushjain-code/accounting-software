@@ -27,7 +27,7 @@ interface InvoiceEditorProps {
 export const InvoiceEditor: React.FC<InvoiceEditorProps> = ({
   invoice,
   client,
-  project,
+  // project,
   onSave,
 }) => {
   const { addInvoice, addInvoiceItem } = useAccountingStore();
@@ -564,7 +564,7 @@ export const InvoiceEditor: React.FC<InvoiceEditorProps> = ({
         dispatchedThrough: formData.dispatchedThrough,
         destination: formData.destination,
         termsOfDelivery: formData.termsOfDelivery,
-        items: items,
+        items,
         notes: `Invoice for ${clientInfo.company}`,
       };
 
@@ -653,7 +653,7 @@ export const InvoiceEditor: React.FC<InvoiceEditorProps> = ({
     dispatchedThrough: formData.dispatchedThrough,
     destination: formData.destination,
     termsOfDelivery: formData.termsOfDelivery,
-    items: items,
+    items,
     createdAt: new Date(),
     updatedAt: new Date(),
   };

@@ -5,11 +5,53 @@ export class TestHelpers {
    * Authenticate user with PIN
    */
   static async authenticate(page: Page, pin: string = "1234"): Promise<void> {
-    const authOverlay = page.locator('[data-testid="auth-overlay"]');
-    if (await authOverlay.isVisible()) {
-      await page.fill('[data-testid="pin-input"]', pin);
-      await page.click('[data-testid="pin-submit"]');
-      await page.waitForLoadState("networkidle");
+    // Check if auth overlay is present - target the actual overlay class
+    const authOverlay = page.locator(
+      "div.fixed.inset-0.bg-gradient-to-br.from-blue-600.to-purple-700.flex.items-center.justify-center.z-50"
+    );
+
+    try {
+      // Wait a bit for page to load
+      await page.waitForTimeout(1000);
+
+      // Check if auth overlay is visible
+      if (await authOverlay.isVisible()) {
+        console.log("🔐 Auth overlay found, authenticating...");
+
+        // Wait a bit for overlay to fully render
+        await page.waitForTimeout(1000);
+
+        // Fill in PIN - use more specific selector
+        const pinInput = page.locator(
+          'input[type="password"], input[placeholder*="PIN"], input[placeholder*="pin"], [data-testid="pin-input"]'
+        );
+        await pinInput.waitFor({ state: "visible", timeout: 10000 });
+        await pinInput.fill(pin);
+
+        // Submit PIN - use more specific selector
+        const submitButton = page.locator(
+          'button[type="submit"], button:has-text("Submit"), button:has-text("Login"), [data-testid="pin-submit"]'
+        );
+        await submitButton.waitFor({ state: "visible", timeout: 10000 });
+        await submitButton.click();
+
+        // Wait for auth overlay to disappear
+        await authOverlay.waitFor({ state: "hidden", timeout: 15000 });
+
+        // Wait for page to load
+        await page.waitForLoadState("networkidle");
+
+        // Additional wait to ensure auth is complete
+        await page.waitForTimeout(2000);
+
+        console.log("✅ Authentication completed");
+      } else {
+        console.log(
+          "ℹ️ No auth overlay found - already authenticated or not required"
+        );
+      }
+    } catch (error) {
+      console.log("Auth overlay not found or already authenticated:", error);
     }
   }
 
@@ -17,8 +59,27 @@ export class TestHelpers {
    * Navigate to a specific section
    */
   static async navigateToSection(page: Page, section: string): Promise<void> {
-    await page.click(`text=${section}`);
+    // First ensure we're authenticated
+    await this.authenticate(page);
+
+    // Wait for navigation to be ready
     await page.waitForLoadState("networkidle");
+
+    // Try to find the navigation link - be more specific
+    const navLink = page.locator(`a[href*="${section.toLowerCase()}"]`).first();
+
+    // Wait for navigation to be visible and clickable
+    await navLink.waitFor({ state: "visible", timeout: 10000 });
+
+    // Ensure element is not covered by overlay
+    await page.waitForTimeout(1000);
+
+    // Click the navigation link
+    await navLink.click();
+
+    // Wait for navigation to complete
+    await page.waitForLoadState("networkidle");
+    await page.waitForTimeout(1000);
   }
 
   /**

@@ -26,9 +26,55 @@ export const useDatabaseLoader = () => {
         console.log("🔄 Database loader: Data loaded from localStorage:", data);
       } else {
         // Load sample data if no stored data exists
-        const sampleData = await import("../data/sample-data-v2.json");
-        data = sampleData.default;
-        console.log("🔄 Database loader: Sample data loaded:", data);
+        try {
+          const sampleData = await import("../data/sample-data-v2.json");
+          data = sampleData.default;
+          console.log("🔄 Database loader: Sample data loaded:", data);
+
+          // Store the sample data in localStorage for future use
+          localStorage.setItem("accountingData", JSON.stringify(data));
+          console.log("🔄 Database loader: Sample data stored in localStorage");
+        } catch (importError) {
+          console.error(
+            "🔄 Database loader: Error importing sample data:",
+            importError
+          );
+          // Try alternative approach - fetch the data
+          try {
+            const response = await fetch("/data/sample-data-v2.json");
+            if (response.ok) {
+              data = await response.json();
+              console.log(
+                "🔄 Database loader: Sample data loaded via fetch:",
+                data
+              );
+              localStorage.setItem("accountingData", JSON.stringify(data));
+            } else {
+              throw new Error(
+                `Failed to fetch sample data: ${response.status}`
+              );
+            }
+          } catch (fetchError) {
+            console.error(
+              "🔄 Database loader: Error fetching sample data:",
+              fetchError
+            );
+            // Create minimal data structure
+            data = {
+              clients: [],
+              projects: [],
+              invoices: [],
+              expenses: [],
+              timesheets: [],
+              dailyLogs: [],
+              companyProfile: {
+                name: "BST",
+                email: "info@bst.com",
+              },
+            };
+            console.log("🔄 Database loader: Using minimal data structure");
+          }
+        }
       }
 
       // Update the store with data

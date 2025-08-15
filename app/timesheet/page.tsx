@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import { useAccountingStore } from "@/store";
 import {
   PlusIcon,
@@ -264,7 +264,7 @@ const TimesheetModal = React.memo(
     onSubmit: (data: Record<string, unknown>) => void;
     formId: string;
   }) => {
-    const { projects, addTimesheetFile, removeTimesheetFile } =
+    const { projects, clients, addTimesheetFile, removeTimesheetFile } =
       useAccountingStore();
     const [formData, setFormData] = useState({
       projectId: "",
@@ -344,7 +344,18 @@ const TimesheetModal = React.memo(
     const validateForm = React.useCallback(() => {
       const newErrors: Record<string, string> = {};
 
-      if (!formData.projectId) newErrors.projectId = "Project is required";
+      if (!formData.projectId) {
+        newErrors.projectId = "Project is required";
+      } else {
+        // Validate that the selected project is active
+        const selectedProject = projects.find(
+          (p) => p.id === formData.projectId
+        );
+        if (selectedProject && selectedProject.status !== "active") {
+          newErrors.projectId = "Only active projects can have timesheets";
+        }
+      }
+
       if (!formData.month) newErrors.month = "Month is required";
       if (!formData.daysWorked || parseInt(formData.daysWorked) <= 0)
         newErrors.daysWorked = "Valid days worked is required";
@@ -357,7 +368,7 @@ const TimesheetModal = React.memo(
 
       setErrors(newErrors);
       return Object.keys(newErrors).length === 0;
-    }, [formData]);
+    }, [formData, projects]);
 
     const handleSubmit = React.useCallback(
       (e: React.FormEvent) => {
@@ -450,18 +461,66 @@ const TimesheetModal = React.memo(
               }`}
             >
               <option value="">Select project</option>
-              {projects.map((project) => (
-                <option key={project.id} value={project.id}>
-                  {project.name} - ₹
-                  {project.budget.toLocaleString("en-IN", {
-                    minimumFractionDigits: 2,
-                    maximumFractionDigits: 2,
-                  })}
-                </option>
-              ))}
+              {projects
+                .filter((project) => project.status === "active")
+                .map((project) => (
+                  <option key={project.id} value={project.id}>
+                    {project.name} - ₹
+                    {project.budget.toLocaleString("en-IN", {
+                      minimumFractionDigits: 2,
+                      maximumFractionDigits: 2,
+                    })}
+                  </option>
+                ))}
             </select>
             {errors.projectId && (
               <p className="text-red-500 text-sm mt-2">{errors.projectId}</p>
+            )}
+
+            {projects.filter((p) => p.status === "active").length === 0 && (
+              <p className="text-amber-600 text-sm mt-2">
+                ⚠️ No active projects available. Please create or activate a
+                project first.
+              </p>
+            )}
+
+            {/* Project Information Display */}
+            {selectedProject && (
+              <div className="mt-4 p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
+                <h4 className="font-semibold text-blue-900 dark:text-blue-100 mb-2">
+                  Project Details
+                </h4>
+                <div className="space-y-2 text-sm text-blue-800 dark:text-blue-200">
+                  <div className="flex justify-between">
+                    <span>Client:</span>
+                    <span className="font-medium">
+                      {clients.find((c) => c.id === selectedProject.clientId)
+                        ?.company || "N/A"}
+                    </span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>Budget:</span>
+                    <span className="font-medium">
+                      ₹{selectedProject.budget.toLocaleString("en-IN")}
+                    </span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>Status:</span>
+                    <span
+                      className={`font-medium px-2 py-1 rounded text-xs ${
+                        selectedProject.status === "active"
+                          ? "bg-green-100 text-green-800"
+                          : selectedProject.status === "completed"
+                          ? "bg-blue-100 text-blue-800"
+                          : "bg-gray-100 text-gray-800"
+                      }`}
+                    >
+                      {selectedProject.status.charAt(0).toUpperCase() +
+                        selectedProject.status.slice(1)}
+                    </span>
+                  </div>
+                </div>
+              </div>
             )}
           </div>
           <div>
@@ -619,6 +678,60 @@ const TimesheetModal = React.memo(
             <div className="mt-2">
               <StatusBadge status={formData.status} />
             </div>
+            
+            {/* Approval Workflow Buttons */}
+            {editingTimesheet && (
+              <div className="mt-3 space-y-2">
+                {formData.status === 'draft' && (
+                  <button
+                    type="button"
+                    onClick={() => setFormData({ ...formData, status: 'submitted' })}
+                    className="w-full px-3 py-2 bg-blue-600 text-white text-sm rounded-lg hover:bg-blue-700 transition-colors"
+                  >
+                    Submit for Approval
+                  </button>
+                )}
+                
+                {formData.status === 'submitted' && (
+                  <div className="space-y-2">
+                    <button
+                      type="button"
+                      onClick={() => setFormData({ ...formData, status: 'approved' })}
+                      className="w-full px-3 py-2 bg-green-600 text-white text-sm rounded-lg hover:bg-green-700 transition-colors"
+                    >
+                      Approve Timesheet
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setFormData({ ...formData, status: 'rejected' })}
+                      className="w-full px-3 py-2 bg-red-600 text-white text-sm rounded-lg hover:bg-red-700 transition-colors"
+                    >
+                      Reject Timesheet
+                    </button>
+                  </div>
+                )}
+                
+                {formData.status === 'approved' && (
+                  <button
+                    type="button"
+                    onClick={() => setFormData({ ...formData, status: 'invoiced' })}
+                    className="w-full px-3 py-2 bg-purple-600 text-white text-sm rounded-lg hover:bg-purple-700 transition-colors"
+                  >
+                    Mark as Invoiced
+                  </button>
+                )}
+                
+                {formData.status === 'rejected' && (
+                  <button
+                    type="button"
+                    onClick={() => setFormData({ ...formData, status: 'draft' })}
+                    className="w-full px-3 py-2 bg-gray-600 text-white text-sm rounded-lg hover:bg-gray-700 transition-colors"
+                  >
+                    Return to Draft
+                  </button>
+                )}
+              </div>
+            )}
           </div>
         </div>
 
@@ -693,6 +806,7 @@ export default function TimesheetPage() {
   const {
     timesheets,
     projects,
+    clients,
     addTimesheet,
     updateTimesheet,
     deleteTimesheet,
@@ -706,6 +820,9 @@ export default function TimesheetPage() {
     null
   );
   const [viewMode] = useState<"cards" | "table">("cards");
+  const [selectedProjectFilter, setSelectedProjectFilter] =
+    useState<string>("all");
+  const [selectedMonthFilter, setSelectedMonthFilter] = useState<string>("all");
 
   // Use the search hook
   const {
@@ -714,6 +831,92 @@ export default function TimesheetPage() {
     handleSearchChange,
     isSearching,
   } = useSearch(timesheets, ["month", "status"]);
+
+  // Filter timesheets by selected project and month
+  const projectFilteredTimesheets = useMemo(() => {
+    let filtered = filteredTimesheets;
+
+    if (selectedProjectFilter !== "all") {
+      filtered = filtered.filter(
+        (timesheet) => timesheet.projectId === selectedProjectFilter
+      );
+    }
+
+    if (selectedMonthFilter !== "all") {
+      filtered = filtered.filter(
+        (timesheet) => timesheet.month === selectedMonthFilter
+      );
+    }
+
+    return filtered;
+  }, [filteredTimesheets, selectedProjectFilter, selectedMonthFilter]);
+
+  // Get unique projects for filter dropdown
+  const uniqueProjects = useMemo(() => {
+    const projectIds = Array.from(new Set(timesheets.map((t) => t.projectId)));
+    return projects.filter((project) => projectIds.includes(project.id));
+  }, [timesheets, projects]);
+
+  // Get unique months for filter dropdown
+  const uniqueMonths = useMemo(() => {
+    const months = Array.from(new Set(timesheets.map((t) => t.month)))
+      .sort()
+      .reverse();
+    return months;
+  }, [timesheets]);
+
+  // Check for missing monthly timesheets for active projects
+  const missingMonthlyTimesheets = useMemo(() => {
+    const currentMonth = format(new Date(), "yyyy-MM");
+    const activeProjects = projects.filter((p) => p.status === "active");
+
+    return activeProjects
+      .map((project) => {
+        const hasTimesheet = timesheets.some(
+          (t) => t.projectId === project.id && t.month === currentMonth
+        );
+
+        return {
+          project,
+          hasTimesheet,
+          month: currentMonth,
+          status: hasTimesheet ? "completed" : "missing",
+        };
+      })
+      .filter((item) => item.status === "missing");
+  }, [projects, timesheets]);
+
+  // Monthly compliance tracking for all projects
+  const monthlyCompliance = useMemo(() => {
+    const last6Months = Array.from({ length: 6 }, (_, i) => {
+      const date = new Date();
+      date.setMonth(date.getMonth() - i);
+      return format(date, "yyyy-MM");
+    });
+
+    return projects.map(project => {
+      const monthlyStatus = last6Months.map(month => {
+        const timesheet = timesheets.find(t => 
+          t.projectId === project.id && t.month === month
+        );
+        
+        if (!timesheet) return { month, status: 'missing', timesheet: null };
+        
+        return {
+          month,
+          status: timesheet.status,
+          timesheet,
+          needsApproval: timesheet.status === 'draft' || timesheet.status === 'submitted'
+        };
+      });
+
+      return {
+        project,
+        monthlyStatus,
+        overallCompliance: monthlyStatus.filter(m => m.status !== 'missing').length / last6Months.length
+      };
+    });
+  }, [projects, timesheets]);
 
   const handleSubmit = React.useCallback(
     async (formData: Record<string, unknown>) => {
@@ -796,10 +999,365 @@ export default function TimesheetPage() {
       </div>
       {/* (Removed: Stats Cards and Status Summary Cards) */}
 
+      {/* Monthly Reminder Banner */}
+      <div className="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 border border-blue-200 dark:border-blue-800 rounded-2xl p-6">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center space-x-3">
+            <div className="w-10 h-10 bg-blue-100 dark:bg-blue-800 rounded-full flex items-center justify-center">
+              <span className="text-blue-600 dark:text-blue-400 text-lg">📅</span>
+            </div>
+            <div>
+              <h3 className="text-lg font-semibold text-blue-800 dark:text-blue-200">
+                Monthly Timesheet Reminder
+              </h3>
+              <p className="text-blue-700 dark:text-blue-300 text-sm">
+                {format(new Date(), "MMMM yyyy")} timesheets are due. Each active project requires a monthly timesheet for proper billing and project tracking.
+              </p>
+            </div>
+          </div>
+          <div className="flex items-center space-x-2">
+            <span className="text-sm text-blue-600 dark:text-blue-400 font-medium">
+              {missingMonthlyTimesheets.length} projects pending
+            </span>
+            {missingMonthlyTimesheets.length > 0 && (
+              <button
+                onClick={() => setIsModalOpen(true)}
+                className="px-4 py-2 bg-blue-600 text-white text-sm rounded-lg hover:bg-blue-700 transition-colors"
+              >
+                Create Missing Timesheets
+              </button>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* Monthly Timesheet Requirements Alert */}
+      {missingMonthlyTimesheets.length > 0 && (
+        <div className="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-2xl p-6">
+          <div className="flex items-start space-x-3">
+            <div className="flex-shrink-0">
+              <div className="w-8 h-8 bg-amber-100 dark:bg-amber-800 rounded-full flex items-center justify-center">
+                <span className="text-amber-600 dark:text-amber-400 text-lg">
+                  ⚠️
+                </span>
+              </div>
+            </div>
+            <div className="flex-1">
+              <h3 className="text-lg font-semibold text-amber-800 dark:text-amber-200 mb-2">
+                Monthly Timesheet Requirements
+              </h3>
+              <p className="text-amber-700 dark:text-amber-300 mb-4">
+                The following active projects require timesheets for{" "}
+                {format(new Date(), "MMMM yyyy")}:
+              </p>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 mb-4">
+                {missingMonthlyTimesheets.map(({ project }) => (
+                  <div
+                    key={project.id}
+                    className="flex items-center justify-between p-3 bg-amber-100 dark:bg-amber-800/30 rounded-lg border border-amber-200 dark:border-amber-700"
+                  >
+                    <div>
+                      <p className="font-medium text-amber-800 dark:text-amber-200 text-sm">
+                        {project.name}
+                      </p>
+                      <p className="text-amber-600 dark:text-amber-400 text-xs">
+                        {clients.find((c) => c.id === project.clientId)
+                          ?.company || "N/A"}
+                      </p>
+                    </div>
+                    <button
+                      onClick={() => {
+                        setSelectedProjectFilter(project.id);
+                        setSelectedMonthFilter(format(new Date(), "yyyy-MM"));
+                        setIsModalOpen(true);
+                      }}
+                      className="px-3 py-1 bg-amber-600 text-white text-xs rounded-md hover:bg-amber-700 transition-colors"
+                    >
+                      Create Timesheet
+                    </button>
+                  </div>
+                ))}
+              </div>
+              <div className="flex items-center space-x-2 text-amber-600 dark:text-amber-400 text-sm">
+                <span>💡</span>
+                <span>
+                  Each active project requires a monthly timesheet for proper
+                  billing and project tracking.
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Monthly Compliance Dashboard */}
+      <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+        <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+          Monthly Compliance Dashboard
+        </h3>
+        <p className="text-gray-600 dark:text-gray-400 mb-6">
+          Track timesheet completion and approval status for the last 6 months
+        </p>
+        
+        <div className="overflow-x-auto">
+          <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+            <thead className="bg-gray-50 dark:bg-gray-800">
+              <tr>
+                <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                  Project
+                </th>
+                {Array.from({ length: 6 }, (_, i) => {
+                  const date = new Date();
+                  date.setMonth(date.getMonth() - i);
+                  return format(date, "yyyy-MM");
+                }).map(month => (
+                  <th key={month} className="px-3 py-3 text-center text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                    {format(new Date(month + "-01"), "MMM yyyy")}
+                  </th>
+                ))}
+                <th className="px-4 py-3 text-center text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                  Compliance
+                </th>
+              </tr>
+            </thead>
+            <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+              {monthlyCompliance.map(({ project, monthlyStatus, overallCompliance }) => (
+                <tr key={project.id} className="hover:bg-gray-50 dark:hover:bg-gray-700">
+                  <td className="px-4 py-3 whitespace-nowrap">
+                    <div>
+                      <div className="text-sm font-medium text-gray-900 dark:text-white">
+                        {project.name}
+                      </div>
+                      <div className="text-xs text-gray-500 dark:text-gray-400">
+                        {clients.find(c => c.id === project.clientId)?.company || 'N/A'}
+                      </div>
+                    </div>
+                  </td>
+                  {monthlyStatus.map(({ month, status, timesheet, needsApproval }) => (
+                    <td key={month} className="px-3 py-3 text-center">
+                      {status === 'missing' ? (
+                        <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                          Missing
+                        </span>
+                      ) : status === 'draft' ? (
+                        <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
+                          Draft
+                        </span>
+                      ) : status === 'submitted' ? (
+                        <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                          Pending
+                        </span>
+                      ) : status === 'approved' ? (
+                        <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                          Approved
+                        </span>
+                      ) : status === 'rejected' ? (
+                        <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                          Rejected
+                        </span>
+                      ) : (
+                        <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
+                          Invoiced
+                        </span>
+                      )}
+                      {needsApproval && timesheet && (
+                        <button
+                          onClick={() => handleEdit(timesheet)}
+                          className="ml-2 text-xs text-blue-600 hover:text-blue-800 underline"
+                        >
+                          Review
+                        </button>
+                      )}
+                    </td>
+                  ))}
+                  <td className="px-4 py-3 text-center">
+                    <div className="flex items-center justify-center">
+                      <div className="w-16 bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+                        <div
+                          className="bg-green-600 h-2 rounded-full transition-all duration-300"
+                          style={{ width: `${(overallCompliance * 100).toFixed(0)}%` }}
+                        ></div>
+                      </div>
+                      <span className="ml-2 text-sm text-gray-600 dark:text-gray-400">
+                        {(overallCompliance * 100).toFixed(0)}%
+                      </span>
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+        
+        <div className="mt-4 text-sm text-gray-600 dark:text-gray-400">
+          <div className="flex items-center space-x-4">
+            <span className="flex items-center">
+              <span className="w-3 h-3 bg-red-100 rounded-full mr-2"></span>
+              Missing
+            </span>
+            <span className="flex items-center">
+              <span className="w-3 h-3 bg-gray-100 rounded-full mr-2"></span>
+              Draft
+            </span>
+            <span className="flex items-center">
+              <span className="w-3 h-3 bg-blue-100 rounded-full mr-2"></span>
+              Pending Approval
+            </span>
+            <span className="flex items-center">
+              <span className="w-3 h-3 bg-green-100 rounded-full mr-2"></span>
+              Approved
+            </span>
+            <span className="flex items-center">
+              <span className="w-3 h-3 bg-purple-100 rounded-full mr-2"></span>
+              Invoiced
+            </span>
+          </div>
+        </div>
+      </div>
+
+      {/* Project Timesheet Summary */}
+      <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+        <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+          Project Timesheet Summary
+        </h3>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {uniqueProjects.map((project) => {
+            const projectTimesheets = timesheets.filter(
+              (t) => t.projectId === project.id
+            );
+            const totalDays = projectTimesheets.reduce(
+              (sum, t) => sum + (t.daysWorked || 0),
+              0
+            );
+            const totalAmount = projectTimesheets.reduce(
+              (sum, t) => sum + (t.totalAmount || 0),
+              0
+            );
+            const projectClient = clients.find(
+              (c) => c.id === project.clientId
+            );
+
+            return (
+              <div
+                key={project.id}
+                className="p-4 border border-gray-200 dark:border-gray-700 rounded-lg"
+              >
+                <div className="flex items-center justify-between mb-2">
+                  <h4 className="font-medium text-gray-900 dark:text-white text-sm">
+                    {project.name}
+                  </h4>
+                  <span
+                    className={`px-2 py-1 rounded text-xs ${
+                      project.status === "active"
+                        ? "bg-green-100 text-green-800"
+                        : project.status === "completed"
+                        ? "bg-blue-100 text-blue-800"
+                        : "bg-gray-100 text-gray-800"
+                    }`}
+                  >
+                    {project.status.charAt(0).toUpperCase() +
+                      project.status.slice(1)}
+                  </span>
+                </div>
+                <p className="text-xs text-gray-600 dark:text-gray-400 mb-2">
+                  {projectClient?.company || "N/A"}
+                </p>
+                <div className="space-y-1 text-sm">
+                  <div className="flex justify-between">
+                    <span>Timesheets:</span>
+                    <span className="font-medium">
+                      {projectTimesheets.length}
+                    </span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>Total Days:</span>
+                    <span className="font-medium">{totalDays}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>Total Amount:</span>
+                    <span className="font-medium">
+                      ₹{totalAmount.toLocaleString("en-IN")}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* Quick Actions */}
+      <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+        <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+          Quick Actions
+        </h3>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          <button
+            onClick={() => setIsModalOpen(true)}
+            className="p-4 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-xl hover:border-primary-500 hover:bg-primary-50 dark:hover:bg-primary-900/20 transition-all duration-200 group"
+          >
+            <div className="text-center">
+              <PlusIcon className="h-8 w-8 text-gray-400 group-hover:text-primary-600 mx-auto mb-2" />
+              <p className="text-sm font-medium text-gray-700 dark:text-gray-300 group-hover:text-primary-700">
+                Create New Timesheet
+              </p>
+            </div>
+          </button>
+          
+          <button
+            onClick={() => {
+              setSelectedMonthFilter(format(new Date(), "yyyy-MM"));
+              setSelectedProjectFilter("all");
+            }}
+            className="p-4 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-xl hover:border-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-all duration-200 group"
+          >
+            <div className="text-center">
+              <ClockIcon className="h-8 w-8 text-gray-400 group-hover:text-blue-600 mx-auto mb-2" />
+              <p className="text-sm font-medium text-gray-700 dark:text-gray-300 group-hover:text-blue-700">
+                View Current Month
+              </p>
+            </div>
+          </button>
+          
+          <button
+            onClick={() => {
+              setSelectedProjectFilter("all");
+              setSelectedMonthFilter("all");
+            }}
+            className="p-4 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-xl hover:border-green-500 hover:bg-green-50 dark:hover:bg-green-900/20 transition-all duration-200 group"
+          >
+            <div className="text-center">
+              <CheckIcon className="h-8 w-8 text-gray-400 group-hover:text-green-600 mx-auto mb-2" />
+              <p className="text-sm font-medium text-gray-700 dark:text-gray-300 group-hover:text-green-700">
+                Pending Approvals
+              </p>
+            </div>
+          </button>
+          
+          <button
+            onClick={() => {
+              setSelectedProjectFilter("all");
+              setSelectedMonthFilter("all");
+            }}
+            className="p-4 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-xl hover:border-purple-500 hover:bg-purple-50 dark:hover:bg-purple-900/20 transition-all duration-200 group"
+          >
+            <div className="text-center">
+              <div className="h-8 w-8 text-gray-400 group-hover:text-purple-600 mx-auto mb-2 flex items-center justify-center">
+                <span className="text-lg">📊</span>
+              </div>
+              <p className="text-sm font-medium text-gray-700 dark:text-gray-300 group-hover:text-purple-700">
+                Compliance Report
+              </p>
+            </div>
+          </button>
+        </div>
+      </div>
+
       {/* Enhanced Search and Filters */}
       <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
         <div className="mb-6">
-          <div className="flex items-center space-x-3">
+          <div className="flex flex-col md:flex-row gap-4">
+            {/* Search Input */}
             <div className="relative flex-1">
               <MagnifyingGlassIcon className="absolute left-4 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400 dark:text-gray-500" />
               <input
@@ -815,6 +1373,55 @@ export default function TimesheetPage() {
                 </div>
               )}
             </div>
+
+            {/* Project Filter */}
+            <div className="min-w-[200px]">
+              <select
+                value={selectedProjectFilter}
+                onChange={(e) => setSelectedProjectFilter(e.target.value)}
+                className="w-full px-4 py-4 border border-gray-300 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+              >
+                <option value="all">All Projects</option>
+                {uniqueProjects.map((project) => (
+                  <option key={project.id} value={project.id}>
+                    {project.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            {/* Month Filter */}
+            <div className="min-w-[150px]">
+              <select
+                value={selectedMonthFilter}
+                onChange={(e) => setSelectedMonthFilter(e.target.value)}
+                className="w-full px-4 py-4 border border-gray-300 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+              >
+                <option value="all">All Months</option>
+                {uniqueMonths.map((month) => (
+                  <option key={month} value={month}>
+                    {format(new Date(month + "-01"), "MMMM yyyy")}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            {/* Clear Filters Button */}
+            {(searchTerm ||
+              selectedProjectFilter !== "all" ||
+              selectedMonthFilter !== "all") && (
+              <button
+                onClick={() => {
+                  handleSearchChange("");
+                  setSelectedProjectFilter("all");
+                  setSelectedMonthFilter("all");
+                }}
+                className="px-4 py-4 text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 border border-gray-300 dark:border-gray-600 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-700 transition-all duration-200"
+              >
+                Clear Filters
+              </button>
+            )}
+
             <Tooltip content="Search across project names, months, and status. Try 'draft', 'approved', or project names.">
               <div className="p-2 text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors">
                 <InformationCircleIcon className="h-5 w-5" />
@@ -822,6 +1429,35 @@ export default function TimesheetPage() {
             </Tooltip>
           </div>
         </div>
+
+        {/* Filter Summary */}
+        {(searchTerm ||
+          selectedProjectFilter !== "all" ||
+          selectedMonthFilter !== "all") && (
+          <div className="mb-4 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
+            <p className="text-sm text-blue-800 dark:text-blue-200">
+              <span className="font-medium">Active Filters:</span>
+                              {searchTerm && (
+                  <span className="ml-2 inline-block bg-blue-100 dark:bg-blue-800 text-blue-800 dark:text-blue-200 px-2 py-1 rounded text-xs">
+                    Search: &quot;{searchTerm}&quot;
+                  </span>
+                )}
+              {selectedProjectFilter !== "all" && (
+                <span className="ml-2 inline-block bg-blue-100 dark:bg-blue-800 text-blue-800 dark:text-blue-200 px-2 py-1 rounded text-xs">
+                  Project: {projects.find(p => p.id === selectedProjectFilter)?.name || 'Unknown'}
+                </span>
+              )}
+              {selectedMonthFilter !== "all" && (
+                <span className="ml-2 inline-block bg-blue-100 dark:bg-blue-800 text-blue-800 dark:text-blue-200 px-2 py-1 rounded text-xs">
+                  Month: {format(new Date(selectedMonthFilter + "-01"), "MMMM yyyy")}
+                </span>
+              )}
+              <span className="ml-2 text-blue-600 dark:text-blue-300">
+                Showing {projectFilteredTimesheets.length} of {timesheets.length} timesheets
+              </span>
+            </p>
+          </div>
+        )}
 
         {/* Conditional Rendering for Cards vs Table View */}
         {viewMode === "cards" ? (
@@ -851,7 +1487,7 @@ export default function TimesheetPage() {
                 </tr>
               </thead>
               <tbody className="bg-white dark:bg-gray-900 divide-y divide-gray-200 dark:divide-gray-700">
-                {filteredTimesheets.map((timesheet) => {
+                {projectFilteredTimesheets.map((timesheet) => {
                   const project = projects.find(
                     (p) => p.id === timesheet.projectId
                   );
@@ -868,17 +1504,17 @@ export default function TimesheetPage() {
                 })}
               </tbody>
             </table>
-            {filteredTimesheets.length === 0 && (
+            {projectFilteredTimesheets.length === 0 && (
               <div className="text-center py-12">
                 <div className="mx-auto h-12 w-12 text-gray-400 mb-4">
                   <CalculatorIcon className="h-12 w-12" />
                 </div>
                 <p className="text-gray-500 text-lg font-medium">
-                  {searchTerm
-                    ? "No timesheets found matching your search."
+                  {searchTerm || selectedProjectFilter !== "all"
+                    ? "No timesheets found matching your current filters."
                     : "No timesheets found. Create your first timesheet to get started."}
                 </p>
-                {!searchTerm && (
+                {!searchTerm && selectedProjectFilter === "all" && (
                   <button
                     onClick={() => setIsModalOpen(true)}
                     className="mt-4 bg-primary-600 text-white px-6 py-3 rounded-xl font-semibold hover:bg-primary-700 transition-colors duration-200"
@@ -892,7 +1528,7 @@ export default function TimesheetPage() {
         ) : (
           /* Table View */
           <TimesheetsTable
-            timesheets={filteredTimesheets}
+            timesheets={projectFilteredTimesheets}
             projects={projects}
             onEdit={handleEdit}
             onDelete={handleDelete}

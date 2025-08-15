@@ -1,5 +1,5 @@
-import { useEffect, useRef, useCallback } from 'react';
-import { performanceMonitor } from '@/utils/performance';
+import { useEffect, useRef, useCallback } from "react";
+import { performanceMonitor } from "@/utils/performance";
 
 interface UsePerformanceOptions {
   componentName: string;
@@ -7,10 +7,10 @@ interface UsePerformanceOptions {
   enabled?: boolean;
 }
 
-export function usePerformance({ 
-  componentName, 
+export function usePerformance({
+  componentName,
   threshold = 16, // 60fps threshold
-  enabled = true 
+  enabled = true,
 }: UsePerformanceOptions) {
   const renderStartTime = useRef<number>(0);
   const renderCount = useRef<number>(0);
@@ -23,31 +23,43 @@ export function usePerformance({
 
   const endRender = useCallback(() => {
     if (!enabled || renderStartTime.current === 0) return;
-    
+
     const renderTime = performance.now() - renderStartTime.current;
-    
+
     // Track render performance
     performanceMonitor.trackRender(componentName, renderTime);
-    
+
     // Warn if render is slow
     if (renderTime > threshold) {
       console.warn(
-        `🚨 Slow render detected in ${componentName}: ${renderTime.toFixed(2)}ms (threshold: ${threshold}ms)`
+        `🚨 Slow render detected in ${componentName}: ${renderTime.toFixed(
+          2
+        )}ms (threshold: ${threshold}ms)`
       );
     }
-    
+
     renderStartTime.current = 0;
   }, [componentName, threshold, enabled]);
 
-  const trackInteraction = useCallback((interactionName: string, duration: number) => {
-    if (!enabled) return;
-    performanceMonitor.trackInteraction(componentName, interactionName, duration);
-  }, [componentName, enabled]);
+  const trackInteraction = useCallback(
+    (interactionName: string, duration: number) => {
+      if (!enabled) return;
+      performanceMonitor.trackInteraction(
+        componentName,
+        interactionName,
+        duration
+      );
+    },
+    [componentName, enabled]
+  );
 
-  const trackDataLoad = useCallback((dataSize: number, loadTime: number) => {
-    if (!enabled) return;
-    performanceMonitor.trackDataLoad(componentName, dataSize, loadTime);
-  }, [componentName, enabled]);
+  const trackDataLoad = useCallback(
+    (dataSize: number, loadTime: number) => {
+      if (!enabled) return;
+      performanceMonitor.trackDataLoad(componentName, dataSize, loadTime);
+    },
+    [componentName, enabled]
+  );
 
   useEffect(() => {
     startRender();
@@ -75,16 +87,19 @@ export function useMeasureOperation(operationName: string) {
 
   const end = useCallback(() => {
     if (startTime.current === 0) return;
-    
+
     const duration = performance.now() - startTime.current;
     performanceMonitor.trackOperation(operationName, duration);
-    
-    if (duration > 100) { // 100ms threshold
+
+    if (duration > 100) {
+      // 100ms threshold
       console.warn(
-        `🐌 Slow operation detected: ${operationName} took ${duration.toFixed(2)}ms`
+        `🐌 Slow operation detected: ${operationName} took ${duration.toFixed(
+          2
+        )}ms`
       );
     }
-    
+
     startTime.current = 0;
     return duration;
   }, [operationName]);
@@ -109,12 +124,19 @@ export function useMeasureDataProcessing<T>(
     processingTime.current = performance.now() - startTime;
 
     // Track processing performance
-    performanceMonitor.trackDataProcessing(processorName, data.length, processingTime.current);
+    performanceMonitor.trackDataProcessing(
+      processorName,
+      data.length,
+      processingTime.current
+    );
 
     // Warn if processing is slow
-    if (processingTime.current > 50) { // 50ms threshold
+    if (processingTime.current > 50) {
+      // 50ms threshold
       console.warn(
-        `🐌 Slow data processing detected: ${processorName} took ${processingTime.current.toFixed(2)}ms for ${data.length} items`
+        `🐌 Slow data processing detected: ${processorName} took ${processingTime.current.toFixed(
+          2
+        )}ms for ${data.length} items`
       );
     }
   }, [data, processor, processorName]);

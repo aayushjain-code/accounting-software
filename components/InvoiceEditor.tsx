@@ -42,6 +42,8 @@ export const InvoiceEditor: React.FC<InvoiceEditorProps> = ({
     referenceNo: "",
     buyerOrderNo: "",
     buyerOrderDate: "",
+    purchaseOrderNo: "",
+    purchaseOrderDate: "",
     dispatchDocNo: "",
     deliveryNoteDate: "",
     dispatchedThrough: "Email",
@@ -961,6 +963,39 @@ export const InvoiceEditor: React.FC<InvoiceEditorProps> = ({
                       className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                     />
                   </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Purchase Order No.
+                    </label>
+                    <input
+                      type="text"
+                      value={formData.purchaseOrderNo}
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          purchaseOrderNo: e.target.value,
+                        })
+                      }
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      placeholder="e.g., PO-2025-001"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Purchase Order Date
+                    </label>
+                    <input
+                      type="date"
+                      value={formData.purchaseOrderDate}
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          purchaseOrderDate: e.target.value,
+                        })
+                      }
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    />
+                  </div>
                 </div>
               </div>
 
@@ -1571,6 +1606,7 @@ export const InvoiceEditor: React.FC<InvoiceEditorProps> = ({
             clientInfo={clientInfo}
             signatureInfo={signatureInfo}
             itemDetails={itemDetails}
+            formData={formData}
             taxType={taxType}
           />
         </div>

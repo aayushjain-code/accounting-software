@@ -35,11 +35,17 @@ interface InvoiceTemplateProps {
     hsnCode: string;
     unit: string;
   };
+  formData?: {
+    buyerOrderNo: string;
+    buyerOrderDate: string;
+    purchaseOrderNo: string;
+    purchaseOrderDate: string;
+  };
   taxType?: "igst" | "sgst-cgst";
 }
 
 export const InvoiceTemplate: React.FC<InvoiceTemplateProps> = (props) => {
-  const { invoice, client, items, companyInfo, clientInfo, itemDetails, taxType = "igst" } =
+  const { invoice, client, items, companyInfo, clientInfo, itemDetails, formData, taxType = "igst" } =
     props;
 
   const formatCurrency = (amount: number) => {
@@ -234,6 +240,11 @@ export const InvoiceTemplate: React.FC<InvoiceTemplateProps> = (props) => {
   const leave = itemDetails?.leave || "0";
   const hsnCode = itemDetails?.hsnCode || "998314";
   const unit = itemDetails?.unit || "Nos";
+  
+  const buyerOrderNo = formData?.buyerOrderNo || "";
+  const buyerOrderDate = formData?.buyerOrderDate || "";
+  const purchaseOrderNo = formData?.purchaseOrderNo || "";
+  const purchaseOrderDate = formData?.purchaseOrderDate || "";
 
   const subtotal = calculateSubtotal();
   const taxAmount = calculateTax();
@@ -269,28 +280,6 @@ export const InvoiceTemplate: React.FC<InvoiceTemplateProps> = (props) => {
               },
             },
             "TAX INVOICE"
-          ),
-
-          // Buyer Order Number Display
-          React.createElement(
-            "div",
-            {
-              style: {
-                textAlign: "center",
-                fontSize: "11px",
-                margin: "0 0 8px 0",
-                fontWeight: "bold",
-                color: "#333",
-              },
-            },
-            [
-              React.createElement("span", {}, "Buyer Order: "),
-              React.createElement(
-                "span",
-                { style: { color: "#0066cc" } },
-                poNumber
-              ),
-            ]
           ),
 
           // Header: Left (Company & Buyer) | Right (Invoice Meta)
@@ -474,7 +463,7 @@ export const InvoiceTemplate: React.FC<InvoiceTemplateProps> = (props) => {
                               "Buyer's Order No."
                             ),
                             React.createElement("br"),
-                            clientPoNumber,
+                            buyerOrderNo || clientPoNumber,
                           ]
                         ),
                         React.createElement(
@@ -488,7 +477,41 @@ export const InvoiceTemplate: React.FC<InvoiceTemplateProps> = (props) => {
                           [
                             React.createElement("strong", {}, "Dated"),
                             React.createElement("br"),
-                            invoice.buyerOrderDate || "",
+                            buyerOrderDate || invoice.buyerOrderDate || "",
+                          ]
+                        ),
+                      ]),
+                      React.createElement("tr", {}, [
+                        React.createElement(
+                          "td",
+                          {
+                            style: {
+                              border: "1px solid #000",
+                              padding: "4px",
+                            },
+                          },
+                          [
+                            React.createElement(
+                              "strong",
+                              {},
+                              "Purchase Order No."
+                            ),
+                            React.createElement("br"),
+                            purchaseOrderNo,
+                          ]
+                        ),
+                        React.createElement(
+                          "td",
+                          {
+                            style: {
+                              border: "1px solid #000",
+                              padding: "4px",
+                            },
+                          },
+                          [
+                            React.createElement("strong", {}, "Dated"),
+                            React.createElement("br"),
+                            purchaseOrderDate,
                           ]
                         ),
                       ]),

@@ -802,7 +802,7 @@ export const InvoiceTemplate: React.FC<InvoiceTemplateProps> = (props) => {
             ]
           ),
 
-          // IGST Row
+          // Tax Row
           React.createElement(
             "div",
             {
@@ -825,7 +825,7 @@ export const InvoiceTemplate: React.FC<InvoiceTemplateProps> = (props) => {
                     fontWeight: "bold",
                   },
                 },
-                "IGST"
+                getTaxType()
               ),
               React.createElement(
                 "div",
@@ -837,7 +837,7 @@ export const InvoiceTemplate: React.FC<InvoiceTemplateProps> = (props) => {
                     textAlign: "center",
                   },
                 },
-                "18 %"
+                getTaxRate()
               ),
               React.createElement(
                 "div",
@@ -964,7 +964,7 @@ export const InvoiceTemplate: React.FC<InvoiceTemplateProps> = (props) => {
                         textAlign: "center",
                       },
                     },
-                    "IGST"
+                    getTaxType()
                   ),
                   React.createElement(
                     "th",

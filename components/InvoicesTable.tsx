@@ -54,7 +54,7 @@ export const InvoicesTable: React.FC<InvoicesTableProps> = ({
     }).format(amount);
   };
 
-  const getStatusIcon = (status: string): JSX.Element => {
+  const getStatusIcon = (status: string): string => {
     switch (status) {
       case "paid":
         return "✓";

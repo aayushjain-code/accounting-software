@@ -167,22 +167,22 @@ export const InvoiceTemplate: React.FC<InvoiceTemplateProps> = props => {
       }
 
       if (num < 10) {
-        return ones[num];
+        return ones[num] || "";
       }
       if (num < 20) {
-        return teens[num - 10];
+        return teens[num - 10] || "";
       }
       if (num < 100) {
         if (num % 10 === 0) {
-          return tens[Math.floor(num / 10)];
+          return tens[Math.floor(num / 10)] || "";
         }
-        return `${tens[Math.floor(num / 10)]} ${ones[num % 10]}`;
+        return `${tens[Math.floor(num / 10)] || ""} ${ones[num % 10] || ""}`;
       }
       if (num < 1000) {
         if (num % 100 === 0) {
-          return `${ones[Math.floor(num / 100)]} Hundred`;
+          return `${ones[Math.floor(num / 100)] || ""} Hundred`;
         }
-        return `${ones[Math.floor(num / 100)]} Hundred ${
+        return `${ones[Math.floor(num / 100)] || ""} Hundred ${
           num % 100 !== 0 ? convertLessThanOneThousand(num % 100) : ""
         }`;
       }
@@ -236,21 +236,25 @@ export const InvoiceTemplate: React.FC<InvoiceTemplateProps> = props => {
   // Function to convert line breaks in text to React elements
   const renderTextWithLineBreaks = (text: string): JSX.Element => {
     if (!text) {
-      return "";
+      return React.createElement("span", {}, "");
     }
     const lines = text.split("\n");
     if (lines.length === 1) {
-      return text;
+      return React.createElement("span", {}, text);
     }
 
-    return lines
-      .map((line, index) => [
-        line,
-        index < lines.length - 1
-          ? React.createElement("br", { key: `br-${index}` })
-          : null,
-      ])
-      .filter(Boolean);
+    return React.createElement(
+      "span",
+      {},
+      lines
+        .map((line, index) => [
+          line,
+          index < lines.length - 1
+            ? React.createElement("br", { key: `br-${index}` })
+            : null,
+        ])
+        .filter(Boolean)
+    );
   };
 
   // Default values

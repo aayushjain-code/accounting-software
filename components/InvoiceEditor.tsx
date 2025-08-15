@@ -678,35 +678,7 @@ export const InvoiceEditor: React.FC<InvoiceEditorProps> = ({
             </div>
           )}
 
-          {/* Invoice Summary Card */}
-          <div className="mb-6 bg-gradient-to-r from-blue-50 to-indigo-50 p-4 rounded-lg border border-blue-200">
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
-              <div>
-                <p className="text-sm text-gray-600">Subtotal</p>
-                <p className="text-lg font-bold text-blue-800">
-                  ₹{formatCurrency(calculateSubtotal())}
-                </p>
-              </div>
-              <div>
-                <p className="text-sm text-gray-600">IGST (18%)</p>
-                <p className="text-lg font-bold text-blue-800">
-                  ₹{formatCurrency(calculateTax())}
-                </p>
-              </div>
-              <div>
-                <p className="text-sm text-gray-600">Total</p>
-                <p className="text-lg font-bold text-blue-800">
-                  ₹{formatCurrency(calculateTotal())}
-                </p>
-              </div>
-              <div>
-                <p className="text-sm text-gray-600">Items</p>
-                <p className="text-lg font-bold text-blue-800">
-                  {items.length}
-                </p>
-              </div>
-            </div>
-          </div>
+
 
           <div className="flex justify-between items-center mb-4">
             <div>

@@ -29,7 +29,7 @@ import { LogoutButton } from "./LogoutButton";
 import { AuthOverlay } from "./AuthOverlay";
 import { PerformanceDashboard } from "./PerformanceDashboard";
 
-const navigation = [
+const mainNavigation = [
   { name: "Home", href: "/", icon: HomeIcon },
   { name: "Clients", href: "/clients", icon: UsersIcon },
   { name: "Projects", href: "/projects", icon: FolderIcon },
@@ -37,6 +37,10 @@ const navigation = [
   { name: "Invoice Editor", href: "/invoice-editor", icon: PencilSquareIcon },
   { name: "Expenses", href: "/expenses", icon: ReceiptRefundIcon },
   { name: "Daily Logs", href: "/daily-logs", icon: CalendarIcon },
+  { name: "Directory", href: "/directory", icon: UserGroupIcon },
+];
+
+const betaArchiveNavigation = [
   { name: "Timesheets", href: "/timesheet", icon: ClockIcon },
   {
     name: "Timesheet Generator",
@@ -48,7 +52,6 @@ const navigation = [
     href: "/timesheet-management",
     icon: ClockIcon,
   },
-  { name: "Directory", href: "/directory", icon: UserGroupIcon },
 ];
 
 export default function Layout({ children }: { children: React.ReactNode }) {
@@ -175,7 +178,8 @@ export default function Layout({ children }: { children: React.ReactNode }) {
             </button>
           </div>
           <nav className="flex-1 space-y-1 px-2 py-4">
-            {navigation.map((item) => {
+            {/* Main Navigation */}
+            {mainNavigation.map((item) => {
               const isActive = pathname === item.href;
               return (
                 <Link
@@ -194,13 +198,51 @@ export default function Layout({ children }: { children: React.ReactNode }) {
                       "mr-3 h-5 w-5 flex-shrink-0",
                       isActive
                         ? "text-primary-500 dark:text-primary-400"
-                        : "text-gray-400 dark:text-gray-500 group-hover:text-gray-500 dark:group-hover:text-gray-400"
+                        : "text-gray-400 dark:text-gray-500 group-hover:text-gray-500 dark:hover:text-gray-400"
                     )}
                   />
                   {item.name}
                 </Link>
               );
             })}
+            
+            {/* Divider */}
+            <div className="border-t border-gray-200 dark:border-gray-700 my-4" />
+            
+            {/* Beta/Archive Section */}
+            <div className="px-2 py-2">
+              <h3 className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2">
+                Beta/Archive
+              </h3>
+              <div className="space-y-1">
+                {betaArchiveNavigation.map((item) => {
+                  const isActive = pathname === item.href;
+                  return (
+                    <Link
+                      key={item.name}
+                      href={item.href}
+                      className={clsx(
+                        "group flex items-center px-2 py-2 text-sm font-medium rounded-md",
+                        isActive
+                          ? "bg-yellow-100 dark:bg-yellow-900/20 text-yellow-900 dark:text-yellow-100"
+                          : "text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700 hover:text-gray-700 dark:hover:text-gray-300"
+                      )}
+                      onClick={() => setSidebarOpen(false)}
+                    >
+                      <item.icon
+                        className={clsx(
+                          "mr-3 h-5 w-5 flex-shrink-0",
+                          isActive
+                            ? "text-yellow-500 dark:text-yellow-400"
+                            : "text-gray-400 dark:text-gray-500 group-hover:text-gray-500 dark:hover:text-gray-400"
+                        )}
+                      />
+                      {item.name}
+                    </Link>
+                  );
+                })}
+              </div>
+            </div>
           </nav>
         </div>
       </div>
@@ -219,7 +261,8 @@ export default function Layout({ children }: { children: React.ReactNode }) {
             </div>
           </div>
           <nav className="flex-1 space-y-1 px-2 py-4">
-            {navigation.map((item) => {
+            {/* Main Navigation */}
+            {mainNavigation.map((item) => {
               const isActive = pathname === item.href;
               return (
                 <Link
@@ -237,13 +280,50 @@ export default function Layout({ children }: { children: React.ReactNode }) {
                       "mr-3 h-5 w-5 flex-shrink-0",
                       isActive
                         ? "text-primary-500 dark:text-primary-400"
-                        : "text-gray-400 dark:text-gray-500 group-hover:text-gray-500 dark:group-hover:text-gray-400"
+                        : "text-gray-400 dark:text-gray-500 group-hover:text-gray-500 dark:hover:text-gray-400"
                     )}
                   />
                   {item.name}
                 </Link>
               );
             })}
+            
+            {/* Divider */}
+            <div className="border-t border-gray-200 dark:border-gray-700 my-4" />
+            
+            {/* Beta/Archive Section */}
+            <div className="px-2 py-2">
+              <h3 className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2">
+                Beta/Archive
+              </h3>
+              <div className="space-y-1">
+                {betaArchiveNavigation.map((item) => {
+                  const isActive = pathname === item.href;
+                  return (
+                    <Link
+                      key={item.name}
+                      href={item.href}
+                      className={clsx(
+                        "group flex items-center px-2 py-2 text-sm font-medium rounded-md",
+                        isActive
+                          ? "bg-yellow-100 dark:bg-yellow-900/20 text-yellow-900 dark:text-yellow-100"
+                          : "text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700 hover:text-gray-700 dark:hover:text-gray-300"
+                      )}
+                    >
+                      <item.icon
+                        className={clsx(
+                          "mr-3 h-5 w-5 flex-shrink-0",
+                          isActive
+                            ? "text-yellow-500 dark:text-yellow-400"
+                            : "text-gray-400 dark:text-gray-500 group-hover:text-gray-500 dark:hover:text-gray-400"
+                        )}
+                      />
+                      {item.name}
+                    </Link>
+                  );
+                })}
+              </div>
+            </div>
           </nav>
         </div>
       </div>

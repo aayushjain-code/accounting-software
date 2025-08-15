@@ -26,11 +26,17 @@ export interface CreateClientData {
   tags?: string[];
 }
 
-export interface UpdateClientData extends Partial<CreateClientData> {}
+export interface UpdateClientData extends Partial<CreateClientData> {
+  // Add client-specific update fields here when needed
+}
 
 // Extend this interface for additional client-specific filters
 export interface ClientFilters extends BaseFilters {
-  // Add client-specific filters here when needed
+  search?: string;
+  status?: string;
+  city?: string;
+  state?: string;
+  tags?: string[];
 }
 
 export class ClientService {
@@ -39,7 +45,7 @@ export class ClientService {
     filters: ClientFilters = {},
     page = 1,
     limit = 20
-  ): Promise<{ data: any[]; totalPages: number; page: number; limit: number }> {
+  ): Promise<{ data: Client[]; totalPages: number; page: number; limit: number }> {
     try {
       let query = supabase
         .from("clients")
@@ -93,7 +99,7 @@ export class ClientService {
   }
 
   // Get client by ID
-  static async getClientById(id: string): Promise<any> {
+  static async getClientById(id: string): Promise<Client | null> {
     try {
       const { data, error } = await supabase
         .from("clients")
@@ -112,7 +118,7 @@ export class ClientService {
   }
 
   // Get client by client code
-  static async getClientByCode(clientCode: string): Promise<any> {
+  static async getClientByCode(clientCode: string): Promise<Client | null> {
     try {
       const { data, error } = await supabase
         .from("clients")
@@ -131,7 +137,7 @@ export class ClientService {
   }
 
   // Create new client
-  static async createClient(clientData: CreateClientData): Promise<any> {
+  static async createClient(clientData: CreateClientData): Promise<Client | null> {
     try {
       // Generate client code
       const clientCode = await this.generateClientCode();
@@ -153,7 +159,7 @@ export class ClientService {
   }
 
   // Update existing client
-  static async updateClient(id: string, clientData: UpdateClientData): Promise<any> {
+  static async updateClient(id: string, clientData: UpdateClientData): Promise<Client | null> {
     try {
       const { data, error } = await supabase
         .from("clients")
@@ -196,9 +202,9 @@ export class ClientService {
         throw error;
       }
 
-      const total = data?.length || 0;
-      const active = data?.filter(c => c.status === "active").length || 0;
-      const inactive = data?.filter(c => c.status === "inactive").length || 0;
+      const total = data?.length ?? 0;
+      const active = data?.filter(c => c.status === "active").length ?? 0;
+      const inactive = data?.filter(c => c.status === "inactive").length ?? 0;
 
       return { total, active, inactive };
     } catch (error) {
@@ -208,7 +214,7 @@ export class ClientService {
   }
 
   // Get clients by status
-  static async getClientsByStatus(status: string): Promise<any[]> {
+  static async getClientsByStatus(status: string): Promise<Client[]> {
     try {
       const { data, error } = await supabase
         .from("clients")
@@ -227,7 +233,7 @@ export class ClientService {
   }
 
   // Get clients by location
-  static async getClientsByLocation(city?: string, state?: string): Promise<any[]> {
+  static async getClientsByLocation(city?: string, state?: string): Promise<Client[]> {
     try {
       let query = supabase
         .from("clients")
@@ -255,7 +261,7 @@ export class ClientService {
   }
 
   // Search clients
-  static async searchClients(searchTerm: string): Promise<any[]> {
+  static async searchClients(searchTerm: string): Promise<Client[]> {
     try {
       const { data, error } = await supabase
         .from("clients")
@@ -312,7 +318,7 @@ export class ClientService {
   // Bulk operations
   static async bulkUpdateClients(
     updates: Array<{ id: string; data: UpdateClientData }>
-  ): Promise<any[]> {
+  ): Promise<Client[]> {
     try {
       const { data, error } = await supabase
         .from("clients")

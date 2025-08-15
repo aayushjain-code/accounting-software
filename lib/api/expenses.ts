@@ -1,61 +1,76 @@
 import { supabase } from "@/lib/supabase";
-import { Expense } from "@/types";
 
 export interface CreateExpenseData {
+  user_id: string;
+  project_id?: string;
+  client_id?: string;
+  category: string;
   description: string;
   amount: number;
-  category: string;
   date: string;
-  project_id?: string;
+  receipt_path?: string;
   status?: "pending" | "approved" | "rejected";
-  receipt?: string;
   notes?: string;
+  tags?: string[];
+  billable?: boolean;
+  reimbursable?: boolean;
 }
 
 export interface UpdateExpenseData extends Partial<CreateExpenseData> {}
 
 export interface ExpenseFilters {
-  search?: string;
-  status?: string;
-  category?: string;
+  user_id?: string;
   project_id?: string;
+  client_id?: string;
+  category?: string;
+  status?: string;
   date_from?: string;
   date_to?: string;
   amount_min?: number;
   amount_max?: number;
+  billable?: boolean;
+  reimbursable?: boolean;
 }
 
 export class ExpenseService {
-  // Get all expenses with optional filtering
-  static async getExpenses(filters: ExpenseFilters = {}, page = 1, limit = 20) {
+  // Get all expenses with optional filtering and pagination
+  static async getExpenses(
+    filters: ExpenseFilters = {},
+    page = 1,
+    limit = 20
+  ): Promise<{ data: any[]; totalPages: number; page: number; limit: number }> {
     try {
       let query = supabase
         .from("expenses")
         .select(
           `
           *,
-          project:projects(name, client:clients(name, company_name))
+          user:user_profiles(first_name, last_name, email),
+          project:projects(name, billing_rate),
+          client:clients(name, company_name)
         `
         )
-        .order("created_at", { ascending: false });
+        .order("date", { ascending: false });
 
       // Apply filters
-      if (filters.search) {
-        query = query.or(
-          `description.ilike.%${filters.search}%,notes.ilike.%${filters.search}%`
-        );
+      if (filters.user_id) {
+        query = query.eq("user_id", filters.user_id);
       }
 
-      if (filters.status) {
-        query = query.eq("status", filters.status);
+      if (filters.project_id) {
+        query = query.eq("project_id", filters.project_id);
+      }
+
+      if (filters.client_id) {
+        query = query.eq("client_id", filters.client_id);
       }
 
       if (filters.category) {
         query = query.eq("category", filters.category);
       }
 
-      if (filters.project_id) {
-        query = query.eq("project_id", filters.project_id);
+      if (filters.status) {
+        query = query.eq("status", filters.status);
       }
 
       if (filters.date_from) {
@@ -66,12 +81,20 @@ export class ExpenseService {
         query = query.lte("date", filters.date_to);
       }
 
-      if (filters.amount_min !== undefined) {
+      if (filters.amount_min) {
         query = query.gte("amount", filters.amount_min);
       }
 
-      if (filters.amount_max !== undefined) {
+      if (filters.amount_max) {
         query = query.lte("amount", filters.amount_max);
+      }
+
+      if (filters.billable !== undefined) {
+        query = query.eq("billable", filters.billable);
+      }
+
+      if (filters.reimbursable !== undefined) {
+        query = query.eq("reimbursable", filters.reimbursable);
       }
 
       // Apply pagination
@@ -81,11 +104,12 @@ export class ExpenseService {
 
       const { data, error, count } = await query;
 
-      if (error) throw error;
+      if (error) {
+        throw error;
+      }
 
       return {
-        expenses: data || [],
-        total: count || 0,
+        data: data || [],
         page,
         limit,
         totalPages: Math.ceil((count || 0) / limit),
@@ -97,21 +121,24 @@ export class ExpenseService {
   }
 
   // Get expense by ID
-  static async getExpenseById(id: string) {
+  static async getExpenseById(id: string): Promise<any> {
     try {
       const { data, error } = await supabase
         .from("expenses")
         .select(
           `
           *,
-          project:projects(*, client:clients(name, company_name)),
-          approved_by_user:user_profiles!approved_by(first_name, last_name, email)
+          user:user_profiles(*),
+          project:projects(*),
+          client:clients(*)
         `
         )
         .eq("id", id)
         .single();
 
-      if (error) throw error;
+      if (error) {
+        throw error;
+      }
       return data;
     } catch (error) {
       console.error("Error fetching expense:", error);
@@ -119,21 +146,25 @@ export class ExpenseService {
     }
   }
 
-  // Get expense by code
-  static async getExpenseByCode(expenseCode: string) {
+  // Get expense by expense code
+  static async getExpenseByCode(expenseCode: string): Promise<any> {
     try {
       const { data, error } = await supabase
         .from("expenses")
         .select(
           `
           *,
-          project:projects(name, client:clients(name, company_name))
+          user:user_profiles(*),
+          project:projects(*),
+          client:clients(*)
         `
         )
         .eq("expense_code", expenseCode)
         .single();
 
-      if (error) throw error;
+      if (error) {
+        throw error;
+      }
       return data;
     } catch (error) {
       console.error("Error fetching expense by code:", error);
@@ -142,7 +173,7 @@ export class ExpenseService {
   }
 
   // Create new expense
-  static async createExpense(expenseData: CreateExpenseData) {
+  static async createExpense(expenseData: CreateExpenseData): Promise<any> {
     try {
       // Generate expense code
       const expenseCode = await this.generateExpenseCode();
@@ -153,7 +184,9 @@ export class ExpenseService {
         .select()
         .single();
 
-      if (error) throw error;
+      if (error) {
+        throw error;
+      }
       return data;
     } catch (error) {
       console.error("Error creating expense:", error);
@@ -161,8 +194,8 @@ export class ExpenseService {
     }
   }
 
-  // Update expense
-  static async updateExpense(id: string, expenseData: UpdateExpenseData) {
+  // Update existing expense
+  static async updateExpense(id: string, expenseData: UpdateExpenseData): Promise<any> {
     try {
       const { data, error } = await supabase
         .from("expenses")
@@ -171,7 +204,9 @@ export class ExpenseService {
         .select()
         .single();
 
-      if (error) throw error;
+      if (error) {
+        throw error;
+      }
       return data;
     } catch (error) {
       console.error("Error updating expense:", error);
@@ -180,11 +215,13 @@ export class ExpenseService {
   }
 
   // Delete expense
-  static async deleteExpense(id: string) {
+  static async deleteExpense(id: string): Promise<boolean> {
     try {
       const { error } = await supabase.from("expenses").delete().eq("id", id);
 
-      if (error) throw error;
+      if (error) {
+        throw error;
+      }
       return true;
     } catch (error) {
       console.error("Error deleting expense:", error);
@@ -193,20 +230,23 @@ export class ExpenseService {
   }
 
   // Approve expense
-  static async approveExpense(id: string, approvedBy: string) {
+  static async approveExpense(id: string, approverId: string, approvalNotes?: string): Promise<any> {
     try {
       const { data, error } = await supabase
         .from("expenses")
         .update({
           status: "approved",
           approved_at: new Date().toISOString(),
-          approved_by: approvedBy,
+          approved_by: approverId,
+          approval_notes: approvalNotes,
         })
         .eq("id", id)
         .select()
         .single();
 
-      if (error) throw error;
+      if (error) {
+        throw error;
+      }
       return data;
     } catch (error) {
       console.error("Error approving expense:", error);
@@ -215,25 +255,23 @@ export class ExpenseService {
   }
 
   // Reject expense
-  static async rejectExpense(
-    id: string,
-    approvedBy: string,
-    rejectionReason: string
-  ) {
+  static async rejectExpense(id: string, approverId: string, rejectionReason: string): Promise<any> {
     try {
       const { data, error } = await supabase
         .from("expenses")
         .update({
           status: "rejected",
-          approved_at: new Date().toISOString(),
-          approved_by: approvedBy,
+          rejected_at: new Date().toISOString(),
+          approved_by: approverId,
           rejection_reason: rejectionReason,
         })
         .eq("id", id)
         .select()
         .single();
 
-      if (error) throw error;
+      if (error) {
+        throw error;
+      }
       return data;
     } catch (error) {
       console.error("Error rejecting expense:", error);
@@ -241,224 +279,8 @@ export class ExpenseService {
     }
   }
 
-  // Get expenses by project
-  static async getExpensesByProject(projectId: string) {
-    try {
-      const { data, error } = await supabase
-        .from("expenses")
-        .select("*")
-        .eq("project_id", projectId)
-        .order("created_at", { ascending: false });
-
-      if (error) throw error;
-      return data || [];
-    } catch (error) {
-      console.error("Error fetching expenses by project:", error);
-      throw error;
-    }
-  }
-
-  // Get expenses by status
-  static async getExpensesByStatus(status: string) {
-    try {
-      const { data, error } = await supabase
-        .from("expenses")
-        .select(
-          `
-          *,
-          project:projects(name, client:clients(name, company_name))
-        `
-        )
-        .eq("status", status)
-        .order("created_at", { ascending: false });
-
-      if (error) throw error;
-      return data || [];
-    } catch (error) {
-      console.error("Error fetching expenses by status:", error);
-      throw error;
-    }
-  }
-
-  // Get expenses by category
-  static async getExpensesByCategory(category: string) {
-    try {
-      const { data, error } = await supabase
-        .from("expenses")
-        .select(
-          `
-          *,
-          project:projects(name, client:clients(name, company_name))
-        `
-        )
-        .eq("category", category)
-        .order("created_at", { ascending: false });
-
-      if (error) throw error;
-      return data || [];
-    } catch (error) {
-      console.error("Error fetching expenses by category:", error);
-      throw error;
-    }
-  }
-
-  // Get pending expenses (for approval)
-  static async getPendingExpenses() {
-    try {
-      const { data, error } = await supabase
-        .from("expenses")
-        .select(
-          `
-          *,
-          project:projects(name, client:clients(name, company_name))
-        `
-        )
-        .eq("status", "pending")
-        .order("created_at", { ascending: true });
-
-      if (error) throw error;
-      return data || [];
-    } catch (error) {
-      console.error("Error fetching pending expenses:", error);
-      throw error;
-    }
-  }
-
-  // Get expenses by date range
-  static async getExpensesByDateRange(startDate: string, endDate: string) {
-    try {
-      const { data, error } = await supabase
-        .from("expenses")
-        .select(
-          `
-          *,
-          project:projects(name, client:clients(name, company_name))
-        `
-        )
-        .gte("date", startDate)
-        .lte("date", endDate)
-        .order("date", { ascending: true });
-
-      if (error) throw error;
-      return data || [];
-    } catch (error) {
-      console.error("Error fetching expenses by date range:", error);
-      throw error;
-    }
-  }
-
-  // Get expense statistics
-  static async getExpenseStats() {
-    try {
-      const { data, error } = await supabase
-        .from("expenses")
-        .select("status, amount, category, date");
-
-      if (error) throw error;
-
-      const total = data?.length || 0;
-      const pending = data?.filter(e => e.status === "pending").length || 0;
-      const approved = data?.filter(e => e.status === "approved").length || 0;
-      const rejected = data?.filter(e => e.status === "rejected").length || 0;
-      const totalAmount =
-        data?.reduce((sum, e) => sum + (e.amount || 0), 0) || 0;
-      const approvedAmount =
-        data
-          ?.filter(e => e.status === "approved")
-          .reduce((sum, e) => sum + (e.amount || 0), 0) || 0;
-      const pendingAmount =
-        data
-          ?.filter(e => e.status === "pending")
-          .reduce((sum, e) => sum + (e.amount || 0), 0) || 0;
-
-      // Get expenses by category
-      const categoryStats =
-        data?.reduce(
-          (acc, expense) => {
-            const category = expense.category || "Uncategorized";
-            if (!acc[category]) {
-              acc[category] = { count: 0, amount: 0 };
-            }
-            acc[category].count++;
-            acc[category].amount += expense.amount || 0;
-            return acc;
-          },
-          {} as Record<string, { count: number; amount: number }>
-        ) || {};
-
-      // Get monthly expenses for current year
-      const currentYear = new Date().getFullYear();
-      const monthlyExpenses = Array(12).fill(0);
-      data?.forEach(expense => {
-        if (expense.date) {
-          const expenseYear = new Date(expense.date).getFullYear();
-          if (expenseYear === currentYear) {
-            const month = new Date(expense.date).getMonth();
-            monthlyExpenses[month] += expense.amount || 0;
-          }
-        }
-      });
-
-      return {
-        total,
-        pending,
-        approved,
-        rejected,
-        totalAmount,
-        approvedAmount,
-        pendingAmount,
-        categoryStats,
-        monthlyExpenses,
-      };
-    } catch (error) {
-      console.error("Error fetching expense stats:", error);
-      throw error;
-    }
-  }
-
-  // Search expenses
-  static async searchExpenses(searchTerm: string) {
-    try {
-      const { data, error } = await supabase
-        .from("expenses")
-        .select(
-          `
-          *,
-          project:projects(name, client:clients(name, company_name))
-        `
-        )
-        .or(`description.ilike.%${searchTerm}%,notes.ilike.%${searchTerm}%`)
-        .order("created_at", { ascending: false });
-
-      if (error) throw error;
-      return data || [];
-    } catch (error) {
-      console.error("Error searching expenses:", error);
-      throw error;
-    }
-  }
-
-  // Get expense categories
-  static async getExpenseCategories() {
-    try {
-      const { data, error } = await supabase
-        .from("expenses")
-        .select("category");
-
-      if (error) throw error;
-
-      const categories = [
-        ...new Set(data?.map(e => e.category).filter(Boolean)),
-      ];
-      return categories.sort();
-    } catch (error) {
-      console.error("Error fetching expense categories:", error);
-      throw error;
-    }
-  }
-
   // Upload receipt
-  static async uploadReceipt(file: File, expenseId: string) {
+  static async uploadReceipt(expenseId: string, file: File): Promise<any> {
     try {
       const fileExt = file.name.split(".").pop();
       const fileName = `${expenseId}-${Date.now()}.${fileExt}`;
@@ -470,12 +292,23 @@ export class ExpenseService {
           upsert: false,
         });
 
-      if (error) throw error;
+      if (error) {
+        throw error;
+      }
 
       // Update expense with receipt path
-      await this.updateExpense(expenseId, { receipt: fileName });
+      const { data: expenseData, error: updateError } = await supabase
+        .from("expenses")
+        .update({ receipt_path: fileName })
+        .eq("id", expenseId)
+        .select()
+        .single();
 
-      return data;
+      if (updateError) {
+        throw updateError;
+      }
+
+      return expenseData;
     } catch (error) {
       console.error("Error uploading receipt:", error);
       throw error;
@@ -483,19 +316,26 @@ export class ExpenseService {
   }
 
   // Delete receipt
-  static async deleteReceipt(expenseId: string) {
+  static async deleteReceipt(expenseId: string): Promise<boolean> {
     try {
       const expense = await this.getExpenseById(expenseId);
-      if (!expense?.receipt) return true;
+      if (!expense.receipt_path) {
+        return true;
+      }
 
       const { error } = await supabase.storage
         .from("receipts")
-        .remove([expense.receipt]);
+        .remove([expense.receipt_path]);
 
-      if (error) throw error;
+      if (error) {
+        throw error;
+      }
 
-      // Update expense to remove receipt
-      await this.updateExpense(expenseId, { receipt: null });
+      // Update expense to remove receipt path
+      await supabase
+        .from("expenses")
+        .update({ receipt_path: null })
+        .eq("id", expenseId);
 
       return true;
     } catch (error) {
@@ -504,15 +344,227 @@ export class ExpenseService {
     }
   }
 
-  // Get receipt URL
-  static getReceiptUrl(receiptPath: string | null) {
-    if (!receiptPath) return null;
+  // Get expenses by user
+  static async getExpensesByUser(userId: string): Promise<any[]> {
+    try {
+      const { data, error } = await supabase
+        .from("expenses")
+        .select(
+          `
+          *,
+          project:projects(name, billing_rate),
+          client:clients(name, company_name)
+        `
+        )
+        .eq("user_id", userId)
+        .order("date", { ascending: false });
 
-    const { data } = supabase.storage
-      .from("receipts")
-      .getPublicUrl(receiptPath);
+      if (error) {
+        throw error;
+      }
+      return data || [];
+    } catch (error) {
+      console.error("Error fetching expenses by user:", error);
+      throw error;
+    }
+  }
 
-    return data.publicUrl;
+  // Get expenses by project
+  static async getExpensesByProject(projectId: string): Promise<any[]> {
+    try {
+      const { data, error } = await supabase
+        .from("expenses")
+        .select(
+          `
+          *,
+          user:user_profiles(first_name, last_name, email),
+          client:clients(name, company_name)
+        `
+        )
+        .eq("project_id", projectId)
+        .order("date", { ascending: false });
+
+      if (error) {
+        throw error;
+      }
+      return data || [];
+    } catch (error) {
+      console.error("Error fetching expenses by project:", error);
+      throw error;
+    }
+  }
+
+  // Get expenses by client
+  static async getExpensesByClient(clientId: string): Promise<any[]> {
+    try {
+      const { data, error } = await supabase
+        .from("expenses")
+        .select(
+          `
+          *,
+          user:user_profiles(first_name, last_name, email),
+          project:projects(name, billing_rate)
+        `
+        )
+        .eq("client_id", clientId)
+        .order("date", { ascending: false });
+
+      if (error) {
+        throw error;
+      }
+      return data || [];
+    } catch (error) {
+      console.error("Error fetching expenses by client:", error);
+      throw error;
+    }
+  }
+
+  // Get expenses by status
+  static async getExpensesByStatus(status: string): Promise<any[]> {
+    try {
+      const { data, error } = await supabase
+        .from("expenses")
+        .select(
+          `
+          *,
+          user:user_profiles(first_name, last_name, email),
+          project:projects(name, billing_rate),
+          client:clients(name, company_name)
+        `
+        )
+        .eq("status", status)
+        .order("date", { ascending: false });
+
+      if (error) {
+        throw error;
+      }
+      return data || [];
+    } catch (error) {
+      console.error("Error fetching expenses by status:", error);
+      throw error;
+    }
+  }
+
+  // Get expenses by category
+  static async getExpensesByCategory(category: string): Promise<any[]> {
+    try {
+      const { data, error } = await supabase
+        .from("expenses")
+        .select(
+          `
+          *,
+          user:user_profiles(first_name, last_name, email),
+          project:projects(name, billing_rate),
+          client:clients(name, company_name)
+        `
+        )
+        .eq("category", category)
+        .order("date", { ascending: false });
+
+      if (error) {
+        throw error;
+      }
+      return data || [];
+    } catch (error) {
+      console.error("Error fetching expenses by category:", error);
+      throw error;
+    }
+  }
+
+  // Get expense statistics
+  static async getExpenseStats(): Promise<{
+    total: number;
+    pending: number;
+    approved: number;
+    rejected: number;
+    totalAmount: number;
+    approvedAmount: number;
+    pendingAmount: number;
+    billableAmount: number;
+    reimbursableAmount: number;
+    categoryBreakdown: Record<string, number>;
+    monthlyBreakdown: Record<string, number>;
+  }> {
+    try {
+      const { data, error } = await supabase
+        .from("expenses")
+        .select("status, amount, category, date, billable, reimbursable");
+
+      if (error) {
+        throw error;
+      }
+
+      const total = data?.length || 0;
+      const pending = data?.filter(e => e.status === "pending").length || 0;
+      const approved = data?.filter(e => e.status === "approved").length || 0;
+      const rejected = data?.filter(e => e.status === "rejected").length || 0;
+      const totalAmount = data?.reduce((sum, e) => sum + (e.amount || 0), 0) || 0;
+      const approvedAmount =
+        data?.filter(e => e.status === "approved").reduce((sum, e) => sum + (e.amount || 0), 0) || 0;
+      const pendingAmount =
+        data?.filter(e => e.status === "pending").reduce((sum, e) => sum + (e.amount || 0), 0) || 0;
+      const billableAmount =
+        data?.filter(e => e.billable).reduce((sum, e) => sum + (e.amount || 0), 0) || 0;
+      const reimbursableAmount =
+        data?.filter(e => e.reimbursable).reduce((sum, e) => sum + (e.amount || 0), 0) || 0;
+
+      // Category breakdown
+      const categoryBreakdown: Record<string, number> = {};
+      data?.forEach(expense => {
+        const category = expense.category || "Uncategorized";
+        categoryBreakdown[category] = (categoryBreakdown[category] || 0) + (expense.amount || 0);
+      });
+
+      // Monthly breakdown
+      const monthlyBreakdown: Record<string, number> = {};
+      data?.forEach(expense => {
+        const month = expense.date?.substring(0, 7) || "Unknown";
+        monthlyBreakdown[month] = (monthlyBreakdown[month] || 0) + (expense.amount || 0);
+      });
+
+      return {
+        total,
+        pending,
+        approved,
+        rejected,
+        totalAmount,
+        approvedAmount,
+        pendingAmount,
+        billableAmount,
+        reimbursableAmount,
+        categoryBreakdown,
+        monthlyBreakdown,
+      };
+    } catch (error) {
+      console.error("Error fetching expense stats:", error);
+      throw error;
+    }
+  }
+
+  // Search expenses
+  static async searchExpenses(searchTerm: string): Promise<any[]> {
+    try {
+      const { data, error } = await supabase
+        .from("expenses")
+        .select(
+          `
+          *,
+          user:user_profiles(first_name, last_name, email),
+          project:projects(name, billing_rate),
+          client:clients(name, company_name)
+        `
+        )
+        .or(`description.ilike.%${searchTerm}%,notes.ilike.%${searchTerm}%`)
+        .order("date", { ascending: false });
+
+      if (error) {
+        throw error;
+      }
+      return data || [];
+    } catch (error) {
+      console.error("Error searching expenses:", error);
+      throw error;
+    }
   }
 
   // Generate unique expense code
@@ -524,7 +576,9 @@ export class ExpenseService {
         .order("expense_code", { ascending: false })
         .limit(1);
 
-      if (error) throw error;
+      if (error) {
+        throw error;
+      }
 
       let nextNumber = 1;
       if (data && data.length > 0) {
@@ -548,14 +602,16 @@ export class ExpenseService {
   // Bulk operations
   static async bulkUpdateExpenses(
     updates: Array<{ id: string; data: UpdateExpenseData }>
-  ) {
+  ): Promise<any[]> {
     try {
       const { data, error } = await supabase
         .from("expenses")
         .upsert(updates.map(({ id, data }) => ({ id, ...data })))
         .select();
 
-      if (error) throw error;
+      if (error) {
+        throw error;
+      }
       return data || [];
     } catch (error) {
       console.error("Error bulk updating expenses:", error);
@@ -563,11 +619,13 @@ export class ExpenseService {
     }
   }
 
-  static async bulkDeleteExpenses(ids: string[]) {
+  static async bulkDeleteExpenses(ids: string[]): Promise<boolean> {
     try {
       const { error } = await supabase.from("expenses").delete().in("id", ids);
 
-      if (error) throw error;
+      if (error) {
+        throw error;
+      }
       return true;
     } catch (error) {
       console.error("Error bulk deleting expenses:", error);
@@ -618,6 +676,67 @@ export class ExpenseService {
       return data || [];
     } catch (error) {
       console.error("Error bulk rejecting expenses:", error);
+      throw error;
+    }
+  }
+
+  // Get receipt URL
+  static getReceiptUrl(receiptPath: string | null): string | null {
+    if (!receiptPath) {
+      return null;
+    }
+
+    const { data } = supabase.storage.from("receipts").getPublicUrl(receiptPath);
+    return data.publicUrl;
+  }
+
+  // Export expenses to CSV
+  static async exportExpensesToCSV(filters: ExpenseFilters = {}): Promise<string> {
+    try {
+      const { data } = await this.getExpenses(filters, 1, 10000); // Get all expenses
+
+      if (!data || data.length === 0) {
+        return "No expenses found";
+      }
+
+      const headers = [
+        "Expense Code",
+        "Date",
+        "Category",
+        "Description",
+        "Amount",
+        "Status",
+        "User",
+        "Project",
+        "Client",
+        "Billable",
+        "Reimbursable",
+        "Notes",
+      ];
+
+      const csvRows = [headers.join(",")];
+
+      for (const expense of data) {
+        const row = [
+          expense.expense_code || "",
+          expense.date || "",
+          expense.category || "",
+          `"${(expense.description || "").replace(/"/g, '""')}"`,
+          expense.amount || 0,
+          expense.status || "",
+          expense.user ? `${expense.user.first_name} ${expense.user.last_name}` : "",
+          expense.project?.name || "",
+          expense.client?.name || "",
+          expense.billable ? "Yes" : "No",
+          expense.reimbursable ? "Yes" : "No",
+          `"${(expense.notes || "").replace(/"/g, '""')}"`,
+        ];
+        csvRows.push(row.join(","));
+      }
+
+      return csvRows.join("\n");
+    } catch (error) {
+      console.error("Error exporting expenses to CSV:", error);
       throw error;
     }
   }

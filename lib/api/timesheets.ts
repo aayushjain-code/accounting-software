@@ -1,14 +1,14 @@
 import { supabase } from "@/lib/supabase";
-import { Timesheet, TimesheetEntry } from "@/types";
 
 export interface CreateTimesheetData {
   user_id: string;
   project_id: string;
-  month: number;
-  year: number;
+  week_start_date: string;
+  week_end_date: string;
   status?: "draft" | "submitted" | "approved" | "rejected" | "invoiced";
-  billing_rate?: number;
   notes?: string;
+  total_hours?: number;
+  total_amount?: number;
 }
 
 export interface UpdateTimesheetData extends Partial<CreateTimesheetData> {}
@@ -20,29 +20,27 @@ export interface CreateTimesheetEntryData {
   description: string;
   task_type?: string;
   billable?: boolean;
-  rate?: number;
+  hourly_rate?: number;
 }
 
-export interface UpdateTimesheetEntryData
-  extends Partial<CreateTimesheetEntryData> {}
+export interface UpdateTimesheetEntryData extends Partial<CreateTimesheetEntryData> {}
 
 export interface TimesheetFilters {
   user_id?: string;
   project_id?: string;
   status?: string;
-  month?: number;
-  year?: number;
-  date_from?: string;
-  date_to?: string;
+  week_start_date_from?: string;
+  week_start_date_to?: string;
+  approved_by?: string;
 }
 
 export class TimesheetService {
-  // Get all timesheets with optional filtering
+  // Get all timesheets with optional filtering and pagination
   static async getTimesheets(
     filters: TimesheetFilters = {},
     page = 1,
     limit = 20
-  ) {
+  ): Promise<{ data: any[]; totalPages: number; page: number; limit: number }> {
     try {
       let query = supabase
         .from("timesheets")
@@ -50,10 +48,12 @@ export class TimesheetService {
           `
           *,
           user:user_profiles(first_name, last_name, email),
-          project:projects(name, client:clients(name, company_name))
+          project:projects(name, client_id),
+          client:clients(name, company_name),
+          approved_by_user:user_profiles!approved_by(first_name, last_name, email)
         `
         )
-        .order("created_at", { ascending: false });
+        .order("week_start_date", { ascending: false });
 
       // Apply filters
       if (filters.user_id) {
@@ -68,12 +68,16 @@ export class TimesheetService {
         query = query.eq("status", filters.status);
       }
 
-      if (filters.month) {
-        query = query.eq("month", filters.month);
+      if (filters.week_start_date_from) {
+        query = query.gte("week_start_date", filters.week_start_date_from);
       }
 
-      if (filters.year) {
-        query = query.eq("year", filters.year);
+      if (filters.week_start_date_to) {
+        query = query.lte("week_start_date", filters.week_start_date_to);
+      }
+
+      if (filters.approved_by) {
+        query = query.eq("approved_by", filters.approved_by);
       }
 
       // Apply pagination
@@ -83,11 +87,12 @@ export class TimesheetService {
 
       const { data, error, count } = await query;
 
-      if (error) throw error;
+      if (error) {
+        throw error;
+      }
 
       return {
-        timesheets: data || [],
-        total: count || 0,
+        data: data || [],
         page,
         limit,
         totalPages: Math.ceil((count || 0) / limit),
@@ -99,7 +104,7 @@ export class TimesheetService {
   }
 
   // Get timesheet by ID
-  static async getTimesheetById(id: string) {
+  static async getTimesheetById(id: string): Promise<any> {
     try {
       const { data, error } = await supabase
         .from("timesheets")
@@ -108,13 +113,17 @@ export class TimesheetService {
           *,
           user:user_profiles(*),
           project:projects(*),
+          client:clients(*),
+          approved_by_user:user_profiles!approved_by(*),
           entries:timesheet_entries(*)
         `
         )
         .eq("id", id)
         .single();
 
-      if (error) throw error;
+      if (error) {
+        throw error;
+      }
       return data;
     } catch (error) {
       console.error("Error fetching timesheet:", error);
@@ -122,22 +131,25 @@ export class TimesheetService {
     }
   }
 
-  // Get timesheet by code
-  static async getTimesheetByCode(timesheetCode: string) {
+  // Get timesheet by timesheet code
+  static async getTimesheetByCode(timesheetCode: string): Promise<any> {
     try {
       const { data, error } = await supabase
         .from("timesheets")
         .select(
           `
           *,
-          user:user_profiles(first_name, last_name, email),
-          project:projects(name, client:clients(name, company_name))
+          user:user_profiles(*),
+          project:projects(*),
+          client:clients(*)
         `
         )
         .eq("timesheet_code", timesheetCode)
         .single();
 
-      if (error) throw error;
+      if (error) {
+        throw error;
+      }
       return data;
     } catch (error) {
       console.error("Error fetching timesheet by code:", error);
@@ -146,13 +158,10 @@ export class TimesheetService {
   }
 
   // Create new timesheet
-  static async createTimesheet(timesheetData: CreateTimesheetData) {
+  static async createTimesheet(timesheetData: CreateTimesheetData): Promise<any> {
     try {
       // Generate timesheet code
-      const timesheetCode = await this.generateTimesheetCode(
-        timesheetData.month,
-        timesheetData.year
-      );
+      const timesheetCode = await this.generateTimesheetCode();
 
       const { data, error } = await supabase
         .from("timesheets")
@@ -160,7 +169,9 @@ export class TimesheetService {
         .select()
         .single();
 
-      if (error) throw error;
+      if (error) {
+        throw error;
+      }
       return data;
     } catch (error) {
       console.error("Error creating timesheet:", error);
@@ -168,8 +179,8 @@ export class TimesheetService {
     }
   }
 
-  // Update timesheet
-  static async updateTimesheet(id: string, timesheetData: UpdateTimesheetData) {
+  // Update existing timesheet
+  static async updateTimesheet(id: string, timesheetData: UpdateTimesheetData): Promise<any> {
     try {
       const { data, error } = await supabase
         .from("timesheets")
@@ -178,7 +189,9 @@ export class TimesheetService {
         .select()
         .single();
 
-      if (error) throw error;
+      if (error) {
+        throw error;
+      }
       return data;
     } catch (error) {
       console.error("Error updating timesheet:", error);
@@ -187,11 +200,13 @@ export class TimesheetService {
   }
 
   // Delete timesheet
-  static async deleteTimesheet(id: string) {
+  static async deleteTimesheet(id: string): Promise<boolean> {
     try {
       const { error } = await supabase.from("timesheets").delete().eq("id", id);
 
-      if (error) throw error;
+      if (error) {
+        throw error;
+      }
       return true;
     } catch (error) {
       console.error("Error deleting timesheet:", error);
@@ -200,19 +215,18 @@ export class TimesheetService {
   }
 
   // Submit timesheet for approval
-  static async submitTimesheet(id: string) {
+  static async submitTimesheet(id: string): Promise<any> {
     try {
       const { data, error } = await supabase
         .from("timesheets")
-        .update({
-          status: "submitted",
-          submitted_at: new Date().toISOString(),
-        })
+        .update({ status: "submitted", submitted_at: new Date().toISOString() })
         .eq("id", id)
         .select()
         .single();
 
-      if (error) throw error;
+      if (error) {
+        throw error;
+      }
       return data;
     } catch (error) {
       console.error("Error submitting timesheet:", error);
@@ -223,23 +237,25 @@ export class TimesheetService {
   // Approve timesheet
   static async approveTimesheet(
     id: string,
-    approvedBy: string,
-    rejectionReason?: string
-  ) {
+    approverId: string,
+    approvalNotes?: string
+  ): Promise<any> {
     try {
       const { data, error } = await supabase
         .from("timesheets")
         .update({
           status: "approved",
           approved_at: new Date().toISOString(),
-          approved_by: approvedBy,
-          rejection_reason: null,
+          approved_by: approverId,
+          approval_notes: approvalNotes,
         })
         .eq("id", id)
         .select()
         .single();
 
-      if (error) throw error;
+      if (error) {
+        throw error;
+      }
       return data;
     } catch (error) {
       console.error("Error approving timesheet:", error);
@@ -250,23 +266,25 @@ export class TimesheetService {
   // Reject timesheet
   static async rejectTimesheet(
     id: string,
-    approvedBy: string,
+    approverId: string,
     rejectionReason: string
-  ) {
+  ): Promise<any> {
     try {
       const { data, error } = await supabase
         .from("timesheets")
         .update({
           status: "rejected",
-          approved_at: new Date().toISOString(),
-          approved_by: approvedBy,
+          rejected_at: new Date().toISOString(),
+          approved_by: approverId,
           rejection_reason: rejectionReason,
         })
         .eq("id", id)
         .select()
         .single();
 
-      if (error) throw error;
+      if (error) {
+        throw error;
+      }
       return data;
     } catch (error) {
       console.error("Error rejecting timesheet:", error);
@@ -275,16 +293,21 @@ export class TimesheetService {
   }
 
   // Mark timesheet as invoiced
-  static async markTimesheetAsInvoiced(id: string) {
+  static async markTimesheetAsInvoiced(id: string): Promise<any> {
     try {
       const { data, error } = await supabase
         .from("timesheets")
-        .update({ status: "invoiced" })
+        .update({
+          status: "invoiced",
+          invoiced_at: new Date().toISOString(),
+        })
         .eq("id", id)
         .select()
         .single();
 
-      if (error) throw error;
+      if (error) {
+        throw error;
+      }
       return data;
     } catch (error) {
       console.error("Error marking timesheet as invoiced:", error);
@@ -292,176 +315,8 @@ export class TimesheetService {
     }
   }
 
-  // Get timesheets by user
-  static async getTimesheetsByUser(userId: string) {
-    try {
-      const { data, error } = await supabase
-        .from("timesheets")
-        .select(
-          `
-          *,
-          project:projects(name, client:clients(name, company_name))
-        `
-        )
-        .eq("user_id", userId)
-        .order("created_at", { ascending: false });
-
-      if (error) throw error;
-      return data || [];
-    } catch (error) {
-      console.error("Error fetching timesheets by user:", error);
-      throw error;
-    }
-  }
-
-  // Get timesheets by project
-  static async getTimesheetsByProject(projectId: string) {
-    try {
-      const { data, error } = await supabase
-        .from("timesheets")
-        .select(
-          `
-          *,
-          user:user_profiles(first_name, last_name, email)
-        `
-        )
-        .eq("project_id", projectId)
-        .order("created_at", { ascending: false });
-
-      if (error) throw error;
-      return data || [];
-    } catch (error) {
-      console.error("Error fetching timesheets by project:", error);
-      throw error;
-    }
-  }
-
-  // Get timesheets by status
-  static async getTimesheetsByStatus(status: string) {
-    try {
-      const { data, error } = await supabase
-        .from("timesheets")
-        .select(
-          `
-          *,
-          user:user_profiles(first_name, last_name, email),
-          project:projects(name, client:clients(name, company_name))
-        `
-        )
-        .eq("status", status)
-        .order("created_at", { ascending: false });
-
-      if (error) throw error;
-      return data || [];
-    } catch (error) {
-      console.error("Error fetching timesheets by status:", error);
-      throw error;
-    }
-  }
-
-  // Get timesheets by month and year
-  static async getTimesheetsByMonth(month: number, year: number) {
-    try {
-      const { data, error } = await supabase
-        .from("timesheets")
-        .select(
-          `
-          *,
-          user:user_profiles(first_name, last_name, email),
-          project:projects(name, client:clients(name, company_name))
-        `
-        )
-        .eq("month", month)
-        .eq("year", year)
-        .order("created_at", { ascending: false });
-
-      if (error) throw error;
-      return data || [];
-    } catch (error) {
-      console.error("Error fetching timesheets by month:", error);
-      throw error;
-    }
-  }
-
-  // Get pending timesheets (for approval)
-  static async getPendingTimesheets() {
-    try {
-      const { data, error } = await supabase
-        .from("timesheets")
-        .select(
-          `
-          *,
-          user:user_profiles(first_name, last_name, email),
-          project:projects(name, client:clients(name, company_name))
-        `
-        )
-        .eq("status", "submitted")
-        .order("submitted_at", { ascending: true });
-
-      if (error) throw error;
-      return data || [];
-    } catch (error) {
-      console.error("Error fetching pending timesheets:", error);
-      throw error;
-    }
-  }
-
-  // Calculate timesheet totals
-  static async calculateTimesheetTotals(timesheetId: string) {
-    try {
-      const { data, error } = await supabase
-        .from("timesheet_entries")
-        .select("hours, rate, billable")
-        .eq("timesheet_id", timesheetId);
-
-      if (error) throw error;
-
-      const totalHours =
-        data?.reduce((sum, entry) => sum + (entry.hours || 0), 0) || 0;
-      const billableHours =
-        data?.reduce(
-          (sum, entry) => sum + (entry.billable ? entry.hours || 0 : 0),
-          0
-        ) || 0;
-      const totalAmount =
-        data?.reduce(
-          (sum, entry) => sum + (entry.hours || 0) * (entry.rate || 0),
-          0
-        ) || 0;
-
-      return { totalHours, billableHours, totalAmount };
-    } catch (error) {
-      console.error("Error calculating timesheet totals:", error);
-      throw error;
-    }
-  }
-
-  // Update timesheet totals
-  static async updateTimesheetTotals(timesheetId: string) {
-    try {
-      const totals = await this.calculateTimesheetTotals(timesheetId);
-
-      const { data, error } = await supabase
-        .from("timesheets")
-        .update({
-          total_hours: totals.totalHours,
-          total_amount: totals.totalAmount,
-          days_worked: Math.ceil(totals.totalHours / 8), // Assuming 8 hours per day
-        })
-        .eq("id", timesheetId)
-        .select()
-        .single();
-
-      if (error) throw error;
-      return data;
-    } catch (error) {
-      console.error("Error updating timesheet totals:", error);
-      throw error;
-    }
-  }
-
-  // Timesheet Entries Management
-  static async addTimesheetEntry(entryData: CreateTimesheetEntryData) {
+  // Add timesheet entry
+  static async addTimesheetEntry(entryData: CreateTimesheetEntryData): Promise<any> {
     try {
       const { data, error } = await supabase
         .from("timesheet_entries")
@@ -469,7 +324,9 @@ export class TimesheetService {
         .select()
         .single();
 
-      if (error) throw error;
+      if (error) {
+        throw error;
+      }
 
       // Update timesheet totals
       await this.updateTimesheetTotals(entryData.timesheet_id);
@@ -481,10 +338,8 @@ export class TimesheetService {
     }
   }
 
-  static async updateTimesheetEntry(
-    id: string,
-    entryData: UpdateTimesheetEntryData
-  ) {
+  // Update timesheet entry
+  static async updateTimesheetEntry(id: string, entryData: UpdateTimesheetEntryData): Promise<any> {
     try {
       const { data, error } = await supabase
         .from("timesheet_entries")
@@ -493,7 +348,9 @@ export class TimesheetService {
         .select()
         .single();
 
-      if (error) throw error;
+      if (error) {
+        throw error;
+      }
 
       // Update timesheet totals
       if (data.timesheet_id) {
@@ -507,7 +364,8 @@ export class TimesheetService {
     }
   }
 
-  static async deleteTimesheetEntry(id: string) {
+  // Delete timesheet entry
+  static async deleteTimesheetEntry(id: string): Promise<boolean> {
     try {
       const entry = await supabase
         .from("timesheet_entries")
@@ -515,12 +373,11 @@ export class TimesheetService {
         .eq("id", id)
         .single();
 
-      const { error } = await supabase
-        .from("timesheet_entries")
-        .delete()
-        .eq("id", id);
+      const { error } = await supabase.from("timesheet_entries").delete().eq("id", id);
 
-      if (error) throw error;
+      if (error) {
+        throw error;
+      }
 
       // Update timesheet totals
       if (entry.data?.timesheet_id) {
@@ -535,7 +392,7 @@ export class TimesheetService {
   }
 
   // Get timesheet entries
-  static async getTimesheetEntries(timesheetId: string) {
+  static async getTimesheetEntries(timesheetId: string): Promise<any[]> {
     try {
       const { data, error } = await supabase
         .from("timesheet_entries")
@@ -543,7 +400,9 @@ export class TimesheetService {
         .eq("timesheet_id", timesheetId)
         .order("date", { ascending: true });
 
-      if (error) throw error;
+      if (error) {
+        throw error;
+      }
       return data || [];
     } catch (error) {
       console.error("Error fetching timesheet entries:", error);
@@ -551,14 +410,123 @@ export class TimesheetService {
     }
   }
 
+  // Update timesheet totals
+  private static async updateTimesheetTotals(timesheetId: string): Promise<void> {
+    try {
+      const entries = await this.getTimesheetEntries(timesheetId);
+
+      const totalHours = entries.reduce((sum, entry) => sum + (entry.hours || 0), 0);
+      const totalAmount = entries.reduce(
+        (sum, entry) => sum + ((entry.hours || 0) * (entry.hourly_rate || 0)),
+        0
+      );
+
+      await supabase
+        .from("timesheets")
+        .update({
+          total_hours: totalHours,
+          total_amount: totalAmount,
+        })
+        .eq("id", timesheetId);
+    } catch (error) {
+      console.error("Error updating timesheet totals:", error);
+    }
+  }
+
+  // Get timesheets by user
+  static async getTimesheetsByUser(userId: string): Promise<any[]> {
+    try {
+      const { data, error } = await supabase
+        .from("timesheets")
+        .select(
+          `
+          *,
+          project:projects(name, client_id),
+          client:clients(name, company_name)
+        `
+        )
+        .eq("user_id", userId)
+        .order("week_start_date", { ascending: false });
+
+      if (error) {
+        throw error;
+      }
+      return data || [];
+    } catch (error) {
+      console.error("Error fetching timesheets by user:", error);
+      throw error;
+    }
+  }
+
+  // Get timesheets by project
+  static async getTimesheetsByProject(projectId: string): Promise<any[]> {
+    try {
+      const { data, error } = await supabase
+        .from("timesheets")
+        .select(
+          `
+          *,
+          user:user_profiles(first_name, last_name, email)
+        `
+        )
+        .eq("project_id", projectId)
+        .order("week_start_date", { ascending: false });
+
+      if (error) {
+        throw error;
+      }
+      return data || [];
+    } catch (error) {
+      console.error("Error fetching timesheets by project:", error);
+      throw error;
+    }
+  }
+
+  // Get timesheets by status
+  static async getTimesheetsByStatus(status: string): Promise<any[]> {
+    try {
+      const { data, error } = await supabase
+        .from("timesheets")
+        .select(
+          `
+          *,
+          user:user_profiles(first_name, last_name, email),
+          project:projects(name, client_id),
+          client:clients(name, company_name)
+        `
+        )
+        .eq("status", status)
+        .order("week_start_date", { ascending: false });
+
+      if (error) {
+        throw error;
+      }
+      return data || [];
+    } catch (error) {
+      console.error("Error fetching timesheets by status:", error);
+      throw error;
+    }
+  }
+
   // Get timesheet statistics
-  static async getTimesheetStats() {
+  static async getTimesheetStats(): Promise<{
+    total: number;
+    draft: number;
+    submitted: number;
+    approved: number;
+    rejected: number;
+    invoiced: number;
+    totalHours: number;
+    totalAmount: number;
+  }> {
     try {
       const { data, error } = await supabase
         .from("timesheets")
         .select("status, total_hours, total_amount");
 
-      if (error) throw error;
+      if (error) {
+        throw error;
+      }
 
       const total = data?.length || 0;
       const draft = data?.filter(t => t.status === "draft").length || 0;
@@ -566,10 +534,8 @@ export class TimesheetService {
       const approved = data?.filter(t => t.status === "approved").length || 0;
       const rejected = data?.filter(t => t.status === "rejected").length || 0;
       const invoiced = data?.filter(t => t.status === "invoiced").length || 0;
-      const totalHours =
-        data?.reduce((sum, t) => sum + (t.total_hours || 0), 0) || 0;
-      const totalAmount =
-        data?.reduce((sum, t) => sum + (t.total_amount || 0), 0) || 0;
+      const totalHours = data?.reduce((sum, t) => sum + (t.total_hours || 0), 0) || 0;
+      const totalAmount = data?.reduce((sum, t) => sum + (t.total_amount || 0), 0) || 0;
 
       return {
         total,
@@ -587,21 +553,44 @@ export class TimesheetService {
     }
   }
 
+  // Search timesheets
+  static async searchTimesheets(searchTerm: string): Promise<any[]> {
+    try {
+      const { data, error } = await supabase
+        .from("timesheets")
+        .select(
+          `
+          *,
+          user:user_profiles(first_name, last_name, email),
+          project:projects(name, client_id),
+          client:clients(name, company_name)
+        `
+        )
+        .or(`notes.ilike.%${searchTerm}%`)
+        .order("week_start_date", { ascending: false });
+
+      if (error) {
+        throw error;
+      }
+      return data || [];
+    } catch (error) {
+      console.error("Error searching timesheets:", error);
+      throw error;
+    }
+  }
+
   // Generate unique timesheet code
-  private static async generateTimesheetCode(
-    month: number,
-    year: number
-  ): Promise<string> {
+  private static async generateTimesheetCode(): Promise<string> {
     try {
       const { data, error } = await supabase
         .from("timesheets")
         .select("timesheet_code")
-        .eq("month", month)
-        .eq("year", year)
         .order("timesheet_code", { ascending: false })
         .limit(1);
 
-      if (error) throw error;
+      if (error) {
+        throw error;
+      }
 
       let nextNumber = 1;
       if (data && data.length > 0) {
@@ -612,8 +601,9 @@ export class TimesheetService {
         }
       }
 
-      const monthStr = String(month).padStart(2, "0");
-      return `TS-${year}${monthStr}-${String(nextNumber).padStart(4, "0")}`;
+      const year = new Date().getFullYear();
+      const month = String(new Date().getMonth() + 1).padStart(2, "0");
+      return `TS-${year}${month}-${String(nextNumber).padStart(4, "0")}`;
     } catch (error) {
       console.error("Error generating timesheet code:", error);
       // Fallback to timestamp-based code
@@ -624,14 +614,16 @@ export class TimesheetService {
   // Bulk operations
   static async bulkUpdateTimesheets(
     updates: Array<{ id: string; data: UpdateTimesheetData }>
-  ) {
+  ): Promise<any[]> {
     try {
       const { data, error } = await supabase
         .from("timesheets")
         .upsert(updates.map(({ id, data }) => ({ id, ...data })))
         .select();
 
-      if (error) throw error;
+      if (error) {
+        throw error;
+      }
       return data || [];
     } catch (error) {
       console.error("Error bulk updating timesheets:", error);
@@ -639,14 +631,13 @@ export class TimesheetService {
     }
   }
 
-  static async bulkDeleteTimesheets(ids: string[]) {
+  static async bulkDeleteTimesheets(ids: string[]): Promise<boolean> {
     try {
-      const { error } = await supabase
-        .from("timesheets")
-        .delete()
-        .in("id", ids);
+      const { error } = await supabase.from("timesheets").delete().in("id", ids);
 
-      if (error) throw error;
+      if (error) {
+        throw error;
+      }
       return true;
     } catch (error) {
       console.error("Error bulk deleting timesheets:", error);

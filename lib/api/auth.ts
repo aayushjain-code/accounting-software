@@ -1,5 +1,4 @@
 import { supabase } from "@/lib/supabase";
-import { UserProfile } from "@/types";
 
 export interface SignUpData {
   email: string;
@@ -46,7 +45,7 @@ export interface PasswordUpdateData {
 
 export class AuthService {
   // Sign up new user
-  static async signUp(signUpData: SignUpData) {
+  static async signUp(signUpData: SignUpData): Promise<{ user: any; profile: any }> {
     try {
       // Create user in Supabase Auth
       const { data: authData, error: authError } = await supabase.auth.signUp({
@@ -54,7 +53,9 @@ export class AuthService {
         password: signUpData.password,
       });
 
-      if (authError) throw authError;
+      if (authError) {
+        throw authError;
+      }
 
       if (authData.user) {
         // Create user profile
@@ -75,7 +76,9 @@ export class AuthService {
           .select()
           .single();
 
-        if (profileError) throw profileError;
+        if (profileError) {
+          throw profileError;
+        }
 
         return {
           user: authData.user,
@@ -90,15 +93,17 @@ export class AuthService {
     }
   }
 
-  // Sign in user
-  static async signIn(signInData: SignInData) {
+  // Sign in existing user
+  static async signIn(signInData: SignInData): Promise<any> {
     try {
       const { data, error } = await supabase.auth.signInWithPassword({
         email: signInData.email,
         password: signInData.password,
       });
 
-      if (error) throw error;
+      if (error) {
+        throw error;
+      }
 
       if (data.user) {
         // Update last login
@@ -113,10 +118,12 @@ export class AuthService {
   }
 
   // Sign out user
-  static async signOut() {
+  static async signOut(): Promise<boolean> {
     try {
       const { error } = await supabase.auth.signOut();
-      if (error) throw error;
+      if (error) {
+        throw error;
+      }
       return true;
     } catch (error) {
       console.error("Error signing out:", error);
@@ -124,14 +131,16 @@ export class AuthService {
     }
   }
 
-  // Get current user
-  static async getCurrentUser() {
+  // Get current authenticated user
+  static async getCurrentUser(): Promise<any> {
     try {
       const {
         data: { user },
         error,
       } = await supabase.auth.getUser();
-      if (error) throw error;
+      if (error) {
+        throw error;
+      }
       return user;
     } catch (error) {
       console.error("Error getting current user:", error);
@@ -140,10 +149,12 @@ export class AuthService {
   }
 
   // Get current user profile
-  static async getCurrentUserProfile() {
+  static async getCurrentUserProfile(): Promise<any> {
     try {
       const user = await this.getCurrentUser();
-      if (!user) return null;
+      if (!user) {
+        return null;
+      }
 
       const { data, error } = await supabase
         .from("user_profiles")
@@ -151,7 +162,9 @@ export class AuthService {
         .eq("user_id", user.id)
         .single();
 
-      if (error) throw error;
+      if (error) {
+        throw error;
+      }
       return data;
     } catch (error) {
       console.error("Error getting current user profile:", error);
@@ -160,10 +173,12 @@ export class AuthService {
   }
 
   // Update user profile
-  static async updateProfile(profileData: UpdateProfileData) {
+  static async updateProfile(profileData: UpdateProfileData): Promise<any> {
     try {
       const user = await this.getCurrentUser();
-      if (!user) throw new Error("User not authenticated");
+      if (!user) {
+        throw new Error("User not authenticated");
+      }
 
       const { data, error } = await supabase
         .from("user_profiles")
@@ -172,7 +187,9 @@ export class AuthService {
         .select()
         .single();
 
-      if (error) throw error;
+      if (error) {
+        throw error;
+      }
       return data;
     } catch (error) {
       console.error("Error updating profile:", error);
@@ -180,15 +197,17 @@ export class AuthService {
     }
   }
 
-  // Update last login
-  static async updateLastLogin(userId: string) {
+  // Update last login timestamp
+  private static async updateLastLogin(userId: string): Promise<boolean> {
     try {
       const { error } = await supabase
         .from("user_profiles")
         .update({ last_login: new Date().toISOString() })
         .eq("user_id", userId);
 
-      if (error) throw error;
+      if (error) {
+        throw error;
+      }
       return true;
     } catch (error) {
       console.error("Error updating last login:", error);
@@ -198,13 +217,15 @@ export class AuthService {
   }
 
   // Request password reset
-  static async requestPasswordReset(email: string) {
+  static async requestPasswordReset(email: string): Promise<boolean> {
     try {
       const { error } = await supabase.auth.resetPasswordForEmail(email, {
         redirectTo: `${window.location.origin}/reset-password`,
       });
 
-      if (error) throw error;
+      if (error) {
+        throw error;
+      }
       return true;
     } catch (error) {
       console.error("Error requesting password reset:", error);
@@ -213,13 +234,15 @@ export class AuthService {
   }
 
   // Update password
-  static async updatePassword(password: string) {
+  static async updatePassword(password: string): Promise<boolean> {
     try {
       const { error } = await supabase.auth.updateUser({
         password: password,
       });
 
-      if (error) throw error;
+      if (error) {
+        throw error;
+      }
       return true;
     } catch (error) {
       console.error("Error updating password:", error);
@@ -228,7 +251,7 @@ export class AuthService {
   }
 
   // Get user by ID
-  static async getUserById(userId: string) {
+  static async getUserById(userId: string): Promise<any> {
     try {
       const { data, error } = await supabase
         .from("user_profiles")
@@ -236,7 +259,9 @@ export class AuthService {
         .eq("id", userId)
         .single();
 
-      if (error) throw error;
+      if (error) {
+        throw error;
+      }
       return data;
     } catch (error) {
       console.error("Error getting user by ID:", error);
@@ -244,15 +269,17 @@ export class AuthService {
     }
   }
 
-  // Get all users (admin only)
-  static async getAllUsers() {
+  // Get all users
+  static async getAllUsers(): Promise<any[]> {
     try {
       const { data, error } = await supabase
         .from("user_profiles")
         .select("*")
         .order("created_at", { ascending: false });
 
-      if (error) throw error;
+      if (error) {
+        throw error;
+      }
       return data || [];
     } catch (error) {
       console.error("Error getting all users:", error);
@@ -264,7 +291,7 @@ export class AuthService {
   static async updateUserRole(
     userId: string,
     role: "admin" | "user" | "manager"
-  ) {
+  ): Promise<any> {
     try {
       const { data, error } = await supabase
         .from("user_profiles")
@@ -273,7 +300,9 @@ export class AuthService {
         .select()
         .single();
 
-      if (error) throw error;
+      if (error) {
+        throw error;
+      }
       return data;
     } catch (error) {
       console.error("Error updating user role:", error);
@@ -281,15 +310,17 @@ export class AuthService {
     }
   }
 
-  // Delete user (admin only)
-  static async deleteUser(userId: string) {
+  // Delete user
+  static async deleteUser(userId: string): Promise<boolean> {
     try {
       const { error } = await supabase
         .from("user_profiles")
         .delete()
         .eq("id", userId);
 
-      if (error) throw error;
+      if (error) {
+        throw error;
+      }
       return true;
     } catch (error) {
       console.error("Error deleting user:", error);
@@ -298,10 +329,12 @@ export class AuthService {
   }
 
   // Check if user is admin
-  static async isAdmin(userId?: string) {
+  static async isAdmin(userId?: string): Promise<boolean> {
     try {
       const currentUserId = userId || (await this.getCurrentUser())?.id;
-      if (!currentUserId) return false;
+      if (!currentUserId) {
+        return false;
+      }
 
       const profile = await this.getUserById(currentUserId);
       return profile?.role === "admin";
@@ -311,14 +344,16 @@ export class AuthService {
     }
   }
 
-  // Get session
-  static async getSession() {
+  // Get current session
+  static async getSession(): Promise<any> {
     try {
       const {
         data: { session },
         error,
       } = await supabase.auth.getSession();
-      if (error) throw error;
+      if (error) {
+        throw error;
+      }
       return session;
     } catch (error) {
       console.error("Error getting session:", error);
@@ -327,10 +362,12 @@ export class AuthService {
   }
 
   // Refresh session
-  static async refreshSession() {
+  static async refreshSession(): Promise<any> {
     try {
       const { data, error } = await supabase.auth.refreshSession();
-      if (error) throw error;
+      if (error) {
+        throw error;
+      }
       return data;
     } catch (error) {
       console.error("Error refreshing session:", error);
@@ -339,13 +376,15 @@ export class AuthService {
   }
 
   // Listen to auth state changes
-  static onAuthStateChange(callback: (event: string, session: any) => void) {
+  static onAuthStateChange(callback: (event: string, session: any) => void): any {
     return supabase.auth.onAuthStateChange(callback);
   }
 
   // Get user avatar URL
-  static getAvatarUrl(avatarPath: string | null) {
-    if (!avatarPath) return null;
+  static getAvatarUrl(avatarPath: string | null): string | null {
+    if (!avatarPath) {
+      return null;
+    }
 
     const { data } = supabase.storage.from("avatars").getPublicUrl(avatarPath);
 
@@ -353,7 +392,7 @@ export class AuthService {
   }
 
   // Upload avatar
-  static async uploadAvatar(file: File, userId: string) {
+  static async uploadAvatar(file: File, userId: string): Promise<any> {
     try {
       const fileExt = file.name.split(".").pop();
       const fileName = `${userId}-${Date.now()}.${fileExt}`;
@@ -365,7 +404,9 @@ export class AuthService {
           upsert: false,
         });
 
-      if (error) throw error;
+      if (error) {
+        throw error;
+      }
 
       // Update user profile with new avatar path
       await this.updateProfile({ avatar: fileName });
@@ -378,13 +419,15 @@ export class AuthService {
   }
 
   // Delete avatar
-  static async deleteAvatar(avatarPath: string) {
+  static async deleteAvatar(avatarPath: string): Promise<boolean> {
     try {
       const { error } = await supabase.storage
         .from("avatars")
         .remove([avatarPath]);
 
-      if (error) throw error;
+      if (error) {
+        throw error;
+      }
 
       // Update user profile to remove avatar
       await this.updateProfile({ avatar: null });

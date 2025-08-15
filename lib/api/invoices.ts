@@ -1,51 +1,54 @@
 import { supabase } from "@/lib/supabase";
-import { Invoice, InvoiceItem } from "@/types";
 
 export interface CreateInvoiceData {
   client_id: string;
-  project_id: string;
-  timesheet_id?: string;
+  project_id?: string;
+  invoice_number?: string;
   issue_date: string;
   due_date: string;
   status?: "draft" | "sent" | "paid" | "overdue" | "cancelled";
-  subtotal: number;
+  subtotal?: number;
   tax_rate?: number;
   tax_amount?: number;
-  total: number;
-  payment_terms?: string;
+  total_amount?: number;
   notes?: string;
-  terms_conditions?: string;
+  terms?: string;
+  payment_instructions?: string;
 }
 
 export interface UpdateInvoiceData extends Partial<CreateInvoiceData> {}
 
 export interface CreateInvoiceItemData {
   invoice_id: string;
-  title: string;
-  description?: string;
+  description: string;
   quantity: number;
   unit_price: number;
-  total: number;
-  hsn_code?: string;
-  unit?: string;
+  total_price: number;
+  item_type?: string;
+  timesheet_id?: string;
 }
 
 export interface UpdateInvoiceItemData extends Partial<CreateInvoiceItemData> {}
 
 export interface InvoiceFilters {
-  search?: string;
-  status?: string;
   client_id?: string;
   project_id?: string;
-  date_from?: string;
-  date_to?: string;
+  status?: string;
+  issue_date_from?: string;
+  issue_date_to?: string;
   due_date_from?: string;
   due_date_to?: string;
+  amount_min?: number;
+  amount_max?: number;
 }
 
 export class InvoiceService {
-  // Get all invoices with optional filtering
-  static async getInvoices(filters: InvoiceFilters = {}, page = 1, limit = 20) {
+  // Get all invoices with optional filtering and pagination
+  static async getInvoices(
+    filters: InvoiceFilters = {},
+    page = 1,
+    limit = 20
+  ): Promise<{ data: any[]; totalPages: number; page: number; limit: number }> {
     try {
       let query = supabase
         .from("invoices")
@@ -53,23 +56,12 @@ export class InvoiceService {
           `
           *,
           client:clients(name, company_name, email),
-          project:projects(name),
-          timesheet:timesheets(timesheet_code, month, year)
+          project:projects(name, billing_rate)
         `
         )
-        .order("created_at", { ascending: false });
+        .order("issue_date", { ascending: false });
 
       // Apply filters
-      if (filters.search) {
-        query = query.or(
-          `invoice_number.ilike.%${filters.search}%,notes.ilike.%${filters.search}%`
-        );
-      }
-
-      if (filters.status) {
-        query = query.eq("status", filters.status);
-      }
-
       if (filters.client_id) {
         query = query.eq("client_id", filters.client_id);
       }
@@ -78,12 +70,16 @@ export class InvoiceService {
         query = query.eq("project_id", filters.project_id);
       }
 
-      if (filters.date_from) {
-        query = query.gte("issue_date", filters.date_from);
+      if (filters.status) {
+        query = query.eq("status", filters.status);
       }
 
-      if (filters.date_to) {
-        query = query.lte("issue_date", filters.date_to);
+      if (filters.issue_date_from) {
+        query = query.gte("issue_date", filters.issue_date_from);
+      }
+
+      if (filters.issue_date_to) {
+        query = query.lte("issue_date", filters.issue_date_to);
       }
 
       if (filters.due_date_from) {
@@ -94,6 +90,14 @@ export class InvoiceService {
         query = query.lte("due_date", filters.due_date_to);
       }
 
+      if (filters.amount_min) {
+        query = query.gte("total_amount", filters.amount_min);
+      }
+
+      if (filters.amount_max) {
+        query = query.lte("total_amount", filters.amount_max);
+      }
+
       // Apply pagination
       const from = (page - 1) * limit;
       const to = from + limit - 1;
@@ -101,11 +105,12 @@ export class InvoiceService {
 
       const { data, error, count } = await query;
 
-      if (error) throw error;
+      if (error) {
+        throw error;
+      }
 
       return {
-        invoices: data || [],
-        total: count || 0,
+        data: data || [],
         page,
         limit,
         totalPages: Math.ceil((count || 0) / limit),
@@ -117,7 +122,7 @@ export class InvoiceService {
   }
 
   // Get invoice by ID
-  static async getInvoiceById(id: string) {
+  static async getInvoiceById(id: string): Promise<any> {
     try {
       const { data, error } = await supabase
         .from("invoices")
@@ -126,14 +131,15 @@ export class InvoiceService {
           *,
           client:clients(*),
           project:projects(*),
-          timesheet:timesheets(*),
           items:invoice_items(*)
         `
         )
         .eq("id", id)
         .single();
 
-      if (error) throw error;
+      if (error) {
+        throw error;
+      }
       return data;
     } catch (error) {
       console.error("Error fetching invoice:", error);
@@ -141,23 +147,25 @@ export class InvoiceService {
     }
   }
 
-  // Get invoice by number
-  static async getInvoiceByNumber(invoiceNumber: string) {
+  // Get invoice by invoice number
+  static async getInvoiceByNumber(invoiceNumber: string): Promise<any> {
     try {
       const { data, error } = await supabase
         .from("invoices")
         .select(
           `
           *,
-          client:clients(name, company_name, email),
-          project:projects(name),
-          timesheet:timesheets(timesheet_code, month, year)
+          client:clients(*),
+          project:projects(*),
+          items:invoice_items(*)
         `
         )
         .eq("invoice_number", invoiceNumber)
         .single();
 
-      if (error) throw error;
+      if (error) {
+        throw error;
+      }
       return data;
     } catch (error) {
       console.error("Error fetching invoice by number:", error);
@@ -166,18 +174,22 @@ export class InvoiceService {
   }
 
   // Create new invoice
-  static async createInvoice(invoiceData: CreateInvoiceData) {
+  static async createInvoice(invoiceData: CreateInvoiceData): Promise<any> {
     try {
-      // Generate invoice number
-      const invoiceNumber = await this.generateInvoiceNumber();
+      // Generate invoice number if not provided
+      if (!invoiceData.invoice_number) {
+        invoiceData.invoice_number = await this.generateInvoiceNumber();
+      }
 
       const { data, error } = await supabase
         .from("invoices")
-        .insert([{ ...invoiceData, invoice_number: invoiceNumber }])
+        .insert([invoiceData])
         .select()
         .single();
 
-      if (error) throw error;
+      if (error) {
+        throw error;
+      }
       return data;
     } catch (error) {
       console.error("Error creating invoice:", error);
@@ -185,8 +197,8 @@ export class InvoiceService {
     }
   }
 
-  // Update invoice
-  static async updateInvoice(id: string, invoiceData: UpdateInvoiceData) {
+  // Update existing invoice
+  static async updateInvoice(id: string, invoiceData: UpdateInvoiceData): Promise<any> {
     try {
       const { data, error } = await supabase
         .from("invoices")
@@ -195,7 +207,9 @@ export class InvoiceService {
         .select()
         .single();
 
-      if (error) throw error;
+      if (error) {
+        throw error;
+      }
       return data;
     } catch (error) {
       console.error("Error updating invoice:", error);
@@ -204,11 +218,13 @@ export class InvoiceService {
   }
 
   // Delete invoice
-  static async deleteInvoice(id: string) {
+  static async deleteInvoice(id: string): Promise<boolean> {
     try {
       const { error } = await supabase.from("invoices").delete().eq("id", id);
 
-      if (error) throw error;
+      if (error) {
+        throw error;
+      }
       return true;
     } catch (error) {
       console.error("Error deleting invoice:", error);
@@ -216,56 +232,22 @@ export class InvoiceService {
     }
   }
 
-  // Update invoice status
-  static async updateInvoiceStatus(
-    id: string,
-    status: "draft" | "sent" | "paid" | "overdue" | "cancelled"
-  ) {
-    try {
-      const { data, error } = await supabase
-        .from("invoices")
-        .update({ status })
-        .eq("id", id)
-        .select()
-        .single();
-
-      if (error) throw error;
-      return data;
-    } catch (error) {
-      console.error("Error updating invoice status:", error);
-      throw error;
-    }
-  }
-
-  // Mark invoice as sent
-  static async markInvoiceAsSent(id: string) {
-    try {
-      const { data, error } = await supabase
-        .from("invoices")
-        .update({ status: "sent" })
-        .eq("id", id)
-        .select()
-        .single();
-
-      if (error) throw error;
-      return data;
-    } catch (error) {
-      console.error("Error marking invoice as sent:", error);
-      throw error;
-    }
-  }
-
   // Mark invoice as paid
-  static async markInvoiceAsPaid(id: string) {
+  static async markInvoiceAsPaid(id: string, paymentDate?: string): Promise<any> {
     try {
       const { data, error } = await supabase
         .from("invoices")
-        .update({ status: "paid" })
+        .update({
+          status: "paid",
+          paid_date: paymentDate || new Date().toISOString(),
+        })
         .eq("id", id)
         .select()
         .single();
 
-      if (error) throw error;
+      if (error) {
+        throw error;
+      }
       return data;
     } catch (error) {
       console.error("Error marking invoice as paid:", error);
@@ -273,22 +255,219 @@ export class InvoiceService {
     }
   }
 
+  // Generate invoice from timesheet
+  static async generateInvoiceFromTimesheet(
+    timesheetId: string,
+    clientId: string,
+    projectId?: string
+  ): Promise<any> {
+    try {
+      // Get timesheet data
+      const { data: timesheet, error: timesheetError } = await supabase
+        .from("timesheets")
+        .select("*")
+        .eq("id", timesheetId)
+        .single();
+
+      if (timesheetError) {
+        throw timesheetError;
+      }
+
+      // Get timesheet entries
+      const { data: entries, error: entriesError } = await supabase
+        .from("timesheet_entries")
+        .select("*")
+        .eq("timesheet_id", timesheetId);
+
+      if (entriesError) {
+        throw entriesError;
+      }
+
+      // Calculate totals
+      const subtotal = entries?.reduce((sum, entry) => sum + (entry.total_price || 0), 0) || 0;
+      const taxRate = 0.1; // 10% tax rate - you can make this configurable
+      const taxAmount = subtotal * taxRate;
+      const totalAmount = subtotal + taxAmount;
+
+      // Create invoice
+      const invoiceData: CreateInvoiceData = {
+        client_id: clientId,
+        project_id: projectId,
+        issue_date: new Date().toISOString().split("T")[0],
+        due_date: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split("T")[0], // 30 days from now
+        status: "draft",
+        subtotal,
+        tax_rate: taxRate,
+        tax_amount: taxAmount,
+        total_amount: totalAmount,
+        notes: `Generated from timesheet ${timesheet.timesheet_code}`,
+      };
+
+      const invoice = await this.createInvoice(invoiceData);
+
+      // Create invoice items from timesheet entries
+      if (entries) {
+        for (const entry of entries) {
+          await this.addInvoiceItem({
+            invoice_id: invoice.id,
+            description: entry.description,
+            quantity: entry.hours,
+            unit_price: entry.hourly_rate || 0,
+            total_price: entry.hours * (entry.hourly_rate || 0),
+            item_type: "time",
+            timesheet_id: timesheetId,
+          });
+        }
+      }
+
+      // Mark timesheet as invoiced
+      await supabase
+        .from("timesheets")
+        .update({ status: "invoiced" })
+        .eq("id", timesheetId);
+
+      return invoice;
+    } catch (error) {
+      console.error("Error generating invoice from timesheet:", error);
+      throw error;
+    }
+  }
+
+  // Add invoice item
+  static async addInvoiceItem(itemData: CreateInvoiceItemData): Promise<any> {
+    try {
+      const { data, error } = await supabase
+        .from("invoice_items")
+        .insert([itemData])
+        .select()
+        .single();
+
+      if (error) {
+        throw error;
+      }
+
+      // Update invoice totals
+      await this.updateInvoiceTotals(itemData.invoice_id);
+
+      return data;
+    } catch (error) {
+      console.error("Error adding invoice item:", error);
+      throw error;
+    }
+  }
+
+  // Update invoice item
+  static async updateInvoiceItem(id: string, itemData: UpdateInvoiceItemData): Promise<any> {
+    try {
+      const { data, error } = await supabase
+        .from("invoice_items")
+        .update(itemData)
+        .eq("id", id)
+        .select()
+        .single();
+
+      if (error) {
+        throw error;
+      }
+
+      // Update invoice totals
+      if (data.invoice_id) {
+        await this.updateInvoiceTotals(data.invoice_id);
+      }
+
+      return data;
+    } catch (error) {
+      console.error("Error updating invoice item:", error);
+      throw error;
+    }
+  }
+
+  // Delete invoice item
+  static async deleteInvoiceItem(id: string): Promise<boolean> {
+    try {
+      const item = await supabase
+        .from("invoice_items")
+        .select("invoice_id")
+        .eq("id", id)
+        .single();
+
+      const { error } = await supabase.from("invoice_items").delete().eq("id", id);
+
+      if (error) {
+        throw error;
+      }
+
+      // Update invoice totals
+      if (item.data?.invoice_id) {
+        await this.updateInvoiceTotals(item.data.invoice_id);
+      }
+
+      return true;
+    } catch (error) {
+      console.error("Error deleting invoice item:", error);
+      throw error;
+    }
+  }
+
+  // Get invoice items
+  static async getInvoiceItems(invoiceId: string): Promise<any[]> {
+    try {
+      const { data, error } = await supabase
+        .from("invoice_items")
+        .select("*")
+        .eq("invoice_id", invoiceId)
+        .order("created_at", { ascending: true });
+
+      if (error) {
+        throw error;
+      }
+      return data || [];
+    } catch (error) {
+      console.error("Error fetching invoice items:", error);
+      throw error;
+    }
+  }
+
+  // Update invoice totals
+  private static async updateInvoiceTotals(invoiceId: string): Promise<void> {
+    try {
+      const items = await this.getInvoiceItems(invoiceId);
+
+      const subtotal = items.reduce((sum, item) => sum + (item.total_price || 0), 0);
+      const taxRate = 0.1; // 10% tax rate - you can make this configurable
+      const taxAmount = subtotal * taxRate;
+      const totalAmount = subtotal + taxAmount;
+
+      await supabase
+        .from("invoices")
+        .update({
+          subtotal,
+          tax_amount: taxAmount,
+          total_amount: totalAmount,
+        })
+        .eq("id", invoiceId);
+    } catch (error) {
+      console.error("Error updating invoice totals:", error);
+    }
+  }
+
   // Get invoices by client
-  static async getInvoicesByClient(clientId: string) {
+  static async getInvoicesByClient(clientId: string): Promise<any[]> {
     try {
       const { data, error } = await supabase
         .from("invoices")
         .select(
           `
           *,
-          project:projects(name),
-          timesheet:timesheets(timesheet_code, month, year)
+          project:projects(name, billing_rate)
         `
         )
         .eq("client_id", clientId)
-        .order("created_at", { ascending: false });
+        .order("issue_date", { ascending: false });
 
-      if (error) throw error;
+      if (error) {
+        throw error;
+      }
       return data || [];
     } catch (error) {
       console.error("Error fetching invoices by client:", error);
@@ -297,21 +476,22 @@ export class InvoiceService {
   }
 
   // Get invoices by project
-  static async getInvoicesByProject(projectId: string) {
+  static async getInvoicesByProject(projectId: string): Promise<any[]> {
     try {
       const { data, error } = await supabase
         .from("invoices")
         .select(
           `
           *,
-          client:clients(name, company_name, email),
-          timesheet:timesheets(timesheet_code, month, year)
+          client:clients(name, company_name, email)
         `
         )
         .eq("project_id", projectId)
-        .order("created_at", { ascending: false });
+        .order("issue_date", { ascending: false });
 
-      if (error) throw error;
+      if (error) {
+        throw error;
+      }
       return data || [];
     } catch (error) {
       console.error("Error fetching invoices by project:", error);
@@ -320,7 +500,7 @@ export class InvoiceService {
   }
 
   // Get invoices by status
-  static async getInvoicesByStatus(status: string) {
+  static async getInvoicesByStatus(status: string): Promise<any[]> {
     try {
       const { data, error } = await supabase
         .from("invoices")
@@ -328,13 +508,15 @@ export class InvoiceService {
           `
           *,
           client:clients(name, company_name, email),
-          project:projects(name)
+          project:projects(name, billing_rate)
         `
         )
         .eq("status", status)
-        .order("created_at", { ascending: false });
+        .order("issue_date", { ascending: false });
 
-      if (error) throw error;
+      if (error) {
+        throw error;
+      }
       return data || [];
     } catch (error) {
       console.error("Error fetching invoices by status:", error);
@@ -343,25 +525,25 @@ export class InvoiceService {
   }
 
   // Get overdue invoices
-  static async getOverdueInvoices() {
+  static async getOverdueInvoices(): Promise<any[]> {
     try {
-      const today = new Date().toISOString().split("T")[0];
-
       const { data, error } = await supabase
         .from("invoices")
         .select(
           `
           *,
           client:clients(name, company_name, email),
-          project:projects(name)
+          project:projects(name, billing_rate)
         `
         )
-        .lt("due_date", today)
+        .lt("due_date", new Date().toISOString().split("T")[0])
         .neq("status", "paid")
         .neq("status", "cancelled")
         .order("due_date", { ascending: true });
 
-      if (error) throw error;
+      if (error) {
+        throw error;
+      }
       return data || [];
     } catch (error) {
       console.error("Error fetching overdue invoices:", error);
@@ -370,13 +552,25 @@ export class InvoiceService {
   }
 
   // Get invoice statistics
-  static async getInvoiceStats() {
+  static async getInvoiceStats(): Promise<{
+    total: number;
+    draft: number;
+    sent: number;
+    paid: number;
+    overdue: number;
+    cancelled: number;
+    totalAmount: number;
+    paidAmount: number;
+    outstandingAmount: number;
+  }> {
     try {
       const { data, error } = await supabase
         .from("invoices")
-        .select("status, subtotal, tax_amount, total");
+        .select("status, total_amount");
 
-      if (error) throw error;
+      if (error) {
+        throw error;
+      }
 
       const total = data?.length || 0;
       const draft = data?.filter(i => i.status === "draft").length || 0;
@@ -384,17 +578,10 @@ export class InvoiceService {
       const paid = data?.filter(i => i.status === "paid").length || 0;
       const overdue = data?.filter(i => i.status === "overdue").length || 0;
       const cancelled = data?.filter(i => i.status === "cancelled").length || 0;
-
-      const totalAmount =
-        data?.reduce((sum, i) => sum + (i.total || 0), 0) || 0;
+      const totalAmount = data?.reduce((sum, i) => sum + (i.total_amount || 0), 0) || 0;
       const paidAmount =
-        data
-          ?.filter(i => i.status === "paid")
-          .reduce((sum, i) => sum + (i.total || 0), 0) || 0;
-      const outstandingAmount =
-        data
-          ?.filter(i => i.status === "sent")
-          .reduce((sum, i) => sum + (i.total || 0), 0) || 0;
+        data?.filter(i => i.status === "paid").reduce((sum, i) => sum + (i.total_amount || 0), 0) || 0;
+      const outstandingAmount = totalAmount - paidAmount;
 
       return {
         total,
@@ -414,7 +601,7 @@ export class InvoiceService {
   }
 
   // Search invoices
-  static async searchInvoices(searchTerm: string) {
+  static async searchInvoices(searchTerm: string): Promise<any[]> {
     try {
       const { data, error } = await supabase
         .from("invoices")
@@ -422,213 +609,18 @@ export class InvoiceService {
           `
           *,
           client:clients(name, company_name, email),
-          project:projects(name)
+          project:projects(name, billing_rate)
         `
         )
         .or(`invoice_number.ilike.%${searchTerm}%,notes.ilike.%${searchTerm}%`)
-        .order("created_at", { ascending: false });
+        .order("issue_date", { ascending: false });
 
-      if (error) throw error;
+      if (error) {
+        throw error;
+      }
       return data || [];
     } catch (error) {
       console.error("Error searching invoices:", error);
-      throw error;
-    }
-  }
-
-  // Generate invoice from timesheet
-  static async generateInvoiceFromTimesheet(timesheetId: string) {
-    try {
-      // Get timesheet with project and client info
-      const { data: timesheet, error: timesheetError } = await supabase
-        .from("timesheets")
-        .select(
-          `
-          *,
-          project:projects(*, client:clients(*))
-        `
-        )
-        .eq("id", timesheetId)
-        .single();
-
-      if (timesheetError) throw timesheetError;
-
-      if (!timesheet.project) {
-        throw new Error("Project not found for timesheet");
-      }
-
-      if (!timesheet.project.client) {
-        throw new Error("Client not found for project");
-      }
-
-      // Calculate invoice amounts
-      const subtotal = timesheet.total_amount || 0;
-      const taxRate = 18; // Default 18% GST
-      const taxAmount = subtotal * (taxRate / 100);
-      const total = subtotal + taxAmount;
-
-      // Create invoice
-      const invoiceData: CreateInvoiceData = {
-        client_id: timesheet.project.client.id,
-        project_id: timesheet.project.id,
-        timesheet_id: timesheet.id,
-        issue_date: new Date().toISOString().split("T")[0],
-        due_date: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
-          .toISOString()
-          .split("T")[0], // 30 days from now
-        status: "draft",
-        subtotal,
-        tax_rate: taxRate,
-        tax_amount: taxAmount,
-        total,
-        payment_terms: "Net 30",
-        notes: `Invoice generated from timesheet ${timesheet.timesheet_code}`,
-        terms_conditions: "Payment is due within 30 days of invoice date.",
-      };
-
-      const invoice = await this.createInvoice(invoiceData);
-
-      // Create invoice item from timesheet
-      const itemData: CreateInvoiceItemData = {
-        invoice_id: invoice.id,
-        title: `Professional services for ${timesheet.month}/${timesheet.year}`,
-        description: `Timesheet ${timesheet.timesheet_code} - ${timesheet.total_hours || 0} hours`,
-        quantity: timesheet.total_hours || 0,
-        unit_price: timesheet.billing_rate || 0,
-        total: timesheet.total_amount || 0,
-        hsn_code: "998314", // Professional services
-        unit: "Hours",
-      };
-
-      await this.addInvoiceItem(itemData);
-
-      // Mark timesheet as invoiced
-      await supabase
-        .from("timesheets")
-        .update({ status: "invoiced" })
-        .eq("id", timesheetId);
-
-      return invoice;
-    } catch (error) {
-      console.error("Error generating invoice from timesheet:", error);
-      throw error;
-    }
-  }
-
-  // Invoice Items Management
-  static async addInvoiceItem(itemData: CreateInvoiceItemData) {
-    try {
-      const { data, error } = await supabase
-        .from("invoice_items")
-        .insert([itemData])
-        .select()
-        .single();
-
-      if (error) throw error;
-
-      // Update invoice totals
-      await this.updateInvoiceTotals(itemData.invoice_id);
-
-      return data;
-    } catch (error) {
-      console.error("Error adding invoice item:", error);
-      throw error;
-    }
-  }
-
-  static async updateInvoiceItem(id: string, itemData: UpdateInvoiceItemData) {
-    try {
-      const { data, error } = await supabase
-        .from("invoice_items")
-        .update(itemData)
-        .eq("id", id)
-        .select()
-        .single();
-
-      if (error) throw error;
-
-      // Update invoice totals
-      if (data.invoice_id) {
-        await this.updateInvoiceTotals(data.invoice_id);
-      }
-
-      return data;
-    } catch (error) {
-      console.error("Error updating invoice item:", error);
-      throw error;
-    }
-  }
-
-  static async deleteInvoiceItem(id: string) {
-    try {
-      const item = await supabase
-        .from("invoice_items")
-        .select("invoice_id")
-        .eq("id", id)
-        .single();
-
-      const { error } = await supabase
-        .from("invoice_items")
-        .delete()
-        .eq("id", id);
-
-      if (error) throw error;
-
-      // Update invoice totals
-      if (item.data?.invoice_id) {
-        await this.updateInvoiceTotals(item.data.invoice_id);
-      }
-
-      return true;
-    } catch (error) {
-      console.error("Error deleting invoice item:", error);
-      throw error;
-    }
-  }
-
-  // Get invoice items
-  static async getInvoiceItems(invoiceId: string) {
-    try {
-      const { data, error } = await supabase
-        .from("invoice_items")
-        .select("*")
-        .eq("invoice_id", invoiceId)
-        .order("created_at", { ascending: true });
-
-      if (error) throw error;
-      return data || [];
-    } catch (error) {
-      console.error("Error fetching invoice items:", error);
-      throw error;
-    }
-  }
-
-  // Update invoice totals
-  static async updateInvoiceTotals(invoiceId: string) {
-    try {
-      const items = await this.getInvoiceItems(invoiceId);
-
-      const subtotal = items.reduce((sum, item) => sum + (item.total || 0), 0);
-      const taxRate = 18; // Default 18% GST
-      const taxAmount = subtotal * (taxRate / 100);
-      const total = subtotal + taxAmount;
-
-      const { data, error } = await supabase
-        .from("invoices")
-        .update({
-          subtotal,
-          tax_rate: taxRate,
-          tax_amount: taxAmount,
-          total,
-        })
-        .eq("id", invoiceId)
-        .select()
-        .single();
-
-      if (error) throw error;
-      return data;
-    } catch (error) {
-      console.error("Error updating invoice totals:", error);
       throw error;
     }
   }
@@ -642,7 +634,9 @@ export class InvoiceService {
         .order("invoice_number", { ascending: false })
         .limit(1);
 
-      if (error) throw error;
+      if (error) {
+        throw error;
+      }
 
       let nextNumber = 1;
       if (data && data.length > 0) {
@@ -666,14 +660,16 @@ export class InvoiceService {
   // Bulk operations
   static async bulkUpdateInvoices(
     updates: Array<{ id: string; data: UpdateInvoiceData }>
-  ) {
+  ): Promise<any[]> {
     try {
       const { data, error } = await supabase
         .from("invoices")
         .upsert(updates.map(({ id, data }) => ({ id, ...data })))
         .select();
 
-      if (error) throw error;
+      if (error) {
+        throw error;
+      }
       return data || [];
     } catch (error) {
       console.error("Error bulk updating invoices:", error);
@@ -681,11 +677,13 @@ export class InvoiceService {
     }
   }
 
-  static async bulkDeleteInvoices(ids: string[]) {
+  static async bulkDeleteInvoices(ids: string[]): Promise<boolean> {
     try {
       const { error } = await supabase.from("invoices").delete().in("id", ids);
 
-      if (error) throw error;
+      if (error) {
+        throw error;
+      }
       return true;
     } catch (error) {
       console.error("Error bulk deleting invoices:", error);

@@ -1,5 +1,4 @@
 import { supabase } from "@/lib/supabase";
-import { Client } from "@/types";
 
 export interface CreateClientData {
   name: string;
@@ -38,8 +37,12 @@ export interface ClientFilters {
 }
 
 export class ClientService {
-  // Get all clients with optional filtering
-  static async getClients(filters: ClientFilters = {}, page = 1, limit = 20) {
+  // Get all clients with optional filtering and pagination
+  static async getClients(
+    filters: ClientFilters = {},
+    page = 1,
+    limit = 20
+  ): Promise<{ data: any[]; totalPages: number; page: number; limit: number }> {
     try {
       let query = supabase
         .from("clients")
@@ -76,11 +79,12 @@ export class ClientService {
 
       const { data, error, count } = await query;
 
-      if (error) throw error;
+      if (error) {
+        throw error;
+      }
 
       return {
-        clients: data || [],
-        total: count || 0,
+        data: data || [],
         page,
         limit,
         totalPages: Math.ceil((count || 0) / limit),
@@ -92,7 +96,7 @@ export class ClientService {
   }
 
   // Get client by ID
-  static async getClientById(id: string) {
+  static async getClientById(id: string): Promise<any> {
     try {
       const { data, error } = await supabase
         .from("clients")
@@ -100,7 +104,9 @@ export class ClientService {
         .eq("id", id)
         .single();
 
-      if (error) throw error;
+      if (error) {
+        throw error;
+      }
       return data;
     } catch (error) {
       console.error("Error fetching client:", error);
@@ -108,8 +114,8 @@ export class ClientService {
     }
   }
 
-  // Get client by code
-  static async getClientByCode(clientCode: string) {
+  // Get client by client code
+  static async getClientByCode(clientCode: string): Promise<any> {
     try {
       const { data, error } = await supabase
         .from("clients")
@@ -117,7 +123,9 @@ export class ClientService {
         .eq("client_code", clientCode)
         .single();
 
-      if (error) throw error;
+      if (error) {
+        throw error;
+      }
       return data;
     } catch (error) {
       console.error("Error fetching client by code:", error);
@@ -126,7 +134,7 @@ export class ClientService {
   }
 
   // Create new client
-  static async createClient(clientData: CreateClientData) {
+  static async createClient(clientData: CreateClientData): Promise<any> {
     try {
       // Generate client code
       const clientCode = await this.generateClientCode();
@@ -137,7 +145,9 @@ export class ClientService {
         .select()
         .single();
 
-      if (error) throw error;
+      if (error) {
+        throw error;
+      }
       return data;
     } catch (error) {
       console.error("Error creating client:", error);
@@ -145,8 +155,8 @@ export class ClientService {
     }
   }
 
-  // Update client
-  static async updateClient(id: string, clientData: UpdateClientData) {
+  // Update existing client
+  static async updateClient(id: string, clientData: UpdateClientData): Promise<any> {
     try {
       const { data, error } = await supabase
         .from("clients")
@@ -155,7 +165,9 @@ export class ClientService {
         .select()
         .single();
 
-      if (error) throw error;
+      if (error) {
+        throw error;
+      }
       return data;
     } catch (error) {
       console.error("Error updating client:", error);
@@ -164,11 +176,13 @@ export class ClientService {
   }
 
   // Delete client
-  static async deleteClient(id: string) {
+  static async deleteClient(id: string): Promise<boolean> {
     try {
       const { error } = await supabase.from("clients").delete().eq("id", id);
 
-      if (error) throw error;
+      if (error) {
+        throw error;
+      }
       return true;
     } catch (error) {
       console.error("Error deleting client:", error);
@@ -177,11 +191,13 @@ export class ClientService {
   }
 
   // Get client statistics
-  static async getClientStats() {
+  static async getClientStats(): Promise<{ total: number; active: number; inactive: number }> {
     try {
       const { data, error } = await supabase.from("clients").select("status");
 
-      if (error) throw error;
+      if (error) {
+        throw error;
+      }
 
       const total = data?.length || 0;
       const active = data?.filter(c => c.status === "active").length || 0;
@@ -195,7 +211,7 @@ export class ClientService {
   }
 
   // Get clients by status
-  static async getClientsByStatus(status: string) {
+  static async getClientsByStatus(status: string): Promise<any[]> {
     try {
       const { data, error } = await supabase
         .from("clients")
@@ -203,7 +219,9 @@ export class ClientService {
         .eq("status", status)
         .order("created_at", { ascending: false });
 
-      if (error) throw error;
+      if (error) {
+        throw error;
+      }
       return data || [];
     } catch (error) {
       console.error("Error fetching clients by status:", error);
@@ -212,7 +230,7 @@ export class ClientService {
   }
 
   // Get clients by location
-  static async getClientsByLocation(city?: string, state?: string) {
+  static async getClientsByLocation(city?: string, state?: string): Promise<any[]> {
     try {
       let query = supabase
         .from("clients")
@@ -229,7 +247,9 @@ export class ClientService {
 
       const { data, error } = await query;
 
-      if (error) throw error;
+      if (error) {
+        throw error;
+      }
       return data || [];
     } catch (error) {
       console.error("Error fetching clients by location:", error);
@@ -238,7 +258,7 @@ export class ClientService {
   }
 
   // Search clients
-  static async searchClients(searchTerm: string) {
+  static async searchClients(searchTerm: string): Promise<any[]> {
     try {
       const { data, error } = await supabase
         .from("clients")
@@ -248,7 +268,9 @@ export class ClientService {
         )
         .order("created_at", { ascending: false });
 
-      if (error) throw error;
+      if (error) {
+        throw error;
+      }
       return data || [];
     } catch (error) {
       console.error("Error searching clients:", error);
@@ -265,7 +287,9 @@ export class ClientService {
         .order("client_code", { ascending: false })
         .limit(1);
 
-      if (error) throw error;
+      if (error) {
+        throw error;
+      }
 
       let nextNumber = 1;
       if (data && data.length > 0) {
@@ -289,14 +313,16 @@ export class ClientService {
   // Bulk operations
   static async bulkUpdateClients(
     updates: Array<{ id: string; data: UpdateClientData }>
-  ) {
+  ): Promise<any[]> {
     try {
       const { data, error } = await supabase
         .from("clients")
         .upsert(updates.map(({ id, data }) => ({ id, ...data })))
         .select();
 
-      if (error) throw error;
+      if (error) {
+        throw error;
+      }
       return data || [];
     } catch (error) {
       console.error("Error bulk updating clients:", error);
@@ -304,11 +330,13 @@ export class ClientService {
     }
   }
 
-  static async bulkDeleteClients(ids: string[]) {
+  static async bulkDeleteClients(ids: string[]): Promise<boolean> {
     try {
       const { error } = await supabase.from("clients").delete().in("id", ids);
 
-      if (error) throw error;
+      if (error) {
+        throw error;
+      }
       return true;
     } catch (error) {
       console.error("Error bulk deleting clients:", error);

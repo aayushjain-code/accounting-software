@@ -2,10 +2,10 @@ import { supabase } from "@/lib/supabase";
 
 export interface CreateInvoiceData {
   client_id: string;
-  project_id?: string;
+  project_id?: string | null;
   invoice_number?: string;
-  issue_date: string;
-  due_date: string;
+  issue_date?: string;
+  due_date?: string;
   status?: "draft" | "sent" | "paid" | "overdue" | "cancelled";
   subtotal?: number;
   tax_rate?: number;
@@ -292,9 +292,9 @@ export class InvoiceService {
       // Create invoice
       const invoiceData: CreateInvoiceData = {
         client_id: clientId,
-        project_id: projectId,
-        issue_date: new Date().toISOString().split("T")[0],
-        due_date: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split("T")[0], // 30 days from now
+        project_id: projectId || null,
+        issue_date: new Date().toISOString().split("T")[0] || "",
+        due_date: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split("T")[0] || "", // 30 days from now
         status: "draft",
         subtotal,
         tax_rate: taxRate,
@@ -640,10 +640,12 @@ export class InvoiceService {
 
       let nextNumber = 1;
       if (data && data.length > 0) {
-        const lastNumber = data[0].invoice_number;
-        const match = lastNumber.match(/INV-(\d+)/);
-        if (match) {
-          nextNumber = parseInt(match[1]) + 1;
+        const lastNumber = data[0]?.invoice_number;
+        if (lastNumber) {
+          const match = lastNumber.match(/INV-(\d+)/);
+          if (match) {
+            nextNumber = parseInt(match[1]) + 1;
+          }
         }
       }
 

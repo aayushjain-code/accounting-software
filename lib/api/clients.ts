@@ -293,10 +293,12 @@ export class ClientService {
 
       let nextNumber = 1;
       if (data && data.length > 0) {
-        const lastCode = data[0].client_code;
-        const match = lastCode.match(/CLI-(\d+)/);
-        if (match) {
-          nextNumber = parseInt(match[1]) + 1;
+        const lastCode = data[0]?.client_code;
+        if (lastCode) {
+          const match = lastCode.match(/CLI-(\d+)/);
+          if (match) {
+            nextNumber = parseInt(match[1]) + 1;
+          }
         }
       }
 

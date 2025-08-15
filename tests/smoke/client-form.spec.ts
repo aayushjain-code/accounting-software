@@ -1,4 +1,4 @@
-import { test, expect } from "@playwright/test";
+import { test } from "@playwright/test";
 import { TestHelpers } from "../utils/test-helpers";
 
 test.describe("Client Form Inspection", () => {

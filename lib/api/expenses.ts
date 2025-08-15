@@ -285,7 +285,7 @@ export class ExpenseService {
       const fileExt = file.name.split(".").pop();
       const fileName = `${expenseId}-${Date.now()}.${fileExt}`;
 
-      const { data, error } = await supabase.storage
+      const { error } = await supabase.storage
         .from("receipts")
         .upload(fileName, file, {
           cacheControl: "3600",
@@ -582,10 +582,12 @@ export class ExpenseService {
 
       let nextNumber = 1;
       if (data && data.length > 0) {
-        const lastCode = data[0].expense_code;
-        const match = lastCode.match(/EXP-(\d+)/);
-        if (match) {
-          nextNumber = parseInt(match[1]) + 1;
+        const lastCode = data[0]?.expense_code;
+        if (lastCode) {
+          const match = lastCode.match(/EXP-(\d+)/);
+          if (match) {
+            nextNumber = parseInt(match[1]) + 1;
+          }
         }
       }
 

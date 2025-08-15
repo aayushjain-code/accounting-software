@@ -5,7 +5,7 @@ export interface MigrationProgress {
   completed: number;
   current: string;
   status: "idle" | "running" | "completed" | "failed";
-  error?: string;
+  error?: string | null;
 }
 
 export interface MigrationResult {
@@ -100,7 +100,7 @@ export class DataMigrationService {
     try {
       this.progress.status = "running";
       this.progress.completed = 0;
-      this.progress.error = undefined;
+      this.progress.error = null;
 
       // Get local data
       const localData = this.exportLocalData();
@@ -237,7 +237,7 @@ export class DataMigrationService {
             pan: companyData.pan || "",
             logo: companyData.logo || "",
           })
-          .eq("id", existing[0].id);
+          .eq("id", existing[0]?.id);
       } else {
         // Create new profile
         await supabase.from("company_profiles").insert([

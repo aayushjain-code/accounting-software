@@ -85,7 +85,7 @@ test.describe("Dashboard E2E Tests", () => {
       const activityItems = recentActivities.locator(
         '[data-testid="activity-item"]'
       );
-      await expect(activityItems).toHaveCount.greaterThan(0);
+      await expect(activityItems).toHaveCount(1);
 
       // Verify activity details
       const firstActivity = activityItems.first();

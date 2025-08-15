@@ -404,7 +404,7 @@ export class ProjectService {
       }
 
       const currentMembers = project.team_members || [];
-      const updatedMembers = currentMembers.filter(id => id !== userId);
+      const updatedMembers = currentMembers.filter((id: string) => id !== userId);
 
       const { data, error } = await supabase
         .from("projects")
@@ -461,10 +461,12 @@ export class ProjectService {
 
       let nextNumber = 1;
       if (data && data.length > 0) {
-        const lastCode = data[0].project_code;
-        const match = lastCode.match(/PRJ-(\d+)/);
-        if (match) {
-          nextNumber = parseInt(match[1]) + 1;
+        const lastCode = data[0]?.project_code;
+        if (lastCode) {
+          const match = lastCode.match(/PRJ-(\d+)/);
+          if (match) {
+            nextNumber = parseInt(match[1]) + 1;
+          }
         }
       }
 

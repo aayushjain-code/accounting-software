@@ -20,7 +20,7 @@ export interface UpdateProfileData {
   first_name?: string;
   last_name?: string;
   phone?: string;
-  avatar?: string;
+  avatar?: string | null;
   department?: string;
   position?: string;
   bio?: string;

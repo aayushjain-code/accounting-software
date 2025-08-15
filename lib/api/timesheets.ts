@@ -594,10 +594,12 @@ export class TimesheetService {
 
       let nextNumber = 1;
       if (data && data.length > 0) {
-        const lastCode = data[0].timesheet_code;
-        const match = lastCode.match(/TS-(\d+)/);
-        if (match) {
-          nextNumber = parseInt(match[1]) + 1;
+        const lastCode = data[0]?.timesheet_code;
+        if (lastCode) {
+          const match = lastCode.match(/TS-(\d+)/);
+          if (match) {
+            nextNumber = parseInt(match[1]) + 1;
+          }
         }
       }
 

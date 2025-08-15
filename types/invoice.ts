@@ -7,7 +7,10 @@ export interface Invoice extends BaseEntity {
   projectId: string;
   issueDate: Date;
   dueDate: Date;
-  status: StatusOptions["draft"] | StatusOptions["sent"] | StatusOptions["paid"];
+  status:
+    | StatusOptions["draft"]
+    | StatusOptions["sent"]
+    | StatusOptions["paid"];
   subtotal: number;
   taxRate: number;
   taxAmount: number;
@@ -17,7 +20,7 @@ export interface Invoice extends BaseEntity {
   paymentTerms: string;
   items: InvoiceItem[];
   files?: InvoiceFile[];
-  
+
   // Legacy properties for backward compatibility
   notes?: string;
   referenceNo?: string;

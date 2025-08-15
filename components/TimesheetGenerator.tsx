@@ -1,9 +1,19 @@
 "use client";
 
 import React, { useState, useMemo } from "react";
-import { format, startOfMonth, endOfMonth, eachDayOfInterval, isWeekend } from "date-fns";
+import {
+  format,
+  startOfMonth,
+  endOfMonth,
+  eachDayOfInterval,
+  isWeekend,
+} from "date-fns";
 import { useAccountingStore } from "@/store";
-import { ArrowDownTrayIcon, EyeIcon, XMarkIcon } from "@heroicons/react/24/outline";
+import {
+  ArrowDownTrayIcon,
+  EyeIcon,
+  XMarkIcon,
+} from "@heroicons/react/24/outline";
 import Modal from "./Modal";
 
 interface DailyEntry {
@@ -19,10 +29,15 @@ interface TimesheetGeneratorProps {
   onClose: () => void;
 }
 
-const TimesheetGenerator: React.FC<TimesheetGeneratorProps> = ({ isOpen, onClose }) => {
+const TimesheetGenerator: React.FC<TimesheetGeneratorProps> = ({
+  isOpen,
+  onClose,
+}) => {
   const { projects, clients } = useAccountingStore();
-  
-  const [selectedMonth, setSelectedMonth] = useState(format(new Date(), "yyyy-MM"));
+
+  const [selectedMonth, setSelectedMonth] = useState(
+    format(new Date(), "yyyy-MM")
+  );
   const [selectedProject, setSelectedProject] = useState<string>("");
   const [employeeName, setEmployeeName] = useState("");
   const [employeeRole, setEmployeeRole] = useState("");
@@ -31,14 +46,14 @@ const TimesheetGenerator: React.FC<TimesheetGeneratorProps> = ({ isOpen, onClose
 
   // Generate daily entries for the selected month
   const generateDailyEntries = useMemo(() => {
-    if (!selectedMonth) return [];
-    
+    if (!selectedMonth) {return [];}
+
     const [year, month] = selectedMonth.split("-").map(Number);
     const startDate = startOfMonth(new Date(year, month - 1));
     const endDate = endOfMonth(new Date(year, month - 1));
-    
+
     const days = eachDayOfInterval({ start: startDate, end: endDate });
-    
+
     return days.map(day => {
       const isWeekendDay = isWeekend(day);
       return {
@@ -46,7 +61,7 @@ const TimesheetGenerator: React.FC<TimesheetGeneratorProps> = ({ isOpen, onClose
         taskName: isWeekendDay ? "WEEK OFF" : "",
         description: isWeekendDay ? "" : "",
         hours: isWeekendDay ? 0 : 8,
-        isWeekend: isWeekendDay
+        isWeekend: isWeekendDay,
       };
     });
   }, [selectedMonth]);
@@ -56,12 +71,14 @@ const TimesheetGenerator: React.FC<TimesheetGeneratorProps> = ({ isOpen, onClose
     setDailyEntries(generateDailyEntries);
   }, [generateDailyEntries]);
 
-  const handleEntryChange = (date: string, field: keyof DailyEntry, value: string | number) => {
-    setDailyEntries(prev => 
-      prev.map(entry => 
-        entry.date === date 
-          ? { ...entry, [field]: value }
-          : entry
+  const handleEntryChange = (
+    date: string,
+    field: keyof DailyEntry,
+    value: string | number
+  ) => {
+    setDailyEntries(prev =>
+      prev.map(entry =>
+        entry.date === date ? { ...entry, [field]: value } : entry
       )
     );
   };
@@ -76,7 +93,7 @@ const TimesheetGenerator: React.FC<TimesheetGeneratorProps> = ({ isOpen, onClose
 
   const handleDownloadPDF = () => {
     // Implementation for PDF download
-    const printWindow = window.open('', '_blank');
+    const printWindow = window.open("", "_blank");
     if (printWindow) {
       printWindow.document.write(`
         <html>
@@ -104,14 +121,18 @@ const TimesheetGenerator: React.FC<TimesheetGeneratorProps> = ({ isOpen, onClose
                 </tr>
               </thead>
               <tbody>
-                ${dailyEntries.map(entry => `
-                  <tr class="${entry.isWeekend ? 'weekend' : ''}">
+                ${dailyEntries
+                  .map(
+                    entry => `
+                  <tr class="${entry.isWeekend ? "weekend" : ""}">
                     <td>${entry.date}</td>
                     <td>${entry.taskName}</td>
                     <td>${entry.description}</td>
-                    <td class="hours">${entry.hours || ''}</td>
+                    <td class="hours">${entry.hours || ""}</td>
                   </tr>
-                `).join('')}
+                `
+                  )
+                  .join("")}
               </tbody>
             </table>
           </body>
@@ -123,12 +144,19 @@ const TimesheetGenerator: React.FC<TimesheetGeneratorProps> = ({ isOpen, onClose
   };
 
   const selectedProjectData = projects.find(p => p.id === selectedProject);
-  const selectedClientData = selectedProjectData ? clients.find(c => c.id === selectedProjectData.clientId) : null;
+  const selectedClientData = selectedProjectData
+    ? clients.find(c => c.id === selectedProjectData.clientId)
+    : null;
 
-  if (!isOpen) return null;
+  if (!isOpen) {return null;}
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} title="Timesheet Generator" size="6xl">
+    <Modal
+      isOpen={isOpen}
+      onClose={onClose}
+      title="Timesheet Generator"
+      size="6xl"
+    >
       <div className="p-6">
         <div className="flex items-center justify-between mb-6">
           <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
@@ -153,24 +181,26 @@ const TimesheetGenerator: React.FC<TimesheetGeneratorProps> = ({ isOpen, onClose
                 <input
                   type="month"
                   value={selectedMonth}
-                  onChange={(e) => setSelectedMonth(e.target.value)}
+                  onChange={e => setSelectedMonth(e.target.value)}
                   className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
                 />
               </div>
-              
+
               <div>
                 <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
                   Project *
                 </label>
                 <select
                   value={selectedProject}
-                  onChange={(e) => setSelectedProject(e.target.value)}
+                  onChange={e => setSelectedProject(e.target.value)}
                   className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
                 >
                   <option value="">Select Project</option>
                   {projects.map(project => (
                     <option key={project.id} value={project.id}>
-                      {project.name} - {clients.find(c => c.id === project.clientId)?.company || 'N/A'}
+                      {project.name} -{" "}
+                      {clients.find(c => c.id === project.clientId)?.company ||
+                        "N/A"}
                     </option>
                   ))}
                 </select>
@@ -185,12 +215,12 @@ const TimesheetGenerator: React.FC<TimesheetGeneratorProps> = ({ isOpen, onClose
                 <input
                   type="text"
                   value={employeeName}
-                  onChange={(e) => setEmployeeName(e.target.value)}
+                  onChange={e => setEmployeeName(e.target.value)}
                   placeholder="e.g., Anshuman"
                   className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
                 />
               </div>
-              
+
               <div>
                 <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
                   Employee Role *
@@ -198,7 +228,7 @@ const TimesheetGenerator: React.FC<TimesheetGeneratorProps> = ({ isOpen, onClose
                 <input
                   type="text"
                   value={employeeRole}
-                  onChange={(e) => setEmployeeRole(e.target.value)}
+                  onChange={e => setEmployeeRole(e.target.value)}
                   placeholder="e.g., IAM Consultant"
                   className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
                 />
@@ -207,23 +237,41 @@ const TimesheetGenerator: React.FC<TimesheetGeneratorProps> = ({ isOpen, onClose
 
             {selectedProjectData && (
               <div className="bg-gray-50 dark:bg-gray-800 p-4 rounded-xl">
-                <h3 className="font-semibold text-gray-900 dark:text-white mb-2">Project Details</h3>
+                <h3 className="font-semibold text-gray-900 dark:text-white mb-2">
+                  Project Details
+                </h3>
                 <div className="grid grid-cols-2 gap-4 text-sm">
                   <div>
-                    <span className="text-gray-600 dark:text-gray-400">Project:</span>
-                    <span className="ml-2 font-medium text-gray-900 dark:text-white">{selectedProjectData.name}</span>
+                    <span className="text-gray-600 dark:text-gray-400">
+                      Project:
+                    </span>
+                    <span className="ml-2 font-medium text-gray-900 dark:text-white">
+                      {selectedProjectData.name}
+                    </span>
                   </div>
                   <div>
-                    <span className="text-gray-600 dark:text-gray-400">Client:</span>
-                    <span className="ml-2 font-medium text-gray-900 dark:text-white">{selectedClientData?.company || 'N/A'}</span>
+                    <span className="text-gray-600 dark:text-gray-400">
+                      Client:
+                    </span>
+                    <span className="ml-2 font-medium text-gray-900 dark:text-white">
+                      {selectedClientData?.company || "N/A"}
+                    </span>
                   </div>
                   <div>
-                    <span className="text-gray-600 dark:text-gray-400">Status:</span>
-                    <span className="ml-2 font-medium text-gray-900 dark:text-white">{selectedProjectData.status}</span>
+                    <span className="text-gray-600 dark:text-gray-400">
+                      Status:
+                    </span>
+                    <span className="ml-2 font-medium text-gray-900 dark:text-white">
+                      {selectedProjectData.status}
+                    </span>
                   </div>
                   <div>
-                    <span className="text-gray-600 dark:text-gray-400">Budget:</span>
-                    <span className="ml-2 font-medium text-gray-900 dark:text-white">₹{selectedProjectData.budget.toLocaleString("en-IN")}</span>
+                    <span className="text-gray-600 dark:text-gray-400">
+                      Budget:
+                    </span>
+                    <span className="ml-2 font-medium text-gray-900 dark:text-white">
+                      ₹{selectedProjectData.budget.toLocaleString("en-IN")}
+                    </span>
                   </div>
                 </div>
               </div>
@@ -255,7 +303,8 @@ const TimesheetGenerator: React.FC<TimesheetGeneratorProps> = ({ isOpen, onClose
                   Timesheet Preview
                 </h3>
                 <p className="text-gray-600 dark:text-gray-400">
-                  {format(new Date(selectedMonth + "-01"), "MMMM yyyy")} - {employeeName} ({employeeRole})
+                  {format(new Date(`${selectedMonth  }-01`), "MMMM yyyy")} -{" "}
+                  {employeeName} ({employeeRole})
                 </p>
               </div>
               <div className="flex space-x-3">
@@ -296,7 +345,12 @@ const TimesheetGenerator: React.FC<TimesheetGeneratorProps> = ({ isOpen, onClose
                 </thead>
                 <tbody className="bg-white dark:bg-gray-900 divide-y divide-gray-200 dark:divide-gray-700">
                   {dailyEntries.map((entry, index) => (
-                    <tr key={index} className={entry.isWeekend ? 'bg-gray-50 dark:bg-gray-800' : ''}>
+                    <tr
+                      key={index}
+                      className={
+                        entry.isWeekend ? "bg-gray-50 dark:bg-gray-800" : ""
+                      }
+                    >
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100 border-r border-gray-200 dark:border-gray-700">
                         {entry.date}
                       </td>
@@ -306,7 +360,13 @@ const TimesheetGenerator: React.FC<TimesheetGeneratorProps> = ({ isOpen, onClose
                       <td className="px-6 py-4 text-sm text-gray-900 dark:text-gray-100 border-r border-gray-200 dark:border-gray-700">
                         <textarea
                           value={entry.description}
-                          onChange={(e) => handleEntryChange(entry.date, 'description', e.target.value)}
+                          onChange={e =>
+                            handleEntryChange(
+                              entry.date,
+                              "description",
+                              e.target.value
+                            )
+                          }
                           placeholder="Enter task description..."
                           className="w-full border-none bg-transparent resize-none focus:outline-none focus:ring-0"
                           rows={2}
@@ -315,8 +375,14 @@ const TimesheetGenerator: React.FC<TimesheetGeneratorProps> = ({ isOpen, onClose
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100 text-right">
                         <input
                           type="number"
-                          value={entry.hours || ''}
-                          onChange={(e) => handleEntryChange(entry.date, 'hours', parseInt(e.target.value) || 0)}
+                          value={entry.hours || ""}
+                          onChange={e =>
+                            handleEntryChange(
+                              entry.date,
+                              "hours",
+                              parseInt(e.target.value) || 0
+                            )
+                          }
                           min="0"
                           max="24"
                           className="w-20 text-right border-none bg-transparent focus:outline-none focus:ring-0"
@@ -333,19 +399,28 @@ const TimesheetGenerator: React.FC<TimesheetGeneratorProps> = ({ isOpen, onClose
             <div className="bg-gray-50 dark:bg-gray-800 p-4 rounded-xl">
               <div className="grid grid-cols-3 gap-4 text-center">
                 <div>
-                  <p className="text-sm text-gray-600 dark:text-gray-400">Total Working Days</p>
+                  <p className="text-sm text-gray-600 dark:text-gray-400">
+                    Total Working Days
+                  </p>
                   <p className="text-lg font-semibold text-gray-900 dark:text-white">
                     {dailyEntries.filter(entry => !entry.isWeekend).length}
                   </p>
                 </div>
                 <div>
-                  <p className="text-sm text-gray-600 dark:text-gray-400">Total Hours</p>
+                  <p className="text-sm text-gray-600 dark:text-gray-400">
+                    Total Hours
+                  </p>
                   <p className="text-lg font-semibold text-gray-900 dark:text-white">
-                    {dailyEntries.reduce((sum, entry) => sum + (entry.hours || 0), 0)}
+                    {dailyEntries.reduce(
+                      (sum, entry) => sum + (entry.hours || 0),
+                      0
+                    )}
                   </p>
                 </div>
                 <div>
-                  <p className="text-sm text-gray-600 dark:text-gray-400">Weekends</p>
+                  <p className="text-sm text-gray-600 dark:text-gray-400">
+                    Weekends
+                  </p>
                   <p className="text-lg font-semibold text-gray-900 dark:text-white">
                     {dailyEntries.filter(entry => entry.isWeekend).length}
                   </p>

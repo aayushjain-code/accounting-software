@@ -1,4 +1,4 @@
-import { ComponentType, lazy } from 'react';
+import { ComponentType, lazy } from "react";
 
 // Lazy load heavy components
 export const lazyLoad = <T extends ComponentType<any>>(
@@ -25,7 +25,7 @@ export const lazyLoadWithChunk = <T extends ComponentType<any>>(
     // Add webpack chunk name comment for better chunking
     return importFunc().then(module => {
       // @ts-ignore - webpack specific
-      if (typeof window !== 'undefined') {
+      if (typeof window !== "undefined") {
         // @ts-ignore - webpack specific
         window.__webpack_chunk_name__ = chunkName;
       }
@@ -35,11 +35,11 @@ export const lazyLoadWithChunk = <T extends ComponentType<any>>(
 };
 
 // Common lazy imports - using dynamic imports for code splitting
-export const LazyInvoiceEditor = () => import('@/components/InvoiceEditor');
-export const LazyInvoiceTemplate = () => import('@/components/InvoiceTemplate');
-export const LazyExpensesTable = () => import('@/components/ExpensesTable');
-export const LazyClientsTable = () => import('@/components/ClientsTable');
-export const LazyProjectsTable = () => import('@/components/ProjectsTable');
-export const LazyDailyLogsTable = () => import('@/components/DailyLogsTable');
-export const LazyTimesheetsTable = () => import('@/components/TimesheetsTable');
-export const LazyInvoicesTable = () => import('@/components/InvoicesTable');
+export const LazyInvoiceEditor = () => import("@/components/InvoiceEditor");
+export const LazyInvoiceTemplate = () => import("@/components/InvoiceTemplate");
+export const LazyExpensesTable = () => import("@/components/ExpensesTable");
+export const LazyClientsTable = () => import("@/components/ClientsTable");
+export const LazyProjectsTable = () => import("@/components/ProjectsTable");
+export const LazyDailyLogsTable = () => import("@/components/DailyLogsTable");
+export const LazyTimesheetsTable = () => import("@/components/TimesheetsTable");
+export const LazyInvoicesTable = () => import("@/components/InvoicesTable");

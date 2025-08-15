@@ -41,7 +41,7 @@ export default function TimesheetGeneratorPage() {
 
   // Generate daily entries for the selected month
   const generateDailyEntries = useMemo(() => {
-    if (!selectedMonth) return [];
+    if (!selectedMonth) {return [];}
 
     const [year, month] = selectedMonth.split("-").map(Number);
     const startDate = startOfMonth(new Date(year, month - 1));
@@ -49,7 +49,7 @@ export default function TimesheetGeneratorPage() {
 
     const days = eachDayOfInterval({ start: startDate, end: endDate });
 
-    return days.map((day) => {
+    return days.map(day => {
       const isWeekendDay = isWeekend(day);
       return {
         date: format(day, "dd-MMM-yyyy"),
@@ -71,8 +71,8 @@ export default function TimesheetGeneratorPage() {
     field: keyof DailyEntry,
     value: string | number
   ) => {
-    setDailyEntries((prev) =>
-      prev.map((entry) =>
+    setDailyEntries(prev =>
+      prev.map(entry =>
         entry.date === date ? { ...entry, [field]: value } : entry
       )
     );
@@ -118,7 +118,7 @@ export default function TimesheetGeneratorPage() {
               <tbody>
                 ${dailyEntries
                   .map(
-                    (entry) => `
+                    entry => `
                   <tr class="${entry.isWeekend ? "weekend" : ""}">
                     <td>${entry.date}</td>
                     <td>${entry.taskName}</td>
@@ -140,18 +140,20 @@ export default function TimesheetGeneratorPage() {
 
   const handleDownloadBlankFormat = () => {
     const csvContent = [
-      ['Date', 'Task Name', 'Description', 'Hours'],
+      ["Date", "Task Name", "Description", "Hours"],
       ...dailyEntries.map(entry => [
         entry.date,
         entry.taskName,
         entry.description,
-        entry.hours
-      ])
-    ].map(row => row.map(cell => `"${cell}"`).join(',')).join('\n');
+        entry.hours,
+      ]),
+    ]
+      .map(row => row.map(cell => `"${cell}"`).join(","))
+      .join("\n");
 
-    const blob = new Blob([csvContent], { type: 'text/csv' });
+    const blob = new Blob([csvContent], { type: "text/csv" });
     const url = window.URL.createObjectURL(blob);
-    const a = document.createElement('a');
+    const a = document.createElement("a");
     a.href = url;
     a.download = `Timesheet_${employeeName}_${employeeRole}_${selectedMonth}_blank.csv`;
     document.body.appendChild(a);
@@ -162,15 +164,17 @@ export default function TimesheetGeneratorPage() {
 
   const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
-    if (file && file.type === 'text/csv') {
+    if (file && file.type === "text/csv") {
       setUploadedFile(file);
       const reader = new FileReader();
-      reader.onload = (e) => {
+      reader.onload = e => {
         const text = e.target?.result as string;
-        const lines = text.split('\n');
+        const lines = text.split("\n");
         const newEntries = dailyEntries.map((entry, index) => {
           if (index < lines.length - 1 && lines[index + 1]) {
-            const values = lines[index + 1].split(',').map(v => v.replace(/"/g, '').trim());
+            const values = lines[index + 1]
+              .split(",")
+              .map(v => v.replace(/"/g, "").trim());
             if (values.length >= 4) {
               return {
                 ...entry,
@@ -188,9 +192,9 @@ export default function TimesheetGeneratorPage() {
     }
   };
 
-  const selectedProjectData = projects.find((p) => p.id === selectedProject);
+  const selectedProjectData = projects.find(p => p.id === selectedProject);
   const selectedClientData = selectedProjectData
-    ? clients.find((c) => c.id === selectedProjectData.clientId)
+    ? clients.find(c => c.id === selectedProjectData.clientId)
     : null;
 
   return (
@@ -237,7 +241,7 @@ export default function TimesheetGeneratorPage() {
                     <input
                       type="month"
                       value={selectedMonth}
-                      onChange={(e) => setSelectedMonth(e.target.value)}
+                      onChange={e => setSelectedMonth(e.target.value)}
                       className="w-full px-4 py-4 border border-gray-300 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
                     />
                   </div>
@@ -249,14 +253,14 @@ export default function TimesheetGeneratorPage() {
                     </label>
                     <select
                       value={selectedProject}
-                      onChange={(e) => setSelectedProject(e.target.value)}
+                      onChange={e => setSelectedProject(e.target.value)}
                       className="w-full px-4 py-4 border border-gray-300 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
                     >
                       <option value="">Select Project</option>
-                      {projects.map((project) => (
+                      {projects.map(project => (
                         <option key={project.id} value={project.id}>
                           {project.name} -{" "}
-                          {clients.find((c) => c.id === project.clientId)
+                          {clients.find(c => c.id === project.clientId)
                             ?.company || "N/A"}
                         </option>
                       ))}
@@ -273,7 +277,7 @@ export default function TimesheetGeneratorPage() {
                     <input
                       type="text"
                       value={employeeName}
-                      onChange={(e) => setEmployeeName(e.target.value)}
+                      onChange={e => setEmployeeName(e.target.value)}
                       placeholder="e.g., Anshuman"
                       className="w-full px-4 py-4 border border-gray-300 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
                     />
@@ -287,7 +291,7 @@ export default function TimesheetGeneratorPage() {
                     <input
                       type="text"
                       value={employeeRole}
-                      onChange={(e) => setEmployeeRole(e.target.value)}
+                      onChange={e => setEmployeeRole(e.target.value)}
                       placeholder="e.g., IAM Consultant"
                       className="w-full px-4 py-4 border border-gray-300 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
                     />
@@ -358,7 +362,8 @@ export default function TimesheetGeneratorPage() {
                         Download CSV Template
                       </button>
                       <p className="text-xs text-green-600 dark:text-green-400 mt-2">
-                        Download blank format, fill it manually, then upload back
+                        Download blank format, fill it manually, then upload
+                        back
                       </p>
                     </div>
                     <div>
@@ -451,7 +456,7 @@ export default function TimesheetGeneratorPage() {
                     Timesheet Preview
                   </h2>
                   <p className="text-gray-600 dark:text-gray-400 mt-2">
-                    {format(new Date(selectedMonth + "-01"), "MMMM yyyy")} -{" "}
+                    {format(new Date(`${selectedMonth  }-01`), "MMMM yyyy")} -{" "}
                     {employeeName} ({employeeRole})
                   </p>
                 </div>
@@ -506,7 +511,7 @@ export default function TimesheetGeneratorPage() {
                           <input
                             type="text"
                             value={entry.taskName}
-                            onChange={(e) =>
+                            onChange={e =>
                               handleEntryChange(
                                 entry.date,
                                 "taskName",
@@ -520,7 +525,7 @@ export default function TimesheetGeneratorPage() {
                         <td className="px-6 py-4 text-sm text-gray-900 dark:text-gray-100 border-r border-gray-200 dark:border-gray-700">
                           <textarea
                             value={entry.description}
-                            onChange={(e) =>
+                            onChange={e =>
                               handleEntryChange(
                                 entry.date,
                                 "description",
@@ -536,7 +541,7 @@ export default function TimesheetGeneratorPage() {
                           <input
                             type="number"
                             value={entry.hours || ""}
-                            onChange={(e) =>
+                            onChange={e =>
                               handleEntryChange(
                                 entry.date,
                                 "hours",
@@ -563,7 +568,7 @@ export default function TimesheetGeneratorPage() {
                       Total Working Days
                     </p>
                     <p className="text-2xl font-semibold text-gray-900 dark:text-white">
-                      {dailyEntries.filter((entry) => !entry.isWeekend).length}
+                      {dailyEntries.filter(entry => !entry.isWeekend).length}
                     </p>
                   </div>
                   <div>
@@ -582,7 +587,7 @@ export default function TimesheetGeneratorPage() {
                       Weekends
                     </p>
                     <p className="text-2xl font-semibold text-gray-900 dark:text-white">
-                      {dailyEntries.filter((entry) => entry.isWeekend).length}
+                      {dailyEntries.filter(entry => entry.isWeekend).length}
                     </p>
                   </div>
                 </div>

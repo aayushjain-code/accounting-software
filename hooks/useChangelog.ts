@@ -13,7 +13,8 @@ export const useChangelog = () => {
         id: "1",
         version: "2.1.0",
         title: "Invoice Generator Complete",
-        description: "Major update to the invoice generation system with enhanced features and improved user experience.",
+        description:
+          "Major update to the invoice generation system with enhanced features and improved user experience.",
         changes: [
           "Added professional invoice template matching exact design requirements",
           "Implemented working print functionality with 3 different options",
@@ -22,7 +23,7 @@ export const useChangelog = () => {
           "Added comprehensive form validation and user feedback",
           "Enhanced UI with loading states and success messages",
           "Improved print styles for professional output",
-          "Added client selection and auto-population features"
+          "Added client selection and auto-population features",
         ],
         releaseDate: new Date("2024-01-15"),
         type: "feature",
@@ -34,12 +35,13 @@ export const useChangelog = () => {
         id: "2",
         version: "2.0.5",
         title: "Performance Improvements",
-        description: "Various performance optimizations and bug fixes to improve system stability.",
+        description:
+          "Various performance optimizations and bug fixes to improve system stability.",
         changes: [
           "Optimized database queries for faster data loading",
           "Fixed memory leaks in the dashboard components",
           "Improved error handling across the application",
-          "Enhanced mobile responsiveness for better user experience"
+          "Enhanced mobile responsiveness for better user experience",
         ],
         releaseDate: new Date("2024-01-10"),
         type: "improvement",
@@ -51,13 +53,14 @@ export const useChangelog = () => {
         id: "3",
         version: "2.0.0",
         title: "Major UI Overhaul",
-        description: "Complete redesign of the user interface with modern design principles and improved usability.",
+        description:
+          "Complete redesign of the user interface with modern design principles and improved usability.",
         changes: [
           "Redesigned entire application with modern UI/UX",
           "Added dark mode support",
           "Implemented responsive design for all screen sizes",
           "Added new dashboard with enhanced analytics",
-          "Improved navigation and user flow"
+          "Improved navigation and user flow",
         ],
         releaseDate: new Date("2024-01-01"),
         type: "feature",
@@ -69,27 +72,30 @@ export const useChangelog = () => {
         id: "4",
         version: "1.9.0",
         title: "Profile Management System",
-        description: "Added comprehensive profile management features for both company and user profiles.",
+        description:
+          "Added comprehensive profile management features for both company and user profiles.",
         changes: [
           "Added user profile update functionality",
           "Implemented company profile management",
           "Added security settings with PIN change",
           "Created changelog system to track updates",
-          "Enhanced user preferences and settings"
+          "Enhanced user preferences and settings",
         ],
         releaseDate: new Date("2024-01-20"),
         type: "feature",
         isPublished: true,
         createdAt: new Date("2024-01-20"),
         updatedAt: new Date("2024-01-20"),
-      }
+      },
     ];
 
     setChangelog(mockChangelog);
     setIsLoading(false);
   }, []);
 
-  const addChangelogEntry = (entry: Omit<ChangelogEntry, "id" | "createdAt" | "updatedAt">) => {
+  const addChangelogEntry = (
+    entry: Omit<ChangelogEntry, "id" | "createdAt" | "updatedAt">
+  ) => {
     const newEntry: ChangelogEntry = {
       ...entry,
       id: Date.now().toString(),
@@ -101,10 +107,13 @@ export const useChangelog = () => {
     return newEntry;
   };
 
-  const updateChangelogEntry = (id: string, updates: Partial<ChangelogEntry>) => {
-    setChangelog(prev => 
-      prev.map(entry => 
-        entry.id === id 
+  const updateChangelogEntry = (
+    id: string,
+    updates: Partial<ChangelogEntry>
+  ) => {
+    setChangelog(prev =>
+      prev.map(entry =>
+        entry.id === id
           ? { ...entry, ...updates, updatedAt: new Date() }
           : entry
       )

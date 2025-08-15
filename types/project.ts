@@ -6,7 +6,12 @@ export interface Project extends BaseEntity {
   clientId: string; // Required - Project derives from Client
   description: string;
   startDate: Date;
-  status: StatusOptions["active"] | StatusOptions["inactive"] | StatusOptions["completed"] | StatusOptions["onHold"] | StatusOptions["archived"];
+  status:
+    | StatusOptions["active"]
+    | StatusOptions["inactive"]
+    | StatusOptions["completed"]
+    | StatusOptions["onHold"]
+    | StatusOptions["archived"];
   budget: number;
   billingTerms: number; // Days
   billingRate: number; // Per hour rate

@@ -16,11 +16,11 @@ const FileList: React.FC<FileListProps> = ({
   showActions = true,
 }) => {
   const formatFileSize = (bytes: number): string => {
-    if (bytes === 0) return "0 Bytes";
+    if (bytes === 0) {return "0 Bytes";}
     const k = 1024;
     const sizes = ["Bytes", "KB", "MB", "GB"];
     const i = Math.floor(Math.log(bytes) / Math.log(k));
-    return (bytes / Math.pow(k, i)).toFixed(2) + " " + sizes[i];
+    return `${(bytes / Math.pow(k, i)).toFixed(2)  } ${  sizes[i]}`;
   };
 
   const formatDate = (date: Date): string => {
@@ -33,15 +33,15 @@ const FileList: React.FC<FileListProps> = ({
 
   const getFileIcon = (fileType: string): string => {
     const extension = fileType.toLowerCase();
-    if (extension.includes("pdf")) return "📄";
-    if (extension.includes("doc")) return "📝";
-    if (extension.includes("xls")) return "📊";
+    if (extension.includes("pdf")) {return "📄";}
+    if (extension.includes("doc")) {return "📝";}
+    if (extension.includes("xls")) {return "📊";}
     if (
       extension.includes("jpg") ||
       extension.includes("jpeg") ||
       extension.includes("png")
     )
-      return "🖼️";
+      {return "🖼️";}
     return "📎";
   };
 
@@ -58,7 +58,7 @@ const FileList: React.FC<FileListProps> = ({
       </div>
 
       <div className="space-y-2">
-        {files.map((file) => (
+        {files.map(file => (
           <div
             key={file.id}
             className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"

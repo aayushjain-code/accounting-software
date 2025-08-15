@@ -25,24 +25,25 @@ interface TimesheetUpload {
   fileName: string;
   fileSize: number;
   uploadDate: Date;
-  status: 'pending' | 'approved' | 'rejected';
+  status: "pending" | "approved" | "rejected";
 }
 
 export default function TimesheetManagementPage() {
   const { projects, clients } = useAccountingStore();
-  
+
   const [selectedProject, setSelectedProject] = useState<string>("");
   const [uploadedFile, setUploadedFile] = useState<File | null>(null);
-  const [timesheetUploads, setTimesheetUploads] = useState<TimesheetUpload[]>([]);
+  const [timesheetUploads, setTimesheetUploads] = useState<TimesheetUpload[]>(
+    []
+  );
   const [isDragOver, setIsDragOver] = useState(false);
-  const [viewingTimesheet, setViewingTimesheet] = useState<TimesheetUpload | null>(null);
+  const [viewingTimesheet, setViewingTimesheet] =
+    useState<TimesheetUpload | null>(null);
   const [isViewModalOpen, setIsViewModalOpen] = useState(false);
-
-
 
   // Filter timesheets for selected project
   const projectTimesheets = useMemo(() => {
-    if (!selectedProject) return [];
+    if (!selectedProject) {return [];}
     return timesheetUploads.filter(ts => ts.projectId === selectedProject);
   }, [timesheetUploads, selectedProject]);
 
@@ -66,7 +67,7 @@ export default function TimesheetManagementPage() {
   const handleDrop = (e: React.DragEvent) => {
     e.preventDefault();
     setIsDragOver(false);
-    
+
     const files = Array.from(e.dataTransfer.files);
     if (files.length > 0) {
       setUploadedFile(files[0]);
@@ -94,27 +95,30 @@ export default function TimesheetManagementPage() {
       projectId: selectedProject,
       projectName: project.name,
       clientName: client.company,
-      month: month,
-      year: year,
+      month,
+      year,
       employeeName: "Not specified",
       employeeRole: "Not specified",
       fileName: uploadedFile.name,
       fileSize: uploadedFile.size,
       uploadDate: new Date(),
-      status: 'pending',
+      status: "pending",
     };
 
     setTimesheetUploads(prev => [newTimesheet, ...prev]);
-    
+
     // Reset form
     setUploadedFile(null);
-    
+
     alert("Timesheet uploaded successfully!");
   };
 
-  const handleStatusChange = (timesheetId: string, newStatus: 'approved' | 'rejected') => {
-    setTimesheetUploads(prev => 
-      prev.map(ts => 
+  const handleStatusChange = (
+    timesheetId: string,
+    newStatus: "approved" | "rejected"
+  ) => {
+    setTimesheetUploads(prev =>
+      prev.map(ts =>
         ts.id === timesheetId ? { ...ts, status: newStatus } : ts
       )
     );
@@ -138,20 +142,20 @@ export default function TimesheetManagementPage() {
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'approved':
-        return 'bg-green-100 text-green-800 dark:bg-green-800 dark:text-green-200';
-      case 'rejected':
-        return 'bg-red-100 text-red-800 dark:bg-red-800 dark:text-red-200';
+      case "approved":
+        return "bg-green-100 text-green-800 dark:bg-green-800 dark:text-green-200";
+      case "rejected":
+        return "bg-red-100 text-red-800 dark:bg-red-800 dark:text-red-200";
       default:
-        return 'bg-yellow-100 text-yellow-800 dark:text-yellow-800 dark:text-yellow-200';
+        return "bg-yellow-100 text-yellow-800 dark:text-yellow-800 dark:text-yellow-200";
     }
   };
 
   const getStatusIcon = (status: string) => {
     switch (status) {
-      case 'approved':
+      case "approved":
         return <CheckCircleIcon className="h-4 w-4" />;
-      case 'rejected':
+      case "rejected":
         return <XCircleIcon className="h-4 w-4" />;
       default:
         return <ClockIcon className="h-4 w-4" />;
@@ -159,11 +163,11 @@ export default function TimesheetManagementPage() {
   };
 
   const formatFileSize = (bytes: number) => {
-    if (bytes === 0) return '0 Bytes';
+    if (bytes === 0) {return "0 Bytes";}
     const k = 1024;
-    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+    const sizes = ["Bytes", "KB", "MB", "GB"];
     const i = Math.floor(Math.log(bytes) / Math.log(k));
-    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+    return `${parseFloat((bytes / Math.pow(k, i)).toFixed(2))  } ${  sizes[i]}`;
   };
 
   return (
@@ -177,7 +181,8 @@ export default function TimesheetManagementPage() {
                 Timesheet Management
               </h1>
               <p className="text-gray-600 dark:text-gray-400 mt-2">
-                Manage timesheets by project - Click on a project to upload and view timesheets
+                Manage timesheets by project - Click on a project to upload and
+                view timesheets
               </p>
             </div>
             <div className="flex items-center space-x-3">
@@ -196,31 +201,34 @@ export default function TimesheetManagementPage() {
             Select Project
           </h2>
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-            {projects.map((project) => {
+            {projects.map(project => {
               const client = clients.find(c => c.id === project.clientId);
-              const projectTimesheetsCount = timesheetUploads.filter(ts => ts.projectId === project.id).length;
-              
+              const projectTimesheetsCount = timesheetUploads.filter(
+                ts => ts.projectId === project.id
+              ).length;
+
               return (
                 <button
                   key={project.id}
                   onClick={() => setSelectedProject(project.id)}
                   className={`p-4 rounded-xl border-2 transition-all duration-200 text-left ${
                     selectedProject === project.id
-                      ? 'border-primary-500 bg-primary-50 dark:bg-primary-900/20'
-                      : 'border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 hover:border-primary-300 dark:hover:border-primary-600'
+                      ? "border-primary-500 bg-primary-50 dark:bg-primary-900/20"
+                      : "border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 hover:border-primary-300 dark:hover:border-primary-600"
                   }`}
                 >
                   <div className="flex items-center justify-between mb-2">
                     <FolderIcon className="h-6 w-6 text-primary-600 dark:text-primary-400" />
                     <span className="text-xs bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 px-2 py-1 rounded-full">
-                      {projectTimesheetsCount} timesheet{projectTimesheetsCount !== 1 ? 's' : ''}
+                      {projectTimesheetsCount} timesheet
+                      {projectTimesheetsCount !== 1 ? "s" : ""}
                     </span>
                   </div>
                   <h3 className="font-semibold text-gray-900 dark:text-white text-sm mb-1">
                     {project.name}
                   </h3>
                   <p className="text-xs text-gray-500 dark:text-gray-400">
-                    {client?.company || 'N/A'}
+                    {client?.company || "N/A"}
                   </p>
                 </button>
               );
@@ -238,30 +246,36 @@ export default function TimesheetManagementPage() {
                   {projects.find(p => p.id === selectedProject)?.name}
                 </h2>
                 <span className="text-sm text-gray-500 dark:text-gray-400">
-                  {clients.find(c => c.id === projects.find(p => p.id === selectedProject)?.clientId)?.company}
+                  {
+                    clients.find(
+                      c =>
+                        c.id ===
+                        projects.find(p => p.id === selectedProject)?.clientId
+                    )?.company
+                  }
                 </span>
               </div>
-              
+
               {/* Upload Section */}
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 <div>
                   <h3 className="font-medium text-gray-900 dark:text-white mb-4">
                     Upload New Timesheet
                   </h3>
-                  
+
                   <div className="space-y-4">
                     <div>
                       <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
                         <DocumentTextIcon className="h-4 w-4 inline mr-2 text-primary-600" />
                         Timesheet File *
                       </label>
-                      
+
                       {/* Drag & Drop Zone */}
                       <div
                         className={`border-2 border-dashed rounded-lg p-6 text-center transition-all duration-200 ${
                           isDragOver
-                            ? 'border-primary-500 bg-primary-50 dark:bg-primary-900/20'
-                            : 'border-gray-300 dark:border-gray-600 hover:border-primary-400 dark:hover:border-primary-500'
+                            ? "border-primary-500 bg-primary-50 dark:bg-primary-900/20"
+                            : "border-gray-300 dark:border-gray-600 hover:border-primary-400 dark:hover:border-primary-500"
                         }`}
                         onDragOver={handleDragOver}
                         onDragLeave={handleDragLeave}
@@ -271,16 +285,20 @@ export default function TimesheetManagementPage() {
                           <div className="text-green-600 dark:text-green-400">
                             <DocumentTextIcon className="h-8 w-8 mx-auto mb-2" />
                             <p className="font-medium">{uploadedFile.name}</p>
-                            <p className="text-sm">{formatFileSize(uploadedFile.size)}</p>
+                            <p className="text-sm">
+                              {formatFileSize(uploadedFile.size)}
+                            </p>
                           </div>
                         ) : (
                           <div className="text-gray-500 dark:text-gray-400">
                             <ArrowUpTrayIcon className="h-8 w-8 mx-auto mb-2" />
-                            <p className="font-medium">Drag & drop timesheet file here</p>
+                            <p className="font-medium">
+                              Drag & drop timesheet file here
+                            </p>
                             <p className="text-sm">or click to browse</p>
                           </div>
                         )}
-                        
+
                         <input
                           type="file"
                           accept=".csv,.xlsx,.pdf"
@@ -313,33 +331,53 @@ export default function TimesheetManagementPage() {
                   <h3 className="font-medium text-gray-900 dark:text-white mb-4">
                     Project Overview
                   </h3>
-                  
+
                   <div className="space-y-4">
                     <div className="flex justify-between items-center">
-                      <span className="text-sm text-gray-600 dark:text-gray-400">Total Timesheets:</span>
+                      <span className="text-sm text-gray-600 dark:text-gray-400">
+                        Total Timesheets:
+                      </span>
                       <span className="font-semibold text-gray-900 dark:text-white">
                         {projectTimesheets.length}
                       </span>
                     </div>
-                    
+
                     <div className="flex justify-between items-center">
-                      <span className="text-sm text-gray-600 dark:text-gray-400">Pending:</span>
+                      <span className="text-sm text-gray-600 dark:text-gray-400">
+                        Pending:
+                      </span>
                       <span className="font-semibold text-yellow-600 dark:text-yellow-400">
-                        {projectTimesheets.filter(ts => ts.status === 'pending').length}
+                        {
+                          projectTimesheets.filter(
+                            ts => ts.status === "pending"
+                          ).length
+                        }
                       </span>
                     </div>
-                    
+
                     <div className="flex justify-between items-center">
-                      <span className="text-sm text-gray-600 dark:text-gray-400">Approved:</span>
+                      <span className="text-sm text-gray-600 dark:text-gray-400">
+                        Approved:
+                      </span>
                       <span className="font-semibold text-green-600 dark:text-green-400">
-                        {projectTimesheets.filter(ts => ts.status === 'approved').length}
+                        {
+                          projectTimesheets.filter(
+                            ts => ts.status === "approved"
+                          ).length
+                        }
                       </span>
                     </div>
-                    
+
                     <div className="flex justify-between items-center">
-                      <span className="text-sm text-gray-600 dark:text-gray-400">Rejected:</span>
+                      <span className="text-sm text-gray-600 dark:text-gray-400">
+                        Rejected:
+                      </span>
                       <span className="font-semibold text-red-600 dark:text-red-400">
-                        {projectTimesheets.filter(ts => ts.status === 'rejected').length}
+                        {
+                          projectTimesheets.filter(
+                            ts => ts.status === "rejected"
+                          ).length
+                        }
                       </span>
                     </div>
                   </div>
@@ -355,13 +393,16 @@ export default function TimesheetManagementPage() {
                 </h3>
                 <div className="flex items-center space-x-3">
                   <span className="text-sm text-gray-500 dark:text-gray-400">
-                    {projectTimesheets.length} timesheet{projectTimesheets.length !== 1 ? 's' : ''} found
+                    {projectTimesheets.length} timesheet
+                    {projectTimesheets.length !== 1 ? "s" : ""} found
                   </span>
                   {projectTimesheets.length > 0 && (
                     <button
                       onClick={() => {
                         // Scroll to top of timesheet table
-                        document.querySelector('.timesheet-table')?.scrollIntoView({ behavior: 'smooth' });
+                        document
+                          .querySelector(".timesheet-table")
+                          ?.scrollIntoView({ behavior: "smooth" });
                       }}
                       className="px-3 py-1 bg-primary-100 dark:bg-primary-900/20 text-primary-700 dark:text-primary-300 rounded-lg text-sm hover:bg-primary-200 dark:hover:bg-primary-800/30 transition-colors"
                     >
@@ -375,7 +416,9 @@ export default function TimesheetManagementPage() {
                 <div className="text-center py-8 text-gray-500 dark:text-gray-400">
                   <DocumentTextIcon className="h-12 w-12 mx-auto mb-4 text-gray-300 dark:text-gray-600" />
                   <p>No timesheets uploaded yet for this project.</p>
-                  <p className="text-sm">Upload your first timesheet above to get started.</p>
+                  <p className="text-sm">
+                    Upload your first timesheet above to get started.
+                  </p>
                 </div>
               ) : (
                 <>
@@ -385,110 +428,155 @@ export default function TimesheetManagementPage() {
                       <div className="text-2xl font-bold text-primary-600 dark:text-primary-400">
                         {projectTimesheets.length}
                       </div>
-                      <div className="text-sm text-gray-600 dark:text-gray-400">Total</div>
+                      <div className="text-sm text-gray-600 dark:text-gray-400">
+                        Total
+                      </div>
                     </div>
                     <div className="text-center">
                       <div className="text-2xl font-bold text-yellow-600 dark:text-yellow-400">
-                        {projectTimesheets.filter(ts => ts.status === 'pending').length}
+                        {
+                          projectTimesheets.filter(
+                            ts => ts.status === "pending"
+                          ).length
+                        }
                       </div>
-                      <div className="text-sm text-gray-600 dark:text-gray-400">Pending</div>
+                      <div className="text-sm text-gray-600 dark:text-gray-400">
+                        Pending
+                      </div>
                     </div>
                     <div className="text-center">
                       <div className="text-2xl font-bold text-green-600 dark:text-green-400">
-                        {projectTimesheets.filter(ts => ts.status === 'approved').length}
+                        {
+                          projectTimesheets.filter(
+                            ts => ts.status === "approved"
+                          ).length
+                        }
                       </div>
-                      <div className="text-sm text-gray-600 dark:text-gray-400">Approved</div>
+                      <div className="text-sm text-gray-600 dark:text-gray-400">
+                        Approved
+                      </div>
                     </div>
                     <div className="text-center">
                       <div className="text-2xl font-bold text-red-600 dark:text-red-400">
-                        {projectTimesheets.filter(ts => ts.status === 'rejected').length}
+                        {
+                          projectTimesheets.filter(
+                            ts => ts.status === "rejected"
+                          ).length
+                        }
                       </div>
-                      <div className="text-sm text-gray-600 dark:text-gray-400">Rejected</div>
+                      <div className="text-sm text-gray-600 dark:text-gray-400">
+                        Rejected
+                      </div>
                     </div>
                   </div>
-                  
+
                   {/* Timesheet Table */}
-                <div className="overflow-x-auto timesheet-table">
-                  <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-                    <thead className="bg-gray-50 dark:bg-gray-800">
-                      <tr>
-                        <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
-                          Month
-                        </th>
-                        <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
-                          File
-                        </th>
-                        <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
-                          Status
-                        </th>
-                        <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
-                          Actions
-                        </th>
-                      </tr>
-                    </thead>
-                    <tbody className="bg-white dark:bg-gray-900 divide-y divide-gray-200 dark:divide-gray-700">
-                      {projectTimesheets.map((timesheet) => (
-                        <tr key={timesheet.id} className="hover:bg-gray-50 dark:hover:bg-gray-800">
-                          <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
-                            {format(new Date(parseInt(timesheet.year), parseInt(timesheet.month) - 1), "MMM yyyy")}
-                          </td>
-                          <td className="px-4 py-4 whitespace-nowrap">
-                            <div>
-                              <div className="text-sm text-gray-900 dark:text-white">
-                                {timesheet.fileName}
-                              </div>
-                              <div className="text-sm text-gray-500 dark:text-gray-400">
-                                {formatFileSize(timesheet.fileSize)}
-                              </div>
-                            </div>
-                          </td>
-                          <td className="px-4 py-4 whitespace-nowrap">
-                            <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(timesheet.status)}`}>
-                              {getStatusIcon(timesheet.status)}
-                              <span className="ml-1 capitalize">{timesheet.status}</span>
-                            </span>
-                          </td>
-                          <td className="px-4 py-4 whitespace-nowrap text-sm font-medium">
-                            <div className="flex items-center space-x-2">
-                              {timesheet.status === 'pending' && (
-                                <>
-                                  <button
-                                    onClick={() => handleStatusChange(timesheet.id, 'approved')}
-                                    className="text-green-600 hover:text-green-900 dark:text-green-400 dark:hover:text-green-300"
-                                    title="Approve"
-                                  >
-                                    <CheckCircleIcon className="h-4 w-4" />
-                                  </button>
-                                  <button
-                                    onClick={() => handleStatusChange(timesheet.id, 'rejected')}
-                                    className="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300"
-                                    title="Reject"
-                                  >
-                                    <XCircleIcon className="h-4 w-4" />
-                                  </button>
-                                </>
-                              )}
-                              <button
-                                onClick={() => handleViewTimesheet(timesheet)}
-                                className="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300"
-                                title="View Timesheet"
-                              >
-                                <DocumentTextIcon className="h-4 w-4" />
-                              </button>
-                              <button
-                                onClick={() => handleDeleteTimesheet(timesheet.id)}
-                                className="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300"
-                                title="Delete"
-                              >
-                                <TrashIcon className="h-4 w-4" />
-                              </button>
-                            </div>
-                          </td>
+                  <div className="overflow-x-auto timesheet-table">
+                    <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                      <thead className="bg-gray-50 dark:bg-gray-800">
+                        <tr>
+                          <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                            Month
+                          </th>
+                          <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                            File
+                          </th>
+                          <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                            Status
+                          </th>
+                          <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                            Actions
+                          </th>
                         </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
+                      </thead>
+                      <tbody className="bg-white dark:bg-gray-900 divide-y divide-gray-200 dark:divide-gray-700">
+                        {projectTimesheets.map(timesheet => (
+                          <tr
+                            key={timesheet.id}
+                            className="hover:bg-gray-50 dark:hover:bg-gray-800"
+                          >
+                            <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
+                              {format(
+                                new Date(
+                                  parseInt(timesheet.year),
+                                  parseInt(timesheet.month) - 1
+                                ),
+                                "MMM yyyy"
+                              )}
+                            </td>
+                            <td className="px-4 py-4 whitespace-nowrap">
+                              <div>
+                                <div className="text-sm text-gray-900 dark:text-white">
+                                  {timesheet.fileName}
+                                </div>
+                                <div className="text-sm text-gray-500 dark:text-gray-400">
+                                  {formatFileSize(timesheet.fileSize)}
+                                </div>
+                              </div>
+                            </td>
+                            <td className="px-4 py-4 whitespace-nowrap">
+                              <span
+                                className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(timesheet.status)}`}
+                              >
+                                {getStatusIcon(timesheet.status)}
+                                <span className="ml-1 capitalize">
+                                  {timesheet.status}
+                                </span>
+                              </span>
+                            </td>
+                            <td className="px-4 py-4 whitespace-nowrap text-sm font-medium">
+                              <div className="flex items-center space-x-2">
+                                {timesheet.status === "pending" && (
+                                  <>
+                                    <button
+                                      onClick={() =>
+                                        handleStatusChange(
+                                          timesheet.id,
+                                          "approved"
+                                        )
+                                      }
+                                      className="text-green-600 hover:text-green-900 dark:text-green-400 dark:hover:text-green-300"
+                                      title="Approve"
+                                    >
+                                      <CheckCircleIcon className="h-4 w-4" />
+                                    </button>
+                                    <button
+                                      onClick={() =>
+                                        handleStatusChange(
+                                          timesheet.id,
+                                          "rejected"
+                                        )
+                                      }
+                                      className="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300"
+                                      title="Reject"
+                                    >
+                                      <XCircleIcon className="h-4 w-4" />
+                                    </button>
+                                  </>
+                                )}
+                                <button
+                                  onClick={() => handleViewTimesheet(timesheet)}
+                                  className="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300"
+                                  title="View Timesheet"
+                                >
+                                  <DocumentTextIcon className="h-4 w-4" />
+                                </button>
+                                <button
+                                  onClick={() =>
+                                    handleDeleteTimesheet(timesheet.id)
+                                  }
+                                  className="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300"
+                                  title="Delete"
+                                >
+                                  <TrashIcon className="h-4 w-4" />
+                                </button>
+                              </div>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
                 </>
               )}
             </div>
@@ -503,7 +591,8 @@ export default function TimesheetManagementPage() {
               Select a Project
             </h3>
             <p className="text-gray-500 dark:text-gray-400">
-              Click on a project above to upload timesheets and view previous submissions.
+              Click on a project above to upload timesheets and view previous
+              submissions.
             </p>
           </div>
         )}
@@ -519,15 +608,32 @@ export default function TimesheetManagementPage() {
                     View Timesheet
                   </h3>
                   <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-                    {viewingTimesheet.projectName} - {format(new Date(parseInt(viewingTimesheet.year), parseInt(viewingTimesheet.month) - 1), "MMMM yyyy")}
+                    {viewingTimesheet.projectName} -{" "}
+                    {format(
+                      new Date(
+                        parseInt(viewingTimesheet.year),
+                        parseInt(viewingTimesheet.month) - 1
+                      ),
+                      "MMMM yyyy"
+                    )}
                   </p>
                 </div>
                 <button
                   onClick={closeViewModal}
                   className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
                 >
-                  <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  <svg
+                    className="h-6 w-6"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M6 18L18 6M6 6l12 12"
+                    />
                   </svg>
                 </button>
               </div>
@@ -537,48 +643,92 @@ export default function TimesheetManagementPage() {
                 {/* File Information */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
                   <div className="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-4">
-                    <h4 className="font-medium text-gray-900 dark:text-white mb-3">File Details</h4>
+                    <h4 className="font-medium text-gray-900 dark:text-white mb-3">
+                      File Details
+                    </h4>
                     <div className="space-y-2 text-sm">
                       <div className="flex justify-between">
-                        <span className="text-gray-600 dark:text-gray-400">File Name:</span>
-                        <span className="font-medium text-gray-900 dark:text-white">{viewingTimesheet.fileName}</span>
+                        <span className="text-gray-600 dark:text-gray-400">
+                          File Name:
+                        </span>
+                        <span className="font-medium text-gray-900 dark:text-white">
+                          {viewingTimesheet.fileName}
+                        </span>
                       </div>
                       <div className="flex justify-between">
-                        <span className="text-gray-600 dark:text-gray-400">File Size:</span>
-                        <span className="font-medium text-gray-900 dark:text-white">{formatFileSize(viewingTimesheet.fileSize)}</span>
+                        <span className="text-gray-600 dark:text-gray-400">
+                          File Size:
+                        </span>
+                        <span className="font-medium text-gray-900 dark:text-white">
+                          {formatFileSize(viewingTimesheet.fileSize)}
+                        </span>
                       </div>
                       <div className="flex justify-between">
-                        <span className="text-gray-600 dark:text-gray-400">Upload Date:</span>
-                        <span className="font-medium text-gray-900 dark:text-white">{format(viewingTimesheet.uploadDate, "PPP")}</span>
+                        <span className="text-gray-600 dark:text-gray-400">
+                          Upload Date:
+                        </span>
+                        <span className="font-medium text-gray-900 dark:text-white">
+                          {format(viewingTimesheet.uploadDate, "PPP")}
+                        </span>
                       </div>
                       <div className="flex justify-between">
-                        <span className="text-gray-600 dark:text-gray-400">Status:</span>
-                        <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(viewingTimesheet.status)}`}>
+                        <span className="text-gray-600 dark:text-gray-400">
+                          Status:
+                        </span>
+                        <span
+                          className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(viewingTimesheet.status)}`}
+                        >
                           {getStatusIcon(viewingTimesheet.status)}
-                          <span className="ml-1 capitalize">{viewingTimesheet.status}</span>
+                          <span className="ml-1 capitalize">
+                            {viewingTimesheet.status}
+                          </span>
                         </span>
                       </div>
                     </div>
                   </div>
 
                   <div className="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-4">
-                    <h4 className="font-medium text-gray-900 dark:text-white mb-3">Project Information</h4>
+                    <h4 className="font-medium text-gray-900 dark:text-white mb-3">
+                      Project Information
+                    </h4>
                     <div className="space-y-2 text-sm">
                       <div className="flex justify-between">
-                        <span className="text-gray-600 dark:text-gray-400">Project:</span>
-                        <span className="font-medium text-gray-900 dark:text-white">{viewingTimesheet.projectName}</span>
+                        <span className="text-gray-600 dark:text-gray-400">
+                          Project:
+                        </span>
+                        <span className="font-medium text-gray-900 dark:text-white">
+                          {viewingTimesheet.projectName}
+                        </span>
                       </div>
                       <div className="flex justify-between">
-                        <span className="text-gray-600 dark:text-gray-400">Client:</span>
-                        <span className="font-medium text-gray-900 dark:text-white">{viewingTimesheet.clientName}</span>
+                        <span className="text-gray-600 dark:text-gray-400">
+                          Client:
+                        </span>
+                        <span className="font-medium text-gray-900 dark:text-white">
+                          {viewingTimesheet.clientName}
+                        </span>
                       </div>
                       <div className="flex justify-between">
-                        <span className="text-gray-600 dark:text-gray-400">Month:</span>
-                        <span className="font-medium text-gray-900 dark:text-white">{format(new Date(parseInt(viewingTimesheet.year), parseInt(viewingTimesheet.month) - 1), "MMMM yyyy")}</span>
+                        <span className="text-gray-600 dark:text-gray-400">
+                          Month:
+                        </span>
+                        <span className="font-medium text-gray-900 dark:text-white">
+                          {format(
+                            new Date(
+                              parseInt(viewingTimesheet.year),
+                              parseInt(viewingTimesheet.month) - 1
+                            ),
+                            "MMMM yyyy"
+                          )}
+                        </span>
                       </div>
                       <div className="flex justify-between">
-                        <span className="text-gray-600 dark:text-gray-400">Employee:</span>
-                        <span className="font-medium text-gray-900 dark:text-white">{viewingTimesheet.employeeName}</span>
+                        <span className="text-gray-600 dark:text-gray-400">
+                          Employee:
+                        </span>
+                        <span className="font-medium text-gray-900 dark:text-white">
+                          {viewingTimesheet.employeeName}
+                        </span>
                       </div>
                     </div>
                   </div>
@@ -586,7 +736,9 @@ export default function TimesheetManagementPage() {
 
                 {/* File Preview */}
                 <div className="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-4">
-                  <h4 className="font-medium text-gray-900 dark:text-white mb-3">File Preview</h4>
+                  <h4 className="font-medium text-gray-900 dark:text-white mb-3">
+                    File Preview
+                  </h4>
                   <div className="text-center py-8">
                     <DocumentTextIcon className="h-16 w-16 mx-auto mb-4 text-gray-400 dark:text-gray-500" />
                     <p className="text-gray-600 dark:text-gray-400 mb-2">
@@ -599,7 +751,9 @@ export default function TimesheetManagementPage() {
                       <button
                         onClick={() => {
                           // In a real app, this would download or open the file
-                          alert(`Opening file: ${viewingTimesheet.fileName}\n\nNote: In a production app, this would open the actual file content.`);
+                          alert(
+                            `Opening file: ${viewingTimesheet.fileName}\n\nNote: In a production app, this would open the actual file content.`
+                          );
                         }}
                         className="px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors"
                       >
@@ -618,11 +772,11 @@ export default function TimesheetManagementPage() {
                 >
                   Close
                 </button>
-                {viewingTimesheet.status === 'pending' && (
+                {viewingTimesheet.status === "pending" && (
                   <>
                     <button
                       onClick={() => {
-                        handleStatusChange(viewingTimesheet.id, 'approved');
+                        handleStatusChange(viewingTimesheet.id, "approved");
                         closeViewModal();
                       }}
                       className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
@@ -631,7 +785,7 @@ export default function TimesheetManagementPage() {
                     </button>
                     <button
                       onClick={() => {
-                        handleStatusChange(viewingTimesheet.id, 'rejected');
+                        handleStatusChange(viewingTimesheet.id, "rejected");
                         closeViewModal();
                       }}
                       className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"

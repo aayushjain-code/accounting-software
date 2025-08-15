@@ -12,7 +12,7 @@ export const ChangelogModal: React.FC<ChangelogModalProps> = ({
   onClose,
   changelog,
 }) => {
-  if (!isOpen) return null;
+  if (!isOpen) {return null;}
 
   const getTypeColor = (type: string) => {
     switch (type) {
@@ -58,7 +58,9 @@ export const ChangelogModal: React.FC<ChangelogModalProps> = ({
         {/* Header */}
         <div className="flex items-center justify-between p-6 border-b border-gray-200">
           <div>
-            <h2 className="text-2xl font-bold text-gray-900">What&apos;s New</h2>
+            <h2 className="text-2xl font-bold text-gray-900">
+              What&apos;s New
+            </h2>
             <p className="text-gray-600 mt-1">
               Latest updates and improvements to the system
             </p>
@@ -97,7 +99,7 @@ export const ChangelogModal: React.FC<ChangelogModalProps> = ({
             </div>
           ) : (
             <div className="space-y-6">
-              {changelog.map((entry) => (
+              {changelog.map(entry => (
                 <div
                   key={entry.id}
                   className="border border-gray-200 rounded-lg p-6 hover:shadow-md transition-shadow"

@@ -33,9 +33,9 @@ const Modal: React.FC<ModalProps> = ({
 
   // Close on ESC
   useEffect(() => {
-    if (!isOpen) return;
+    if (!isOpen) {return;}
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "Escape") onClose();
+      if (e.key === "Escape") {onClose();}
     };
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
@@ -48,7 +48,7 @@ const Modal: React.FC<ModalProps> = ({
     }
   }, [isOpen]);
 
-  if (!isOpen) return null;
+  if (!isOpen) {return null;}
 
   const sizeClasses = {
     sm: "max-w-sm",
@@ -75,7 +75,7 @@ const Modal: React.FC<ModalProps> = ({
         className={`relative bg-white dark:bg-gray-900 rounded-2xl shadow-2xl w-full ${sizeClasses[size]} mx-auto p-0 focus:outline-none`}
         ref={modalRef}
         tabIndex={0}
-        onClick={(e) => e.stopPropagation()}
+        onClick={e => e.stopPropagation()}
       >
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100 dark:border-gray-800">

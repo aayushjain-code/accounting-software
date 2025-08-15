@@ -102,11 +102,9 @@ export const InvoicesTable: React.FC<InvoicesTableProps> = ({
                   new Date(b.createdAt).getTime() -
                   new Date(a.createdAt).getTime()
               )
-              .map((invoice) => {
-                const client = clients.find((c) => c.id === invoice.clientId);
-                const project = projects.find(
-                  (p) => p.id === invoice.projectId
-                );
+              .map(invoice => {
+                const client = clients.find(c => c.id === invoice.clientId);
+                const project = projects.find(p => p.id === invoice.projectId);
                 return (
                   <tr
                     key={invoice.id}
@@ -228,12 +226,12 @@ export const InvoicesTable: React.FC<InvoicesTableProps> = ({
                   Client
                 </label>
                 <p className="text-gray-900 dark:text-white">
-                  {clients.find((c) => c.id === viewInvoice.clientId)?.name ||
+                  {clients.find(c => c.id === viewInvoice.clientId)?.name ||
                     "Unknown Client"}
                 </p>
                 <p className="text-sm text-gray-500 dark:text-gray-400">
-                  {clients.find((c) => c.id === viewInvoice.clientId)
-                    ?.company || "No Company"}
+                  {clients.find(c => c.id === viewInvoice.clientId)?.company ||
+                    "No Company"}
                 </p>
               </div>
               <div>
@@ -241,11 +239,11 @@ export const InvoicesTable: React.FC<InvoicesTableProps> = ({
                   Project
                 </label>
                 <p className="text-gray-900 dark:text-white">
-                  {projects.find((p) => p.id === viewInvoice.projectId)?.name ||
+                  {projects.find(p => p.id === viewInvoice.projectId)?.name ||
                     "No Project"}
                 </p>
                 <p className="text-sm text-gray-500 dark:text-gray-400">
-                  {projects.find((p) => p.id === viewInvoice.projectId)
+                  {projects.find(p => p.id === viewInvoice.projectId)
                     ?.projectCode || ""}
                 </p>
               </div>

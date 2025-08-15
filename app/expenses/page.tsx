@@ -1,15 +1,23 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useAccountingStore } from "@/store";
-import { Expense, ExpenseFile } from "@/types";
+import { Expense } from "@/types";
+import { EXPENSE_CATEGORIES } from "@/constants";
 import {
   PlusIcon,
-  CurrencyRupeeIcon,
+  PencilIcon,
+  TrashIcon,
   MagnifyingGlassIcon,
   FunnelIcon,
+  EyeIcon,
+  ReceiptIcon,
+  CalendarIcon,
+  CurrencyDollarIcon,
+  TagIcon,
   ChevronUpIcon,
   ChevronDownIcon,
+  CurrencyRupeeIcon,
 } from "@heroicons/react/24/outline";
 import { format } from "date-fns";
 import toast from "react-hot-toast";
@@ -17,9 +25,8 @@ import Modal from "@/components/Modal";
 import FileUpload from "@/components/FileUpload";
 import FileList from "@/components/FileList";
 import { CloudArrowUpIcon } from "@heroicons/react/24/outline";
-import React from "react";
 import { ExpensesTable } from "@/components/ExpensesTable";
-import { EXPENSE_CATEGORIES } from "@/constants";
+import { ExpenseFile } from "@/types";
 
 export default function ExpensesPage() {
   const [uploadedFiles, setUploadedFiles] = useState<File[]>([]);
@@ -169,13 +176,13 @@ export default function ExpensesPage() {
 
   // Filter and sort expenses
   const filteredAndSortedExpenses = useMemo(() => {
-    const filtered = expenses.filter((expense) => {
+    const filtered = expenses.filter(expense => {
       const matchesSearch =
         expense.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
         expense.category.toLowerCase().includes(searchTerm.toLowerCase()) ||
         (expense.projectId &&
           projects
-            .find((p) => p.id === expense.projectId)
+            .find(p => p.id === expense.projectId)
             ?.name.toLowerCase()
             .includes(searchTerm.toLowerCase()));
 
@@ -274,7 +281,7 @@ export default function ExpensesPage() {
           <p className="text-3xl font-bold text-primary-600 dark:text-primary-400">
             {formatCurrency(
               expenses
-                .filter((e) => {
+                .filter(e => {
                   const expenseDate = new Date(e.date);
                   const now = new Date();
                   return (
@@ -313,7 +320,7 @@ export default function ExpensesPage() {
               type="text"
               placeholder="Search expenses by description, category, or project..."
               value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
+              onChange={e => setSearchTerm(e.target.value)}
               className="w-full pl-12 pr-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200"
             />
           </div>
@@ -325,11 +332,11 @@ export default function ExpensesPage() {
               <FunnelIcon className="h-5 w-5 text-gray-400" />
               <select
                 value={selectedCategory}
-                onChange={(e) => setSelectedCategory(e.target.value)}
+                onChange={e => setSelectedCategory(e.target.value)}
                 className="px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200"
               >
                 <option value="all">All Categories</option>
-                {expenseCategories.map((category) => (
+                {expenseCategories.map(category => (
                   <option key={category} value={category}>
                     {category}
                   </option>
@@ -341,7 +348,7 @@ export default function ExpensesPage() {
             <div className="flex items-center space-x-2">
               <select
                 value={selectedStatus}
-                onChange={(e) => setSelectedStatus(e.target.value)}
+                onChange={e => setSelectedStatus(e.target.value)}
                 className="px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200"
               >
                 <option value="all">All Statuses</option>
@@ -355,7 +362,7 @@ export default function ExpensesPage() {
             <div className="flex items-center space-x-2">
               <select
                 value={sortBy}
-                onChange={(e) =>
+                onChange={e =>
                   setSortBy(e.target.value as "amount" | "date" | "category")
                 }
                 className="px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200"
@@ -504,13 +511,13 @@ export default function ExpensesPage() {
               <select
                 required
                 value={formData.category}
-                onChange={(e) =>
+                onChange={e =>
                   setFormData({ ...formData, category: e.target.value })
                 }
                 className="input"
               >
                 <option value="">Select a category</option>
-                {expenseCategories.map((category) => (
+                {expenseCategories.map(category => (
                   <option key={category} value={category}>
                     {category}
                   </option>
@@ -527,7 +534,7 @@ export default function ExpensesPage() {
                 min="0"
                 step="0.01"
                 value={formData.amount}
-                onChange={(e) =>
+                onChange={e =>
                   setFormData({
                     ...formData,
                     amount: e.target.value,
@@ -544,7 +551,7 @@ export default function ExpensesPage() {
                 type="date"
                 required
                 value={formData.date}
-                onChange={(e) =>
+                onChange={e =>
                   setFormData({ ...formData, date: e.target.value })
                 }
                 className="input"
@@ -556,13 +563,13 @@ export default function ExpensesPage() {
               </label>
               <select
                 value={formData.projectId}
-                onChange={(e) =>
+                onChange={e =>
                   setFormData({ ...formData, projectId: e.target.value })
                 }
                 className="input"
               >
                 <option value="">No specific project</option>
-                {projects.map((project) => (
+                {projects.map(project => (
                   <option key={project.id} value={project.id}>
                     {project.name}
                   </option>
@@ -577,7 +584,7 @@ export default function ExpensesPage() {
                 type="text"
                 required
                 value={formData.description}
-                onChange={(e) =>
+                onChange={e =>
                   setFormData({
                     ...formData,
                     description: e.target.value,

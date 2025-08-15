@@ -10,11 +10,11 @@ interface LazyLoaderProps {
   props?: any;
 }
 
-export function LazyLoader({ 
-  component: Component, 
-  fallback = <DefaultFallback />, 
+export function LazyLoader({
+  component: Component,
+  fallback = <DefaultFallback />,
   errorFallback = <DefaultErrorFallback />,
-  props = {}
+  props = {},
 }: LazyLoaderProps) {
   return (
     <ErrorBoundary fallback={errorFallback}>

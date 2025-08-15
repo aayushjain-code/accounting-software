@@ -56,7 +56,7 @@ export const Directory: React.FC<DirectoryProps> = ({
 
   // Excel-like filtering and sorting
   const filteredAndSortedContacts = contacts
-    .filter((contact) => {
+    .filter(contact => {
       const matchesSearch =
         contact.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
         contact.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -80,8 +80,8 @@ export const Directory: React.FC<DirectoryProps> = ({
       }
 
       if (aValue !== undefined && bValue !== undefined) {
-        if (aValue < bValue) return sortDirection === "asc" ? -1 : 1;
-        if (aValue > bValue) return sortDirection === "asc" ? 1 : -1;
+        if (aValue < bValue) {return sortDirection === "asc" ? -1 : 1;}
+        if (aValue > bValue) {return sortDirection === "asc" ? 1 : -1;}
       }
       return 0;
     });
@@ -89,7 +89,7 @@ export const Directory: React.FC<DirectoryProps> = ({
   // Removed inline editing functionality - users must use explicit edit button
 
   const renderSortIcon = (field: keyof DirectoryContact) => {
-    if (sortField !== field) return null;
+    if (sortField !== field) {return null;}
     return sortDirection === "asc" ? (
       <ArrowUpIcon className="h-4 w-4 ml-1" />
     ) : (
@@ -125,7 +125,7 @@ export const Directory: React.FC<DirectoryProps> = ({
               type="text"
               placeholder="Search contacts..."
               value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
+              onChange={e => setSearchTerm(e.target.value)}
               className="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
             />
           </div>
@@ -156,12 +156,12 @@ export const Directory: React.FC<DirectoryProps> = ({
               </label>
               <select
                 value={companyFilter}
-                onChange={(e) => setCompanyFilter(e.target.value)}
+                onChange={e => setCompanyFilter(e.target.value)}
                 className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
               >
                 <option value="all">All Companies</option>
-                {Array.from(new Set(contacts.map((c) => c.company))).map(
-                  (company) => (
+                {Array.from(new Set(contacts.map(c => c.company))).map(
+                  company => (
                     <option key={company} value={company}>
                       {company}
                     </option>
@@ -176,17 +176,15 @@ export const Directory: React.FC<DirectoryProps> = ({
               </label>
               <select
                 value={roleFilter}
-                onChange={(e) => setRoleFilter(e.target.value)}
+                onChange={e => setRoleFilter(e.target.value)}
                 className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
               >
                 <option value="all">All Roles</option>
-                {Array.from(new Set(contacts.map((c) => c.role))).map(
-                  (role) => (
-                    <option key={role} value={role}>
-                      {role}
-                    </option>
-                  )
-                )}
+                {Array.from(new Set(contacts.map(c => c.role))).map(role => (
+                  <option key={role} value={role}>
+                    {role}
+                  </option>
+                ))}
               </select>
             </div>
           </div>
@@ -198,7 +196,7 @@ export const Directory: React.FC<DirectoryProps> = ({
         <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
           <thead className="bg-gray-50 dark:bg-gray-700">
             <tr>
-              {columns.map((column) => (
+              {columns.map(column => (
                 <th
                   key={column.key}
                   className={`px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider ${
@@ -221,7 +219,7 @@ export const Directory: React.FC<DirectoryProps> = ({
             </tr>
           </thead>
           <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
-            {filteredAndSortedContacts.map((contact) => (
+            {filteredAndSortedContacts.map(contact => (
               <tr
                 key={contact.id}
                 className="hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"

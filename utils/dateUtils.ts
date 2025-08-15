@@ -1,6 +1,17 @@
 // Date utility functions
 
-import { format, parseISO, isValid, startOfMonth, endOfMonth, eachDayOfInterval, isWeekend, addDays, subDays, differenceInDays, differenceInBusinessDays, isBusinessDay, isHoliday } from "date-fns";
+import {
+  format,
+  parseISO,
+  isValid,
+  startOfMonth,
+  endOfMonth,
+  eachDayOfInterval,
+  isWeekend,
+  addDays,
+  subDays,
+  differenceInDays,
+} from "date-fns";
 
 export interface DateRange {
   start: Date;
@@ -57,9 +68,9 @@ export const formatDate = (
 ): string => {
   const parsedDate = parseDate(date);
   if (!parsedDate) return "Invalid Date";
-  
+
   try {
-    return format(parsedDate, formatString, options?.locale);
+    return format(parsedDate, formatString);
   } catch {
     return "Invalid Date";
   }
@@ -72,42 +83,49 @@ export const formatDateRange = (
 ): string => {
   const start = parseDate(startDate);
   const end = parseDate(endDate);
-  
+
   if (!start || !end) return "Invalid Date Range";
-  
+
   return `${formatDate(start, formatString)} - ${formatDate(end, formatString)}`;
 };
 
 export const formatRelativeDate = (date: Date | string | number): string => {
   const parsedDate = parseDate(date);
   if (!parsedDate) return "Invalid Date";
-  
+
   const now = new Date();
   const diffInDays = differenceInDays(now, parsedDate);
-  
+
   if (diffInDays === 0) return "Today";
   if (diffInDays === 1) return "Yesterday";
   if (diffInDays === -1) return "Tomorrow";
   if (diffInDays > 0) return `${diffInDays} days ago`;
   if (diffInDays < 0) return `In ${Math.abs(diffInDays)} days`;
-  
+
   return formatDate(parsedDate, "MMM dd, yyyy");
 };
 
 /**
  * Business date utilities
  */
-export const isBusinessDay = (date: Date, options: BusinessDateOptions = {}): boolean => {
+export const isBusinessDay = (
+  date: Date,
+  options: BusinessDateOptions = {}
+): boolean => {
   const { includeWeekends = false, holidays = [] } = options;
-  
+
   if (!includeWeekends && isWeekend(date)) {
     return false;
   }
-  
-  if (holidays.some(holiday => format(holiday, "yyyy-MM-dd") === format(date, "yyyy-MM-dd"))) {
+
+  if (
+    holidays.some(
+      holiday => format(holiday, "yyyy-MM-dd") === format(date, "yyyy-MM-dd")
+    )
+  ) {
     return false;
   }
-  
+
   return true;
 };
 
@@ -117,18 +135,22 @@ export const getBusinessDays = (
   options: BusinessDateOptions = {}
 ): Date[] => {
   const { includeWeekends = false, holidays = [] } = options;
-  
+
   const allDays = eachDayOfInterval({ start: startDate, end: endDate });
-  
+
   return allDays.filter(day => {
     if (!includeWeekends && isWeekend(day)) {
       return false;
     }
-    
-    if (holidays.some(holiday => format(holiday, "yyyy-MM-dd") === format(day, "yyyy-MM-dd"))) {
+
+    if (
+      holidays.some(
+        holiday => format(holiday, "yyyy-MM-dd") === format(day, "yyyy-MM-dd")
+      )
+    ) {
       return false;
     }
-    
+
     return true;
   });
 };
@@ -149,14 +171,14 @@ export const addBusinessDays = (
   let result = new Date(date);
   let remainingDays = Math.abs(days);
   const direction = days > 0 ? 1 : -1;
-  
+
   while (remainingDays > 0) {
     result = addDays(result, direction);
     if (isBusinessDay(result, options)) {
       remainingDays--;
     }
   }
-  
+
   return result;
 };
 
@@ -203,7 +225,7 @@ export const getFiscalYear = (
 ): number => {
   const year = date.getFullYear();
   const month = date.getMonth() + 1;
-  
+
   if (month >= fiscalYearStartMonth) {
     return year;
   }
@@ -222,17 +244,23 @@ export const getFiscalYearRange = (
 /**
  * Age calculation
  */
-export const calculateAge = (birthDate: Date, referenceDate: Date = new Date()): number => {
+export const calculateAge = (
+  birthDate: Date,
+  referenceDate: Date = new Date()
+): number => {
   const birth = new Date(birthDate);
   const reference = new Date(referenceDate);
-  
+
   let age = reference.getFullYear() - birth.getFullYear();
   const monthDiff = reference.getMonth() - birth.getMonth();
-  
-  if (monthDiff < 0 || (monthDiff === 0 && reference.getDate() < birth.getDate())) {
+
+  if (
+    monthDiff < 0 ||
+    (monthDiff === 0 && reference.getDate() < birth.getDate())
+  ) {
     age--;
   }
-  
+
   return age;
 };
 
@@ -264,7 +292,10 @@ export const isThisWeek = (date: Date): boolean => {
 
 export const isThisMonth = (date: Date): boolean => {
   const now = new Date();
-  return date.getMonth() === now.getMonth() && date.getFullYear() === now.getFullYear();
+  return (
+    date.getMonth() === now.getMonth() &&
+    date.getFullYear() === now.getFullYear()
+  );
 };
 
 export const isThisYear = (date: Date): boolean => {

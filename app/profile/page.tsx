@@ -1,19 +1,27 @@
 "use client";
 
-import React, { useState, useCallback } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useAccountingStore } from "@/store";
+import { UserProfile } from "@/types";
 import {
+  UserIcon,
+  EnvelopeIcon,
+  PhoneIcon,
   BuildingOfficeIcon,
   MapPinIcon,
+  GlobeAltIcon,
+  PencilIcon,
+  CameraIcon,
+  CheckIcon,
+  XMarkIcon,
   BanknotesIcon,
-  UserIcon,
   LinkIcon,
-  CalendarIcon,
   ChartBarIcon,
-  UsersIcon,
-  CurrencyDollarIcon,
   BellIcon,
   CogIcon,
+  CalendarIcon,
+  UsersIcon,
+  CurrencyDollarIcon,
 } from "@heroicons/react/24/outline";
 import toast from "react-hot-toast";
 import { Card } from "@/components/Card";
@@ -24,7 +32,7 @@ import {
 } from "@heroicons/react/24/outline";
 import { ProfileUpdateModal } from "@/components/ProfileUpdateModal";
 import { ChangelogModal } from "@/components/ChangelogModal";
-import { UserProfile, ChangelogEntry } from "@/types";
+import { ChangelogEntry } from "@/types";
 
 export default function ProfilePage() {
   const { companyProfile, updateCompanyProfile } = useAccountingStore();
@@ -40,7 +48,7 @@ export default function ProfilePage() {
   const [showCurrentPin, setShowCurrentPin] = useState(false);
   const [showNewPin, setShowNewPin] = useState(false);
   const [showConfirmPin, setShowConfirmPin] = useState(false);
-  
+
   // Mock user profile data
   const [userProfile, setUserProfile] = useState<UserProfile>({
     id: "1",
@@ -74,7 +82,8 @@ export default function ProfilePage() {
       id: "1",
       version: "2.1.0",
       title: "Invoice Generator Complete",
-      description: "Major update to the invoice generation system with enhanced features and improved user experience.",
+      description:
+        "Major update to the invoice generation system with enhanced features and improved user experience.",
       changes: [
         "Added professional invoice template matching exact design requirements",
         "Implemented working print functionality with 3 different options",
@@ -83,7 +92,7 @@ export default function ProfilePage() {
         "Added comprehensive form validation and user feedback",
         "Enhanced UI with loading states and success messages",
         "Improved print styles for professional output",
-        "Added client selection and auto-population features"
+        "Added client selection and auto-population features",
       ],
       releaseDate: new Date("2024-01-15"),
       type: "feature",
@@ -95,12 +104,13 @@ export default function ProfilePage() {
       id: "2",
       version: "2.0.5",
       title: "Performance Improvements",
-      description: "Various performance optimizations and bug fixes to improve system stability.",
+      description:
+        "Various performance optimizations and bug fixes to improve system stability.",
       changes: [
         "Optimized database queries for faster data loading",
         "Fixed memory leaks in the dashboard components",
         "Improved error handling across the application",
-        "Enhanced mobile responsiveness for better user experience"
+        "Enhanced mobile responsiveness for better user experience",
       ],
       releaseDate: new Date("2024-01-10"),
       type: "improvement",
@@ -112,20 +122,21 @@ export default function ProfilePage() {
       id: "3",
       version: "2.0.0",
       title: "Major UI Overhaul",
-      description: "Complete redesign of the user interface with modern design principles and improved usability.",
+      description:
+        "Complete redesign of the user interface with modern design principles and improved usability.",
       changes: [
         "Redesigned entire application with modern UI/UX",
         "Added dark mode support",
         "Implemented responsive design for all screen sizes",
         "Added new dashboard with enhanced analytics",
-        "Improved navigation and user flow"
+        "Improved navigation and user flow",
       ],
       releaseDate: new Date("2024-01-01"),
       type: "feature",
       isPublished: true,
       createdAt: new Date("2024-01-01"),
       updatedAt: new Date("2024-01-01"),
-    }
+    },
   ]);
 
   const [formData, setFormData] = useState({
@@ -191,106 +202,115 @@ export default function ProfilePage() {
     }
   };
 
-  const handleSubmit = useCallback(
-    (e: React.FormEvent) => {
-      e.preventDefault();
+  const handleSubmit = useMemo(
+    () => {
+      return (e: React.FormEvent) => {
+        e.preventDefault();
 
-      const profileData = {
-        ...formData,
-        annualRevenue: formData.annualRevenue
-          ? parseInt(formData.annualRevenue)
-          : undefined,
-        employeeCount: formData.employeeCount
-          ? parseInt(formData.employeeCount)
-          : undefined,
+        const profileData = {
+          ...formData,
+          annualRevenue: formData.annualRevenue
+            ? parseInt(formData.annualRevenue)
+            : undefined,
+          employeeCount: formData.employeeCount
+            ? parseInt(formData.employeeCount)
+            : undefined,
+        };
+
+        updateCompanyProfile(profileData);
+        setIsEditing(false);
+        toast.success("Company profile updated successfully");
       };
-
-      updateCompanyProfile(profileData);
-      setIsEditing(false);
-      toast.success("Company profile updated successfully");
     },
     [formData, updateCompanyProfile]
   );
 
-  const handlePinChange = useCallback(
-    async (e: React.FormEvent) => {
-      e.preventDefault();
+  const handlePinChange = useMemo(
+    () => {
+      return (e: React.FormEvent) => {
+        e.preventDefault();
 
-      if (pinData.newPin !== pinData.confirmPin) {
-        toast.error("New PIN and confirm PIN do not match");
-        return;
-      }
-
-      if (pinData.newPin.length !== 4) {
-        toast.error("PIN must be exactly 4 digits");
-        return;
-      }
-
-      try {
-        // For web-based app, validate the current PIN and update
-        const currentStoredPin = "1234"; // In production, this would be stored securely
-
-        if (pinData.currentPin !== currentStoredPin) {
-          toast.error("Current PIN is incorrect");
+        if (pinData.newPin !== pinData.confirmPin) {
+          toast.error("New PIN and confirm PIN do not match");
           return;
         }
 
-        // In a real web app, you would send this to your backend
-        // For now, we'll just show a success message
-        toast.success("PIN changed successfully (demo mode)");
-        setPinData({ currentPin: "", newPin: "", confirmPin: "" });
-        setShowPinChange(false);
-      } catch (error) {
-        toast.error("Failed to change PIN");
-        console.error("PIN change error:", error);
-      }
+        if (pinData.newPin.length !== 4) {
+          toast.error("PIN must be exactly 4 digits");
+          return;
+        }
+
+        try {
+          // For web-based app, validate the current PIN and update
+          const currentStoredPin = "1234"; // In production, this would be stored securely
+
+          if (pinData.currentPin !== currentStoredPin) {
+            toast.error("Current PIN is incorrect");
+            return;
+          }
+
+          // In a real web app, you would send this to your backend
+          // For now, we'll just show a success message
+          toast.success("PIN changed successfully (demo mode)");
+          setPinData({ currentPin: "", newPin: "", confirmPin: "" });
+          setShowPinChange(false);
+        } catch (error) {
+          toast.error("Failed to change PIN");
+          console.error("PIN change error:", error);
+        }
+      };
     },
     [pinData]
   );
 
-  const handleCancel = useCallback(() => {
-    setFormData({
-      name: companyProfile.name,
-      legalName: companyProfile.legalName,
-      email: companyProfile.email,
-      phone: companyProfile.phone,
-      website: companyProfile.website,
-      address: companyProfile.address,
-      city: companyProfile.city,
-      state: companyProfile.state,
-      pincode: companyProfile.pincode,
-      country: companyProfile.country,
-      gstNumber: companyProfile.gstNumber,
-      panNumber: companyProfile.panNumber,
-      cinNumber: companyProfile.cinNumber,
-      logo: companyProfile.logo,
-      description: companyProfile.description,
-      foundedYear: companyProfile.foundedYear,
-      industry: companyProfile.industry,
-      companySize: companyProfile.companySize,
-      annualRevenue: companyProfile.annualRevenue?.toString() || "",
-      employeeCount: companyProfile.employeeCount?.toString() || "",
-      bankDetails: {
-        accountNumber: companyProfile.bankDetails.accountNumber,
-        ifscCode: companyProfile.bankDetails.ifscCode,
-        bankName: companyProfile.bankDetails.bankName,
-        branch: companyProfile.bankDetails.branch,
-      },
-      contactPerson: {
-        name: companyProfile.contactPerson.name,
-        email: companyProfile.contactPerson.email,
-        phone: companyProfile.contactPerson.phone,
-        designation: companyProfile.contactPerson.designation,
-      },
-      socialMedia: {
-        linkedin: companyProfile.socialMedia.linkedin || "",
-        twitter: companyProfile.socialMedia.twitter || "",
-        facebook: companyProfile.socialMedia.facebook || "",
-        instagram: companyProfile.socialMedia.instagram || "",
-      },
-    });
-    setIsEditing(false);
-  }, [companyProfile]);
+  const handleCancel = useMemo(
+    () => {
+      return () => {
+        setFormData({
+          name: companyProfile.name,
+          legalName: companyProfile.legalName,
+          email: companyProfile.email,
+          phone: companyProfile.phone,
+          website: companyProfile.website,
+          address: companyProfile.address,
+          city: companyProfile.city,
+          state: companyProfile.state,
+          pincode: companyProfile.pincode,
+          country: companyProfile.country,
+          gstNumber: companyProfile.gstNumber,
+          panNumber: companyProfile.panNumber,
+          cinNumber: companyProfile.cinNumber,
+          logo: companyProfile.logo,
+          description: companyProfile.description,
+          foundedYear: companyProfile.foundedYear,
+          industry: companyProfile.industry,
+          companySize: companyProfile.companySize,
+          annualRevenue: companyProfile.annualRevenue?.toString() || "",
+          employeeCount: companyProfile.employeeCount?.toString() || "",
+          bankDetails: {
+            accountNumber: companyProfile.bankDetails.accountNumber,
+            ifscCode: companyProfile.bankDetails.ifscCode,
+            bankName: companyProfile.bankDetails.bankName,
+            branch: companyProfile.bankDetails.branch,
+          },
+          contactPerson: {
+            name: companyProfile.contactPerson.name,
+            email: companyProfile.contactPerson.email,
+            phone: companyProfile.contactPerson.phone,
+            designation: companyProfile.contactPerson.designation,
+          },
+          socialMedia: {
+            linkedin: companyProfile.socialMedia.linkedin || "",
+            twitter: companyProfile.socialMedia.twitter || "",
+            facebook: companyProfile.socialMedia.facebook || "",
+            instagram: companyProfile.socialMedia.instagram || "",
+          },
+        });
+        setIsEditing(false);
+      };
+    },
+    [companyProfile]
+  );
 
   return (
     <div className="space-y-6">
@@ -338,7 +358,7 @@ export default function ProfilePage() {
             User Profile
           </h2>
         </div>
-        
+
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <div className="text-center">
             <div className="w-20 h-20 bg-primary-100 rounded-full flex items-center justify-center mx-auto mb-3">
@@ -350,29 +370,41 @@ export default function ProfilePage() {
             <p className="text-gray-600">{userProfile.position}</p>
             <p className="text-sm text-gray-500">{userProfile.department}</p>
           </div>
-          
+
           <div className="md:col-span-2">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Email
+                </label>
                 <p className="text-gray-900">{userProfile.email}</p>
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Phone</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Phone
+                </label>
                 <p className="text-gray-900">{userProfile.phone}</p>
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Role</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Role
+                </label>
                 <p className="text-gray-900 capitalize">{userProfile.role}</p>
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Theme</label>
-                <p className="text-gray-900 capitalize">{userProfile.preferences.theme}</p>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Theme
+                </label>
+                <p className="text-gray-900 capitalize">
+                  {userProfile.preferences.theme}
+                </p>
               </div>
             </div>
             {userProfile.bio && (
               <div className="mt-4">
-                <label className="block text-sm font-medium text-gray-700 mb-1">Bio</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Bio
+                </label>
                 <p className="text-gray-900">{userProfile.bio}</p>
               </div>
             )}
@@ -419,7 +451,7 @@ export default function ProfilePage() {
                     required
                     maxLength={4}
                     value={pinData.currentPin}
-                    onChange={(e) =>
+                    onChange={e =>
                       setPinData({
                         ...pinData,
                         currentPin: e.target.value.replace(/\D/g, ""),
@@ -452,7 +484,7 @@ export default function ProfilePage() {
                     required
                     maxLength={4}
                     value={pinData.newPin}
-                    onChange={(e) =>
+                    onChange={e =>
                       setPinData({
                         ...pinData,
                         newPin: e.target.value.replace(/\D/g, ""),
@@ -485,7 +517,7 @@ export default function ProfilePage() {
                     required
                     maxLength={4}
                     value={pinData.confirmPin}
-                    onChange={(e) =>
+                    onChange={e =>
                       setPinData({
                         ...pinData,
                         confirmPin: e.target.value.replace(/\D/g, ""),
@@ -550,7 +582,7 @@ export default function ProfilePage() {
                 type="text"
                 required
                 value={formData.name}
-                onChange={(e) =>
+                onChange={e =>
                   setFormData({ ...formData, name: e.target.value })
                 }
                 className="input"
@@ -565,7 +597,7 @@ export default function ProfilePage() {
                 type="text"
                 required
                 value={formData.legalName}
-                onChange={(e) =>
+                onChange={e =>
                   setFormData({ ...formData, legalName: e.target.value })
                 }
                 className="input"
@@ -580,7 +612,7 @@ export default function ProfilePage() {
                 type="email"
                 required
                 value={formData.email}
-                onChange={(e) =>
+                onChange={e =>
                   setFormData({ ...formData, email: e.target.value })
                 }
                 className="input"
@@ -595,7 +627,7 @@ export default function ProfilePage() {
                 type="tel"
                 required
                 value={formData.phone}
-                onChange={(e) =>
+                onChange={e =>
                   setFormData({ ...formData, phone: e.target.value })
                 }
                 className="input"
@@ -609,7 +641,7 @@ export default function ProfilePage() {
               <input
                 type="url"
                 value={formData.website}
-                onChange={(e) =>
+                onChange={e =>
                   setFormData({ ...formData, website: e.target.value })
                 }
                 className="input"
@@ -623,7 +655,7 @@ export default function ProfilePage() {
               <input
                 type="text"
                 value={formData.industry}
-                onChange={(e) =>
+                onChange={e =>
                   setFormData({ ...formData, industry: e.target.value })
                 }
                 className="input"
@@ -636,7 +668,7 @@ export default function ProfilePage() {
               </label>
               <select
                 value={formData.companySize}
-                onChange={(e) =>
+                onChange={e =>
                   setFormData({
                     ...formData,
                     companySize: e.target.value as
@@ -664,7 +696,7 @@ export default function ProfilePage() {
               <input
                 type="number"
                 value={formData.foundedYear}
-                onChange={(e) =>
+                onChange={e =>
                   setFormData({
                     ...formData,
                     foundedYear: parseInt(e.target.value),
@@ -683,7 +715,7 @@ export default function ProfilePage() {
               <input
                 type="number"
                 value={formData.annualRevenue}
-                onChange={(e) =>
+                onChange={e =>
                   setFormData({ ...formData, annualRevenue: e.target.value })
                 }
                 className="input"
@@ -698,7 +730,7 @@ export default function ProfilePage() {
               <input
                 type="number"
                 value={formData.employeeCount}
-                onChange={(e) =>
+                onChange={e =>
                   setFormData({ ...formData, employeeCount: e.target.value })
                 }
                 className="input"
@@ -712,7 +744,7 @@ export default function ProfilePage() {
               </label>
               <textarea
                 value={formData.description}
-                onChange={(e) =>
+                onChange={e =>
                   setFormData({ ...formData, description: e.target.value })
                 }
                 className="input"
@@ -742,7 +774,7 @@ export default function ProfilePage() {
                 type="text"
                 required
                 value={formData.address}
-                onChange={(e) =>
+                onChange={e =>
                   setFormData({ ...formData, address: e.target.value })
                 }
                 className="input"
@@ -757,7 +789,7 @@ export default function ProfilePage() {
                 type="text"
                 required
                 value={formData.city}
-                onChange={(e) =>
+                onChange={e =>
                   setFormData({ ...formData, city: e.target.value })
                 }
                 className="input"
@@ -772,7 +804,7 @@ export default function ProfilePage() {
                 type="text"
                 required
                 value={formData.state}
-                onChange={(e) =>
+                onChange={e =>
                   setFormData({ ...formData, state: e.target.value })
                 }
                 className="input"
@@ -787,7 +819,7 @@ export default function ProfilePage() {
                 type="text"
                 required
                 value={formData.pincode}
-                onChange={(e) =>
+                onChange={e =>
                   setFormData({ ...formData, pincode: e.target.value })
                 }
                 className="input"
@@ -802,7 +834,7 @@ export default function ProfilePage() {
                 type="text"
                 required
                 value={formData.country}
-                onChange={(e) =>
+                onChange={e =>
                   setFormData({ ...formData, country: e.target.value })
                 }
                 className="input"
@@ -830,7 +862,7 @@ export default function ProfilePage() {
                 type="text"
                 required
                 value={formData.gstNumber}
-                onChange={(e) =>
+                onChange={e =>
                   setFormData({ ...formData, gstNumber: e.target.value })
                 }
                 className="input"
@@ -845,7 +877,7 @@ export default function ProfilePage() {
                 type="text"
                 required
                 value={formData.panNumber}
-                onChange={(e) =>
+                onChange={e =>
                   setFormData({ ...formData, panNumber: e.target.value })
                 }
                 className="input"
@@ -859,7 +891,7 @@ export default function ProfilePage() {
               <input
                 type="text"
                 value={formData.cinNumber}
-                onChange={(e) =>
+                onChange={e =>
                   setFormData({ ...formData, cinNumber: e.target.value })
                 }
                 className="input"
@@ -887,7 +919,7 @@ export default function ProfilePage() {
                 type="text"
                 required
                 value={formData.bankDetails.bankName}
-                onChange={(e) =>
+                onChange={e =>
                   setFormData({
                     ...formData,
                     bankDetails: {
@@ -908,7 +940,7 @@ export default function ProfilePage() {
                 type="text"
                 required
                 value={formData.bankDetails.accountNumber}
-                onChange={(e) =>
+                onChange={e =>
                   setFormData({
                     ...formData,
                     bankDetails: {
@@ -929,7 +961,7 @@ export default function ProfilePage() {
                 type="text"
                 required
                 value={formData.bankDetails.ifscCode}
-                onChange={(e) =>
+                onChange={e =>
                   setFormData({
                     ...formData,
                     bankDetails: {
@@ -950,7 +982,7 @@ export default function ProfilePage() {
                 type="text"
                 required
                 value={formData.bankDetails.branch}
-                onChange={(e) =>
+                onChange={e =>
                   setFormData({
                     ...formData,
                     bankDetails: {
@@ -984,7 +1016,7 @@ export default function ProfilePage() {
                 type="text"
                 required
                 value={formData.contactPerson.name}
-                onChange={(e) =>
+                onChange={e =>
                   setFormData({
                     ...formData,
                     contactPerson: {
@@ -1005,7 +1037,7 @@ export default function ProfilePage() {
                 type="text"
                 required
                 value={formData.contactPerson.designation}
-                onChange={(e) =>
+                onChange={e =>
                   setFormData({
                     ...formData,
                     contactPerson: {
@@ -1026,7 +1058,7 @@ export default function ProfilePage() {
                 type="email"
                 required
                 value={formData.contactPerson.email}
-                onChange={(e) =>
+                onChange={e =>
                   setFormData({
                     ...formData,
                     contactPerson: {
@@ -1047,7 +1079,7 @@ export default function ProfilePage() {
                 type="tel"
                 required
                 value={formData.contactPerson.phone}
-                onChange={(e) =>
+                onChange={e =>
                   setFormData({
                     ...formData,
                     contactPerson: {
@@ -1080,7 +1112,7 @@ export default function ProfilePage() {
               <input
                 type="url"
                 value={formData.socialMedia.linkedin}
-                onChange={(e) =>
+                onChange={e =>
                   setFormData({
                     ...formData,
                     socialMedia: {
@@ -1101,7 +1133,7 @@ export default function ProfilePage() {
               <input
                 type="url"
                 value={formData.socialMedia.twitter}
-                onChange={(e) =>
+                onChange={e =>
                   setFormData({
                     ...formData,
                     socialMedia: {
@@ -1122,7 +1154,7 @@ export default function ProfilePage() {
               <input
                 type="url"
                 value={formData.socialMedia.facebook}
-                onChange={(e) =>
+                onChange={e =>
                   setFormData({
                     ...formData,
                     socialMedia: {
@@ -1143,7 +1175,7 @@ export default function ProfilePage() {
               <input
                 type="url"
                 value={formData.socialMedia.instagram}
-                onChange={(e) =>
+                onChange={e =>
                   setFormData({
                     ...formData,
                     socialMedia: {

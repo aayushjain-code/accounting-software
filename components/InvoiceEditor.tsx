@@ -206,7 +206,7 @@ export const InvoiceEditor: React.FC<InvoiceEditorProps> = ({
   // Optimized form data update handler to prevent unnecessary re-renders
   const handleFormDataChange = useCallback(
     (field: keyof typeof formData, value: string) => {
-      setFormData((prev) => ({ ...prev, [field]: value }));
+      setFormData(prev => ({ ...prev, [field]: value }));
     },
     []
   );
@@ -215,11 +215,11 @@ export const InvoiceEditor: React.FC<InvoiceEditorProps> = ({
   const handlePrint = () => {
     // Create a new window for printing
     const printWindow = window.open("", "_blank");
-    if (!printWindow) return;
+    if (!printWindow) {return;}
 
     // Get the invoice content
     const invoiceContent = invoiceRef.current?.innerHTML;
-    if (!invoiceContent) return;
+    if (!invoiceContent) {return;}
 
     // Create the print document with better styling
     const printDocument = `
@@ -265,7 +265,7 @@ export const InvoiceEditor: React.FC<InvoiceEditorProps> = ({
 
   // PDF download handler
   const handleDownloadPDF = async () => {
-    if (!invoiceRef.current) return;
+    if (!invoiceRef.current) {return;}
 
     setIsGeneratingPDF(true);
 
@@ -353,13 +353,13 @@ export const InvoiceEditor: React.FC<InvoiceEditorProps> = ({
       unitPrice: 0,
       total: 0,
     };
-    setItems((prev) => [...prev, newItem]);
+    setItems(prev => [...prev, newItem]);
   }, [invoice?.id]);
 
   const removeItem = useCallback(
     (index: number) => {
       if (items.length > 1) {
-        setItems((prev) => prev.filter((_, i) => i !== index));
+        setItems(prev => prev.filter((_, i) => i !== index));
       }
     },
     [items.length]
@@ -479,38 +479,38 @@ export const InvoiceEditor: React.FC<InvoiceEditorProps> = ({
       "Nineteen",
     ];
 
-    if (amount === 0) return "Zero";
-    if (amount < 10) return ones[amount];
-    if (amount < 20) return teens[amount - 10];
+    if (amount === 0) {return "Zero";}
+    if (amount < 10) {return ones[amount];}
+    if (amount < 20) {return teens[amount - 10];}
     if (amount < 100) {
-      if (amount % 10 === 0) return tens[Math.floor(amount / 10)];
-      return tens[Math.floor(amount / 10)] + " " + ones[amount % 10];
+      if (amount % 10 === 0) {return tens[Math.floor(amount / 10)];}
+      return `${tens[Math.floor(amount / 10)]  } ${  ones[amount % 10]}`;
     }
     if (amount < 1000) {
       if (amount % 100 === 0) {
-        return ones[Math.floor(amount / 100)] + " Hundred";
+        return `${ones[Math.floor(amount / 100)]  } Hundred`;
       }
       return (
-        ones[Math.floor(amount / 100)] +
-        " Hundred " +
-        getAmountInWords(amount % 100)
+        `${ones[Math.floor(amount / 100)] 
+        } Hundred ${ 
+        getAmountInWords(amount % 100)}`
       );
     }
     if (amount < 100000) {
       const thousands = Math.floor(amount / 1000);
       const remainder = amount % 1000;
-      let result = getAmountInWords(thousands) + " Thousand";
+      let result = `${getAmountInWords(thousands)  } Thousand`;
       if (remainder > 0) {
-        result += " " + getAmountInWords(remainder);
+        result += ` ${  getAmountInWords(remainder)}`;
       }
       return result;
     }
     if (amount < 10000000) {
       const lakhs = Math.floor(amount / 100000);
       const remainder = amount % 100000;
-      let result = getAmountInWords(lakhs) + " Lakh";
+      let result = `${getAmountInWords(lakhs)  } Lakh`;
       if (remainder > 0) {
-        result += " " + getAmountInWords(remainder);
+        result += ` ${  getAmountInWords(remainder)}`;
       }
       return result;
     }
@@ -551,7 +551,7 @@ export const InvoiceEditor: React.FC<InvoiceEditorProps> = ({
       addInvoice(invoiceData);
 
       // Add invoice items to store
-      items.forEach((item) => {
+      items.forEach(item => {
         addInvoiceItem({
           invoiceId: "temp", // This will be updated when we get the actual invoice ID
           description: item.description,
@@ -786,7 +786,7 @@ export const InvoiceEditor: React.FC<InvoiceEditorProps> = ({
                       <input
                         type="text"
                         value={formData.invoiceNumber}
-                        onChange={(e) =>
+                        onChange={e =>
                           setFormData({
                             ...formData,
                             invoiceNumber: e.target.value,
@@ -815,7 +815,7 @@ export const InvoiceEditor: React.FC<InvoiceEditorProps> = ({
                     <input
                       type="date"
                       value={formData.issueDate}
-                      onChange={(e) =>
+                      onChange={e =>
                         setFormData({
                           ...formData,
                           issueDate: e.target.value,
@@ -831,7 +831,7 @@ export const InvoiceEditor: React.FC<InvoiceEditorProps> = ({
                     <input
                       type="date"
                       value={formData.dueDate}
-                      onChange={(e) =>
+                      onChange={e =>
                         handleFormDataChange("dueDate", e.target.value)
                       }
                       className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -843,7 +843,7 @@ export const InvoiceEditor: React.FC<InvoiceEditorProps> = ({
                     </label>
                     <select
                       value={invoice?.status || "draft"}
-                      onChange={(e) => {
+                      onChange={e => {
                         if (invoice) {
                           // This would typically call an API to update the status
                           console.log("Status updated to:", e.target.value);
@@ -863,7 +863,7 @@ export const InvoiceEditor: React.FC<InvoiceEditorProps> = ({
                     <input
                       type="text"
                       value={formData.paymentTerms}
-                      onChange={(e) =>
+                      onChange={e =>
                         handleFormDataChange("paymentTerms", e.target.value)
                       }
                       className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -877,7 +877,7 @@ export const InvoiceEditor: React.FC<InvoiceEditorProps> = ({
                     <input
                       type="text"
                       value={formData.deliveryNote}
-                      onChange={(e) =>
+                      onChange={e =>
                         handleFormDataChange("deliveryNote", e.target.value)
                       }
                       className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -891,7 +891,7 @@ export const InvoiceEditor: React.FC<InvoiceEditorProps> = ({
                     <input
                       type="text"
                       value={formData.dispatchedThrough}
-                      onChange={(e) =>
+                      onChange={e =>
                         setFormData({
                           ...formData,
                           dispatchedThrough: e.target.value,
@@ -908,7 +908,7 @@ export const InvoiceEditor: React.FC<InvoiceEditorProps> = ({
                     <input
                       type="text"
                       value={formData.destination}
-                      onChange={(e) =>
+                      onChange={e =>
                         setFormData({
                           ...formData,
                           destination: e.target.value,
@@ -925,7 +925,7 @@ export const InvoiceEditor: React.FC<InvoiceEditorProps> = ({
                     <input
                       type="text"
                       value={formData.termsOfDelivery}
-                      onChange={(e) =>
+                      onChange={e =>
                         setFormData({
                           ...formData,
                           termsOfDelivery: e.target.value,
@@ -942,7 +942,7 @@ export const InvoiceEditor: React.FC<InvoiceEditorProps> = ({
                     <input
                       type="date"
                       value={formData.buyerOrderDate}
-                      onChange={(e) =>
+                      onChange={e =>
                         setFormData({
                           ...formData,
                           buyerOrderDate: e.target.value,
@@ -958,7 +958,7 @@ export const InvoiceEditor: React.FC<InvoiceEditorProps> = ({
                     <input
                       type="text"
                       value={formData.purchaseOrderNo}
-                      onChange={(e) =>
+                      onChange={e =>
                         setFormData({
                           ...formData,
                           purchaseOrderNo: e.target.value,
@@ -975,7 +975,7 @@ export const InvoiceEditor: React.FC<InvoiceEditorProps> = ({
                     <input
                       type="date"
                       value={formData.purchaseOrderDate}
-                      onChange={(e) =>
+                      onChange={e =>
                         setFormData({
                           ...formData,
                           purchaseOrderDate: e.target.value,
@@ -991,7 +991,7 @@ export const InvoiceEditor: React.FC<InvoiceEditorProps> = ({
                     <input
                       type="text"
                       value={formData.buyerOrderNo}
-                      onChange={(e) =>
+                      onChange={e =>
                         setFormData({
                           ...formData,
                           buyerOrderNo: e.target.value,
@@ -1017,7 +1017,7 @@ export const InvoiceEditor: React.FC<InvoiceEditorProps> = ({
                     <input
                       type="text"
                       value={companyInfo.name}
-                      onChange={(e) =>
+                      onChange={e =>
                         setCompanyInfo({
                           ...companyInfo,
                           name: e.target.value,
@@ -1033,7 +1033,7 @@ export const InvoiceEditor: React.FC<InvoiceEditorProps> = ({
                     <input
                       type="text"
                       value={companyInfo.address}
-                      onChange={(e) =>
+                      onChange={e =>
                         setCompanyInfo({
                           ...companyInfo,
                           address: e.target.value,
@@ -1050,7 +1050,7 @@ export const InvoiceEditor: React.FC<InvoiceEditorProps> = ({
                       <input
                         type="text"
                         value={companyInfo.gstin}
-                        onChange={(e) =>
+                        onChange={e =>
                           setCompanyInfo({
                             ...companyInfo,
                             gstin: e.target.value,
@@ -1066,7 +1066,7 @@ export const InvoiceEditor: React.FC<InvoiceEditorProps> = ({
                       <input
                         type="email"
                         value={companyInfo.email}
-                        onChange={(e) =>
+                        onChange={e =>
                           setCompanyInfo({
                             ...companyInfo,
                             email: e.target.value,
@@ -1083,7 +1083,7 @@ export const InvoiceEditor: React.FC<InvoiceEditorProps> = ({
                     <input
                       type="url"
                       value={companyInfo.website}
-                      onChange={(e) =>
+                      onChange={e =>
                         setCompanyInfo({
                           ...companyInfo,
                           website: e.target.value,
@@ -1108,9 +1108,9 @@ export const InvoiceEditor: React.FC<InvoiceEditorProps> = ({
                   </label>
                   <select
                     value={selectedClientId || ""}
-                    onChange={(e) => {
+                    onChange={e => {
                       const selectedClient = clients.find(
-                        (c) => c.id === e.target.value
+                        c => c.id === e.target.value
                       );
                       if (selectedClient) {
                         setSelectedClientId(selectedClient.id);
@@ -1125,14 +1125,14 @@ export const InvoiceEditor: React.FC<InvoiceEditorProps> = ({
                         });
 
                         // Also update the item details PO number
-                        setItemDetails((prev) => ({
+                        setItemDetails(prev => ({
                           ...prev,
                           poNumber:
                             selectedClient.poNumber || "PO/GSPL/202526/000496",
                         }));
 
                         // Update the form's Purchase Order Number
-                        setFormData((prev) => ({
+                        setFormData(prev => ({
                           ...prev,
                           purchaseOrderNo:
                             selectedClient.poNumber || "PO/GSPL/202526/000496",
@@ -1142,7 +1142,7 @@ export const InvoiceEditor: React.FC<InvoiceEditorProps> = ({
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                   >
                     <option value="">Select a client...</option>
-                    {clients.map((client) => (
+                    {clients.map(client => (
                       <option key={client.id} value={client.id}>
                         {client.company} - {client.name}
                       </option>
@@ -1158,7 +1158,7 @@ export const InvoiceEditor: React.FC<InvoiceEditorProps> = ({
                   <input
                     type="text"
                     value={clientInfo.company || ""}
-                    onChange={(e) =>
+                    onChange={e =>
                       setClientInfo({
                         ...clientInfo,
                         company: e.target.value,
@@ -1177,7 +1177,7 @@ export const InvoiceEditor: React.FC<InvoiceEditorProps> = ({
                   <input
                     type="text"
                     value={clientInfo.address || ""}
-                    onChange={(e) =>
+                    onChange={e =>
                       setClientInfo({
                         ...clientInfo,
                         address: e.target.value,
@@ -1196,7 +1196,7 @@ export const InvoiceEditor: React.FC<InvoiceEditorProps> = ({
                   <input
                     type="text"
                     value={clientInfo.state || ""}
-                    onChange={(e) =>
+                    onChange={e =>
                       setClientInfo({
                         ...clientInfo,
                         state: e.target.value,
@@ -1215,7 +1215,7 @@ export const InvoiceEditor: React.FC<InvoiceEditorProps> = ({
                   <input
                     type="text"
                     value={clientInfo.gstin || ""}
-                    onChange={(e) =>
+                    onChange={e =>
                       setClientInfo({
                         ...clientInfo,
                         gstin: e.target.value,
@@ -1234,7 +1234,7 @@ export const InvoiceEditor: React.FC<InvoiceEditorProps> = ({
                   <input
                     type="text"
                     value={clientInfo.poNumber || ""}
-                    onChange={(e) =>
+                    onChange={e =>
                       setClientInfo({
                         ...clientInfo,
                         poNumber: e.target.value,
@@ -1287,7 +1287,7 @@ export const InvoiceEditor: React.FC<InvoiceEditorProps> = ({
                         <input
                           type="text"
                           value={itemDetails.hsnCode}
-                          onChange={(e) =>
+                          onChange={e =>
                             setItemDetails({
                               ...itemDetails,
                               hsnCode: e.target.value,
@@ -1305,7 +1305,7 @@ export const InvoiceEditor: React.FC<InvoiceEditorProps> = ({
                           <input
                             type="number"
                             value={item.quantity}
-                            onChange={(e) =>
+                            onChange={e =>
                               handleItemChange(
                                 index,
                                 "quantity",
@@ -1322,7 +1322,7 @@ export const InvoiceEditor: React.FC<InvoiceEditorProps> = ({
                           <input
                             type="number"
                             value={item.unitPrice}
-                            onChange={(e) =>
+                            onChange={e =>
                               handleItemChange(
                                 index,
                                 "unitPrice",
@@ -1350,7 +1350,7 @@ export const InvoiceEditor: React.FC<InvoiceEditorProps> = ({
                         <input
                           type="text"
                           value={item.title || ""}
-                          onChange={(e) => {
+                          onChange={e => {
                             const updatedItems = [...items];
                             updatedItems[index] = {
                               ...updatedItems[index],
@@ -1371,7 +1371,7 @@ export const InvoiceEditor: React.FC<InvoiceEditorProps> = ({
                         </label>
                         <textarea
                           value={item.description || ""}
-                          onChange={(e) => {
+                          onChange={e => {
                             const updatedItems = [...items];
                             updatedItems[index] = {
                               ...updatedItems[index],
@@ -1410,7 +1410,7 @@ export const InvoiceEditor: React.FC<InvoiceEditorProps> = ({
                           name="taxType"
                           value="igst"
                           checked={taxType === "igst"}
-                          onChange={(e) =>
+                          onChange={e =>
                             setTaxType(
                               e.target.value as "igst" | "sgst-cgst" | "no-gst"
                             )
@@ -1427,7 +1427,7 @@ export const InvoiceEditor: React.FC<InvoiceEditorProps> = ({
                           name="taxType"
                           value="sgst-cgst"
                           checked={taxType === "sgst-cgst"}
-                          onChange={(e) =>
+                          onChange={e =>
                             setTaxType(
                               e.target.value as "igst" | "sgst-cgst" | "no-gst"
                             )
@@ -1444,7 +1444,7 @@ export const InvoiceEditor: React.FC<InvoiceEditorProps> = ({
                           name="taxType"
                           value="no-gst"
                           checked={taxType === "no-gst"}
-                          onChange={(e) =>
+                          onChange={e =>
                             setTaxType(
                               e.target.value as "igst" | "sgst-cgst" | "no-gst"
                             )
@@ -1502,7 +1502,7 @@ export const InvoiceEditor: React.FC<InvoiceEditorProps> = ({
                     <input
                       type="text"
                       value={signatureInfo.department}
-                      onChange={(e) =>
+                      onChange={e =>
                         setSignatureInfo({
                           ...signatureInfo,
                           department: e.target.value,
@@ -1518,7 +1518,7 @@ export const InvoiceEditor: React.FC<InvoiceEditorProps> = ({
                     <input
                       type="text"
                       value={signatureInfo.company}
-                      onChange={(e) =>
+                      onChange={e =>
                         setSignatureInfo({
                           ...signatureInfo,
                           company: e.target.value,

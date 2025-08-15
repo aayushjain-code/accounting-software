@@ -11,7 +11,9 @@ export const validatePhone = (phone: string): boolean => {
 };
 
 // Required field validation
-export const validateRequired = (value: string | number | boolean | undefined): boolean => {
+export const validateRequired = (
+  value: string | number | boolean | undefined
+): boolean => {
   if (typeof value === "string") {
     return value.trim().length > 0;
   }
@@ -22,7 +24,11 @@ export const validateRequired = (value: string | number | boolean | undefined): 
 };
 
 // Number validation with range
-export const validateNumber = (value: string | number, min: number = 0, max?: number): boolean => {
+export const validateNumber = (
+  value: string | number,
+  min: number = 0,
+  max?: number
+): boolean => {
   const num = typeof value === "string" ? parseFloat(value) : value;
   if (isNaN(num)) return false;
   if (num < min) return false;
@@ -59,19 +65,27 @@ export const validateDate = (date: string | Date): boolean => {
 };
 
 // File size validation
-export const validateFileSize = (fileSize: number, maxSizeMB: number): boolean => {
+export const validateFileSize = (
+  fileSize: number,
+  maxSizeMB: number
+): boolean => {
   const maxSizeBytes = maxSizeMB * 1024 * 1024;
   return fileSize <= maxSizeBytes;
 };
 
 // File type validation
-export const validateFileType = (fileName: string, allowedTypes: string[]): boolean => {
+export const validateFileType = (
+  fileName: string,
+  allowedTypes: string[]
+): boolean => {
   const extension = fileName.split(".").pop()?.toLowerCase();
   return extension ? allowedTypes.includes(extension) : false;
 };
 
 // Password strength validation
-export const validatePassword = (password: string): {
+export const validatePassword = (
+  password: string
+): {
   isValid: boolean;
   strength: "weak" | "medium" | "strong";
   errors: string[];
@@ -91,7 +105,9 @@ export const validatePassword = (password: string): {
   if (/[^A-Za-z0-9]/.test(password)) score += 1;
 
   if (score < 3) {
-    errors.push("Password must contain uppercase, lowercase, number, and special character");
+    errors.push(
+      "Password must contain uppercase, lowercase, number, and special character"
+    );
   }
 
   let strength: "weak" | "medium" | "strong" = "weak";
@@ -106,7 +122,10 @@ export const validatePassword = (password: string): {
 };
 
 // Form validation helper
-export const validateForm = (data: Record<string, any>, rules: Record<string, (value: any) => boolean | string>): {
+export const validateForm = (
+  data: Record<string, any>,
+  rules: Record<string, (value: any) => boolean | string>
+): {
   isValid: boolean;
   errors: Record<string, string>;
 } => {
@@ -116,7 +135,7 @@ export const validateForm = (data: Record<string, any>, rules: Record<string, (v
   for (const [field, rule] of Object.entries(rules)) {
     const value = data[field];
     const result = rule(value);
-    
+
     if (result !== true) {
       errors[field] = typeof result === "string" ? result : "Invalid value";
       isValid = false;
@@ -134,6 +153,8 @@ export const validationRules = {
   url: (value: string) => validateUrl(value) || "Invalid URL",
   gst: (value: string) => validateGST(value) || "Invalid GST number",
   pan: (value: string) => validatePAN(value) || "Invalid PAN number",
-  positiveNumber: (value: number) => validateNumber(value, 0) || "Must be a positive number",
-  percentage: (value: number) => validateNumber(value, 0, 100) || "Must be between 0 and 100",
-}; 
+  positiveNumber: (value: number) =>
+    validateNumber(value, 0) || "Must be a positive number",
+  percentage: (value: number) =>
+    validateNumber(value, 0, 100) || "Must be between 0 and 100",
+};

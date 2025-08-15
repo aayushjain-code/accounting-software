@@ -175,7 +175,7 @@ export function usePagination<T>(
   // Infinite scroll functions
   const loadMore = useCallback(() => {
     if (enableInfiniteScroll && infiniteScrollPagination?.loadMore) {
-      setInfiniteScrollPage((prev) => prev + 1);
+      setInfiniteScrollPage(prev => prev + 1);
     }
   }, [enableInfiniteScroll, infiniteScrollPagination?.loadMore]);
 

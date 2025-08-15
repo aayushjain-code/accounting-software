@@ -1,14 +1,14 @@
 "use client";
 
-import React, { useState, useEffect } from 'react';
-import { performanceMonitor } from '@/utils/performance';
-import { Card } from './Card';
-import { 
-  ChartBarIcon, 
-  ClockIcon, 
+import React, { useState, useEffect } from "react";
+import { performanceMonitor } from "@/utils/performance";
+import { Card } from "./Card";
+import {
+  ChartBarIcon,
+  ClockIcon,
   ExclamationTriangleIcon,
-  CheckCircleIcon 
-} from '@heroicons/react/24/outline';
+  CheckCircleIcon,
+} from "@heroicons/react/24/outline";
 
 interface PerformanceMetrics {
   renderTimes: Record<string, number[]>;
@@ -38,23 +38,23 @@ export function PerformanceDashboard() {
   }, []);
 
   const getAverageTime = (times: number[]) => {
-    if (times.length === 0) return 0;
+    if (times.length === 0) {return 0;}
     return times.reduce((sum, time) => sum + time, 0) / times.length;
   };
 
   const getPerformanceStatus = (avgTime: number, threshold: number) => {
-    if (avgTime <= threshold) return 'good';
-    if (avgTime <= threshold * 2) return 'warning';
-    return 'critical';
+    if (avgTime <= threshold) {return "good";}
+    if (avgTime <= threshold * 2) {return "warning";}
+    return "critical";
   };
 
   const getStatusIcon = (status: string) => {
     switch (status) {
-      case 'good':
+      case "good":
         return <CheckCircleIcon className="h-5 w-5 text-green-500" />;
-      case 'warning':
+      case "warning":
         return <ExclamationTriangleIcon className="h-5 w-5 text-yellow-500" />;
-      case 'critical':
+      case "critical":
         return <ExclamationTriangleIcon className="h-5 w-5 text-red-500" />;
       default:
         return null;
@@ -63,14 +63,14 @@ export function PerformanceDashboard() {
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'good':
-        return 'text-green-600';
-      case 'warning':
-        return 'text-yellow-600';
-      case 'critical':
-        return 'text-red-600';
+      case "good":
+        return "text-green-600";
+      case "warning":
+        return "text-yellow-600";
+      case "critical":
+        return "text-red-600";
       default:
-        return 'text-gray-600';
+        return "text-gray-600";
     }
   };
 
@@ -139,25 +139,27 @@ export function PerformanceDashboard() {
               Interaction Performance
             </h3>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {Object.entries(metrics.interactionTimes).map(([interaction, times]) => {
-                const avgTime = getAverageTime(times);
-                const status = getPerformanceStatus(avgTime, 100);
-                return (
-                  <Card key={interaction} className="p-4">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <p className="font-medium text-gray-900 dark:text-white">
-                          {interaction}
-                        </p>
-                        <p className={`text-sm ${getStatusColor(status)}`}>
-                          {avgTime.toFixed(2)}ms avg
-                        </p>
+              {Object.entries(metrics.interactionTimes).map(
+                ([interaction, times]) => {
+                  const avgTime = getAverageTime(times);
+                  const status = getPerformanceStatus(avgTime, 100);
+                  return (
+                    <Card key={interaction} className="p-4">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <p className="font-medium text-gray-900 dark:text-white">
+                            {interaction}
+                          </p>
+                          <p className={`text-sm ${getStatusColor(status)}`}>
+                            {avgTime.toFixed(2)}ms avg
+                          </p>
+                        </div>
+                        {getStatusIcon(status)}
                       </div>
-                      {getStatusIcon(status)}
-                    </div>
-                  </Card>
-                );
-              })}
+                    </Card>
+                  );
+                }
+              )}
             </div>
           </div>
 
@@ -167,25 +169,27 @@ export function PerformanceDashboard() {
               Data Processing Performance
             </h3>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {Object.entries(metrics.dataProcessingTimes).map(([processor, times]) => {
-                const avgTime = getAverageTime(times);
-                const status = getPerformanceStatus(avgTime, 50);
-                return (
-                  <Card key={processor} className="p-4">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <p className="font-medium text-gray-900 dark:text-white">
-                          {processor}
-                        </p>
-                        <p className={`text-sm ${getStatusColor(status)}`}>
-                          {avgTime.toFixed(2)}ms avg
-                        </p>
+              {Object.entries(metrics.dataProcessingTimes).map(
+                ([processor, times]) => {
+                  const avgTime = getAverageTime(times);
+                  const status = getPerformanceStatus(avgTime, 50);
+                  return (
+                    <Card key={processor} className="p-4">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <p className="font-medium text-gray-900 dark:text-white">
+                            {processor}
+                          </p>
+                          <p className={`text-sm ${getStatusColor(status)}`}>
+                            {avgTime.toFixed(2)}ms avg
+                          </p>
+                        </div>
+                        {getStatusIcon(status)}
                       </div>
-                      {getStatusIcon(status)}
-                    </div>
-                  </Card>
-                );
-              })}
+                    </Card>
+                  );
+                }
+              )}
             </div>
           </div>
 
@@ -196,38 +200,52 @@ export function PerformanceDashboard() {
             </h3>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
               <div>
-                <p className="text-gray-600 dark:text-gray-400">Total Components</p>
+                <p className="text-gray-600 dark:text-gray-400">
+                  Total Components
+                </p>
                 <p className="font-semibold text-gray-900 dark:text-white">
                   {Object.keys(metrics.renderTimes).length}
                 </p>
               </div>
               <div>
-                <p className="text-gray-600 dark:text-gray-400">Avg Render Time</p>
+                <p className="text-gray-600 dark:text-gray-400">
+                  Avg Render Time
+                </p>
                 <p className="font-semibold text-gray-900 dark:text-white">
                   {(() => {
                     const allTimes = Object.values(metrics.renderTimes).flat();
                     const total = allTimes.reduce((sum, time) => sum + time, 0);
                     const count = Math.max(allTimes.length, 1);
                     return (total / count).toFixed(2);
-                  })()}ms
+                  })()}
+                  ms
                 </p>
               </div>
               <div>
                 <p className="text-gray-600 dark:text-gray-400">Slow Renders</p>
                 <p className="font-semibold text-red-600">
-                  {Object.values(metrics.renderTimes)
-                    .flat()
-                    .filter(time => time > 16).length}
+                  {
+                    Object.values(metrics.renderTimes)
+                      .flat()
+                      .filter(time => time > 16).length
+                  }
                 </p>
               </div>
               <div>
-                <p className="text-gray-600 dark:text-gray-400">Performance Score</p>
+                <p className="text-gray-600 dark:text-gray-400">
+                  Performance Score
+                </p>
                 <p className="font-semibold text-gray-900 dark:text-white">
-                  {Math.max(0, 100 - Math.floor(
-                    Object.values(metrics.renderTimes)
-                      .flat()
-                      .filter(time => time > 16).length * 10
-                  ))}%
+                  {Math.max(
+                    0,
+                    100 -
+                      Math.floor(
+                        Object.values(metrics.renderTimes)
+                          .flat()
+                          .filter(time => time > 16).length * 10
+                      )
+                  )}
+                  %
                 </p>
               </div>
             </div>

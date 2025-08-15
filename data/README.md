@@ -13,7 +13,6 @@ This folder contains sample data for the BST Accounting System web application.
 ### **Importing Sample Data**
 
 1. **In the Web App:**
-
    - Go to Profile → Data Management
    - Click "Import Data"
    - Select `sample-data-v2.json`

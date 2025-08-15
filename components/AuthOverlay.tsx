@@ -124,7 +124,7 @@ export const AuthOverlay: React.FC<AuthOverlayProps> = ({
                 <input
                   type={showPin ? "text" : "password"}
                   value={currentPin}
-                  onChange={(e) =>
+                  onChange={e =>
                     setCurrentPin(e.target.value.replace(/\D/g, ""))
                   }
                   maxLength={4}
@@ -152,10 +152,10 @@ export const AuthOverlay: React.FC<AuthOverlayProps> = ({
                   messageType === "success"
                     ? "bg-green-50 text-green-800 border border-green-200"
                     : messageType === "error"
-                    ? "bg-red-50 text-red-800 border border-red-200"
-                    : messageType === "warning"
-                    ? "bg-yellow-50 text-yellow-800 border border-yellow-200"
-                    : "bg-gray-50 text-gray-800 border border-gray-200"
+                      ? "bg-red-50 text-red-800 border border-red-200"
+                      : messageType === "warning"
+                        ? "bg-yellow-50 text-yellow-800 border border-yellow-200"
+                        : "bg-gray-50 text-gray-800 border border-gray-200"
                 }`}
               >
                 {message}

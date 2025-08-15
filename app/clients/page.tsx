@@ -3,7 +3,6 @@
 import { useState, useMemo, useEffect } from "react";
 import { useAccountingStore } from "@/store";
 import { Client } from "@/types";
-import { ReceiptRefundIcon } from "@heroicons/react/24/outline";
 import {
   PlusIcon,
   PencilIcon,
@@ -11,12 +10,12 @@ import {
   MagnifyingGlassIcon,
   FunnelIcon,
   EyeIcon,
+  ReceiptRefundIcon,
+  InformationCircleIcon,
 } from "@heroicons/react/24/outline";
 import toast from "react-hot-toast";
 import { Tooltip, ActionTooltip, IconTooltip } from "@/components/Tooltip";
-import { InformationCircleIcon } from "@heroicons/react/24/outline";
 import { ConfirmationDialog } from "@/components/ConfirmationDialog";
-import React from "react";
 import Modal from "@/components/Modal";
 import { useSearch } from "@/hooks/useSearch";
 import { usePagination } from "@/hooks/usePagination";
@@ -201,8 +200,10 @@ export default function ClientsPage() {
 
   // Memoized filtered clients by status
   const clientsByStatus = useMemo(() => {
-    if (statusFilter === "all") return paginatedClients;
-    return paginatedClients.filter((client) => client.status === statusFilter);
+    if (statusFilter === "all") {
+      return paginatedClients;
+    }
+    return paginatedClients.filter(client => client.status === statusFilter);
   }, [paginatedClients, statusFilter]);
 
   const [formData, setFormData] = useState({
@@ -241,9 +242,15 @@ export default function ClientsPage() {
   const validateForm = () => {
     const newErrors: Record<string, string> = {};
 
-    if (!formData.name.trim()) newErrors.name = "Name is required";
-    if (!formData.email.trim()) newErrors.email = "Email is required";
-    if (!formData.company.trim()) newErrors.company = "Company is required";
+    if (!formData.name.trim()) {
+      newErrors.name = "Name is required";
+    }
+    if (!formData.email.trim()) {
+      newErrors.email = "Email is required";
+    }
+    if (!formData.company.trim()) {
+      newErrors.company = "Company is required";
+    }
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -393,7 +400,7 @@ export default function ClientsPage() {
               type="text"
               placeholder="Search clients by name, company, email, or industry..."
               value={searchTerm}
-              onChange={(e) => handleSearchChange(e.target.value)}
+              onChange={e => handleSearchChange(e.target.value)}
               className="w-full pl-12 pr-4 py-3 border border-gray-300 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400"
             />
             {isSearching && (
@@ -405,7 +412,7 @@ export default function ClientsPage() {
           <div className="flex items-center space-x-3">
             <select
               value={statusFilter}
-              onChange={(e) => setStatusFilter(e.target.value)}
+              onChange={e => setStatusFilter(e.target.value)}
               className="px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200"
             >
               <option value="all">All Status</option>
@@ -428,7 +435,7 @@ export default function ClientsPage() {
         /* Cards View */
         <div className="space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {clientsByStatus.map((client) => (
+            {clientsByStatus.map(client => (
               <ClientCard
                 key={client.id}
                 client={client}
@@ -575,7 +582,7 @@ export default function ClientsPage() {
                 type="text"
                 required
                 value={formData.name}
-                onChange={(e) =>
+                onChange={e =>
                   setFormData({ ...formData, name: e.target.value })
                 }
                 className={`w-full px-4 py-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200 ${
@@ -601,7 +608,7 @@ export default function ClientsPage() {
                 type="text"
                 required
                 value={formData.company}
-                onChange={(e) =>
+                onChange={e =>
                   setFormData({ ...formData, company: e.target.value })
                 }
                 className={`w-full px-4 py-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200 ${
@@ -627,7 +634,7 @@ export default function ClientsPage() {
                 type="email"
                 required
                 value={formData.email}
-                onChange={(e) =>
+                onChange={e =>
                   setFormData({ ...formData, email: e.target.value })
                 }
                 className={`w-full px-4 py-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200 ${
@@ -652,7 +659,7 @@ export default function ClientsPage() {
               <input
                 type="tel"
                 value={formData.phone}
-                onChange={(e) =>
+                onChange={e =>
                   setFormData({ ...formData, phone: e.target.value })
                 }
                 className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200"
@@ -672,7 +679,7 @@ export default function ClientsPage() {
               <input
                 type="text"
                 value={formData.industry}
-                onChange={(e) =>
+                onChange={e =>
                   setFormData({ ...formData, industry: e.target.value })
                 }
                 className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200"
@@ -691,7 +698,7 @@ export default function ClientsPage() {
               </label>
               <select
                 value={formData.companySize}
-                onChange={(e) =>
+                onChange={e =>
                   setFormData({
                     ...formData,
                     companySize: e.target.value as
@@ -724,7 +731,7 @@ export default function ClientsPage() {
               </label>
               <select
                 value={formData.status}
-                onChange={(e) =>
+                onChange={e =>
                   setFormData({
                     ...formData,
                     status: e.target.value as
@@ -759,7 +766,7 @@ export default function ClientsPage() {
               <input
                 type="url"
                 value={formData.companyWebsite}
-                onChange={(e) =>
+                onChange={e =>
                   setFormData({
                     ...formData,
                     companyWebsite: e.target.value,
@@ -782,7 +789,7 @@ export default function ClientsPage() {
               <input
                 type="text"
                 value={formData.companyAddress}
-                onChange={(e) =>
+                onChange={e =>
                   setFormData({
                     ...formData,
                     companyAddress: e.target.value,
@@ -808,7 +815,7 @@ export default function ClientsPage() {
               <input
                 type="text"
                 value={formData.gstId}
-                onChange={(e) =>
+                onChange={e =>
                   setFormData({ ...formData, gstId: e.target.value })
                 }
                 className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200"
@@ -829,7 +836,7 @@ export default function ClientsPage() {
               <input
                 type="text"
                 value={formData.pocName}
-                onChange={(e) =>
+                onChange={e =>
                   setFormData({ ...formData, pocName: e.target.value })
                 }
                 className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200"
@@ -849,7 +856,7 @@ export default function ClientsPage() {
               <input
                 type="email"
                 value={formData.pocEmail}
-                onChange={(e) =>
+                onChange={e =>
                   setFormData({ ...formData, pocEmail: e.target.value })
                 }
                 className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200"
@@ -870,7 +877,7 @@ export default function ClientsPage() {
             </label>
             <textarea
               value={formData.notes}
-              onChange={(e) =>
+              onChange={e =>
                 setFormData({ ...formData, notes: e.target.value })
               }
               className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200"

@@ -16,7 +16,7 @@ export interface ClientSlice {
 export const createClientSlice: StateCreator<ClientSlice> = (set, get) => ({
   clients: [],
 
-  addClient: (client) => {
+  addClient: client => {
     const newClient: Client = {
       ...client,
       id: Math.random().toString(36).substr(2, 9),
@@ -24,28 +24,28 @@ export const createClientSlice: StateCreator<ClientSlice> = (set, get) => ({
       createdAt: new Date(),
       updatedAt: new Date(),
     };
-    set((state) => ({ clients: [...state.clients, newClient] }));
+    set(state => ({ clients: [...state.clients, newClient] }));
   },
 
   updateClient: (id, client) => {
-    set((state) => ({
-      clients: state.clients.map((c) =>
+    set(state => ({
+      clients: state.clients.map(c =>
         c.id === id ? { ...c, ...client, updatedAt: new Date() } : c
       ),
     }));
   },
 
-  deleteClient: (id) => {
-    set((state) => ({
-      clients: state.clients.filter((c) => c.id !== id),
+  deleteClient: id => {
+    set(state => ({
+      clients: state.clients.filter(c => c.id !== id),
     }));
   },
 
-  getClientById: (id) => {
-    return get().clients.find((client) => client.id === id);
+  getClientById: id => {
+    return get().clients.find(client => client.id === id);
   },
 
-  getProjectsByClient: (clientId) => {
+  getProjectsByClient: clientId => {
     // This will be implemented when we have access to projects
     return [];
   },

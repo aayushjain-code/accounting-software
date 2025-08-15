@@ -31,8 +31,8 @@ export function useSearch<T>(
     if (!debouncedSearchTerm) return items;
 
     const searchLower = debouncedSearchTerm.toLowerCase();
-    return items.filter((item) =>
-      searchFields.some((field) => {
+    return items.filter(item =>
+      searchFields.some(field => {
         const value = item[field];
         return String(value).toLowerCase().includes(searchLower);
       })

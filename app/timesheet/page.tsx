@@ -1,19 +1,19 @@
 "use client";
 
-import React, { useState, useMemo } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useAccountingStore } from "@/store";
+import { Timesheet, Client, Project } from "@/types";
 import {
   PlusIcon,
   PencilIcon,
   TrashIcon,
-  CheckIcon,
-  XMarkIcon,
+  MagnifyingGlassIcon,
+  FunnelIcon,
+  EyeIcon,
   DocumentTextIcon,
   ClockIcon,
-  CurrencyRupeeIcon,
-  CalculatorIcon,
-  MagnifyingGlassIcon,
-  InformationCircleIcon,
+  CalendarIcon,
+  UserIcon,
 } from "@heroicons/react/24/outline";
 import {
   format,
@@ -23,7 +23,6 @@ import {
   isWeekend,
 } from "date-fns";
 import toast from "react-hot-toast";
-import { Timesheet, Project } from "@/types";
 import { useSearch } from "@/hooks/useSearch";
 import { formatCurrency } from "@/utils/helpers";
 import { ConfirmationDialog } from "@/components/ConfirmationDialog";
@@ -184,7 +183,7 @@ const TimesheetRow = React.memo(
               {project?.name || "Unknown Project"}
             </div>
             <div className="text-sm text-gray-500 dark:text-gray-400">
-              {format(new Date(timesheet.month + "-01"), "MMMM yyyy")}
+              {format(new Date(`${timesheet.month  }-01`), "MMMM yyyy")}
             </div>
           </div>
         </td>
@@ -248,7 +247,7 @@ const calculateWorkingDays = (year: number, month: number) => {
   const start = startOfMonth(new Date(year, month - 1));
   const end = endOfMonth(new Date(year, month - 1));
   const days = eachDayOfInterval({ start, end });
-  return days.filter((day) => !isWeekend(day)).length;
+  return days.filter(day => !isWeekend(day)).length;
 };
 
 // Enhanced Timesheet Modal Component
@@ -299,7 +298,7 @@ const TimesheetModal = React.memo(
             status: editingTimesheet.status,
           });
           const project = projects.find(
-            (p) => p.id === editingTimesheet.projectId
+            p => p.id === editingTimesheet.projectId
           );
           setSelectedProject(project || null);
         } else {
@@ -324,7 +323,7 @@ const TimesheetModal = React.memo(
       if (formData.month && formData.year) {
         const [year, month] = formData.month.split("-").map(Number);
         const workingDays = calculateWorkingDays(year, month);
-        setFormData((prev) => ({
+        setFormData(prev => ({
           ...prev,
           totalWorkingDays: workingDays.toString(),
         }));
@@ -334,7 +333,7 @@ const TimesheetModal = React.memo(
     // Update selected project when projectId changes
     React.useEffect(() => {
       if (formData.projectId) {
-        const project = projects.find((p) => p.id === formData.projectId);
+        const project = projects.find(p => p.id === formData.projectId);
         setSelectedProject(project || null);
       } else {
         setSelectedProject(null);
@@ -348,23 +347,21 @@ const TimesheetModal = React.memo(
         newErrors.projectId = "Project is required";
       } else {
         // Validate that the selected project is active
-        const selectedProject = projects.find(
-          (p) => p.id === formData.projectId
-        );
+        const selectedProject = projects.find(p => p.id === formData.projectId);
         if (selectedProject && selectedProject.status !== "active") {
           newErrors.projectId = "Only active projects can have timesheets";
         }
       }
 
-      if (!formData.month) newErrors.month = "Month is required";
+      if (!formData.month) {newErrors.month = "Month is required";}
       if (!formData.daysWorked || parseInt(formData.daysWorked) <= 0)
-        newErrors.daysWorked = "Valid days worked is required";
+        {newErrors.daysWorked = "Valid days worked is required";}
 
       const totalWorkingDays = parseInt(formData.totalWorkingDays || "0");
       const daysWorked = parseInt(formData.daysWorked);
 
       if (daysWorked > totalWorkingDays)
-        newErrors.daysWorked = `Days worked cannot exceed ${totalWorkingDays} working days`;
+        {newErrors.daysWorked = `Days worked cannot exceed ${totalWorkingDays} working days`;}
 
       setErrors(newErrors);
       return Object.keys(newErrors).length === 0;
@@ -399,7 +396,7 @@ const TimesheetModal = React.memo(
     );
 
     const handleFileUpload = async () => {
-      if (uploadedFiles.length === 0) return;
+      if (uploadedFiles.length === 0) {return;}
       setIsUploading(true);
       try {
         for (const file of uploadedFiles) {
@@ -434,7 +431,7 @@ const TimesheetModal = React.memo(
       }
     };
 
-    if (!isOpen) return null;
+    if (!isOpen) {return null;}
 
     return (
       <form id={formId} onSubmit={handleSubmit}>
@@ -453,7 +450,7 @@ const TimesheetModal = React.memo(
             <select
               required
               value={formData.projectId}
-              onChange={(e) =>
+              onChange={e =>
                 setFormData({ ...formData, projectId: e.target.value })
               }
               className={`w-full px-4 py-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200 ${
@@ -462,8 +459,8 @@ const TimesheetModal = React.memo(
             >
               <option value="">Select project</option>
               {projects
-                .filter((project) => project.status === "active")
-                .map((project) => (
+                .filter(project => project.status === "active")
+                .map(project => (
                   <option key={project.id} value={project.id}>
                     {project.name} - ₹
                     {project.budget.toLocaleString("en-IN", {
@@ -477,7 +474,7 @@ const TimesheetModal = React.memo(
               <p className="text-red-500 text-sm mt-2">{errors.projectId}</p>
             )}
 
-            {projects.filter((p) => p.status === "active").length === 0 && (
+            {projects.filter(p => p.status === "active").length === 0 && (
               <p className="text-amber-600 text-sm mt-2">
                 ⚠️ No active projects available. Please create or activate a
                 project first.
@@ -494,7 +491,7 @@ const TimesheetModal = React.memo(
                   <div className="flex justify-between">
                     <span>Client:</span>
                     <span className="font-medium">
-                      {clients.find((c) => c.id === selectedProject.clientId)
+                      {clients.find(c => c.id === selectedProject.clientId)
                         ?.company || "N/A"}
                     </span>
                   </div>
@@ -511,8 +508,8 @@ const TimesheetModal = React.memo(
                         selectedProject.status === "active"
                           ? "bg-green-100 text-green-800"
                           : selectedProject.status === "completed"
-                          ? "bg-blue-100 text-blue-800"
-                          : "bg-gray-100 text-gray-800"
+                            ? "bg-blue-100 text-blue-800"
+                            : "bg-gray-100 text-gray-800"
                       }`}
                     >
                       {selectedProject.status.charAt(0).toUpperCase() +
@@ -538,7 +535,7 @@ const TimesheetModal = React.memo(
               type="month"
               required
               value={formData.month}
-              onChange={(e) =>
+              onChange={e =>
                 setFormData({ ...formData, month: e.target.value })
               }
               className={`w-full px-4 py-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200 ${
@@ -566,7 +563,7 @@ const TimesheetModal = React.memo(
               min="1"
               max="31"
               value={formData.daysWorked}
-              onChange={(e) =>
+              onChange={e =>
                 setFormData({
                   ...formData,
                   daysWorked: e.target.value,
@@ -602,7 +599,7 @@ const TimesheetModal = React.memo(
               max="24"
               placeholder="8"
               value={formData.hoursPerDay}
-              onChange={(e) =>
+              onChange={e =>
                 setFormData({
                   ...formData,
                   hoursPerDay: e.target.value,
@@ -631,7 +628,7 @@ const TimesheetModal = React.memo(
               min="1"
               max="31"
               value={formData.totalWorkingDays}
-              onChange={(e) =>
+              onChange={e =>
                 setFormData({
                   ...formData,
                   totalWorkingDays: e.target.value,
@@ -656,7 +653,7 @@ const TimesheetModal = React.memo(
             </label>
             <select
               value={formData.status}
-              onChange={(e) =>
+              onChange={e =>
                 setFormData({
                   ...formData,
                   status: e.target.value as
@@ -849,13 +846,13 @@ export default function TimesheetPage() {
 
     if (selectedProjectFilter !== "all") {
       filtered = filtered.filter(
-        (timesheet) => timesheet.projectId === selectedProjectFilter
+        timesheet => timesheet.projectId === selectedProjectFilter
       );
     }
 
     if (selectedMonthFilter !== "all") {
       filtered = filtered.filter(
-        (timesheet) => timesheet.month === selectedMonthFilter
+        timesheet => timesheet.month === selectedMonthFilter
       );
     }
 
@@ -864,13 +861,13 @@ export default function TimesheetPage() {
 
   // Get unique projects for filter dropdown
   const uniqueProjects = useMemo(() => {
-    const projectIds = Array.from(new Set(timesheets.map((t) => t.projectId)));
-    return projects.filter((project) => projectIds.includes(project.id));
+    const projectIds = Array.from(new Set(timesheets.map(t => t.projectId)));
+    return projects.filter(project => projectIds.includes(project.id));
   }, [timesheets, projects]);
 
   // Get unique months for filter dropdown
   const uniqueMonths = useMemo(() => {
-    const months = Array.from(new Set(timesheets.map((t) => t.month)))
+    const months = Array.from(new Set(timesheets.map(t => t.month)))
       .sort()
       .reverse();
     return months;
@@ -879,12 +876,12 @@ export default function TimesheetPage() {
   // Check for missing monthly timesheets for active projects
   const missingMonthlyTimesheets = useMemo(() => {
     const currentMonth = format(new Date(), "yyyy-MM");
-    const activeProjects = projects.filter((p) => p.status === "active");
+    const activeProjects = projects.filter(p => p.status === "active");
 
     return activeProjects
-      .map((project) => {
+      .map(project => {
         const hasTimesheet = timesheets.some(
-          (t) => t.projectId === project.id && t.month === currentMonth
+          t => t.projectId === project.id && t.month === currentMonth
         );
 
         return {
@@ -894,10 +891,8 @@ export default function TimesheetPage() {
           status: hasTimesheet ? "completed" : "missing",
         };
       })
-      .filter((item) => item.status === "missing");
+      .filter(item => item.status === "missing");
   }, [projects, timesheets]);
-
-
 
   const handleSubmit = React.useCallback(
     async (formData: Record<string, unknown>) => {
@@ -1046,7 +1041,7 @@ export default function TimesheetPage() {
                         {project.name}
                       </p>
                       <p className="text-amber-600 dark:text-amber-400 text-xs">
-                        {clients.find((c) => c.id === project.clientId)
+                        {clients.find(c => c.id === project.clientId)
                           ?.company || "N/A"}
                       </p>
                     </div>
@@ -1081,9 +1076,9 @@ export default function TimesheetPage() {
           Project Timesheet Summary
         </h3>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {uniqueProjects.map((project) => {
+          {uniqueProjects.map(project => {
             const projectTimesheets = timesheets.filter(
-              (t) => t.projectId === project.id
+              t => t.projectId === project.id
             );
             const totalDays = projectTimesheets.reduce(
               (sum, t) => sum + (t.daysWorked || 0),
@@ -1093,9 +1088,7 @@ export default function TimesheetPage() {
               (sum, t) => sum + (t.totalAmount || 0),
               0
             );
-            const projectClient = clients.find(
-              (c) => c.id === project.clientId
-            );
+            const projectClient = clients.find(c => c.id === project.clientId);
 
             return (
               <div
@@ -1111,8 +1104,8 @@ export default function TimesheetPage() {
                       project.status === "active"
                         ? "bg-green-100 text-green-800"
                         : project.status === "completed"
-                        ? "bg-blue-100 text-blue-800"
-                        : "bg-gray-100 text-gray-800"
+                          ? "bg-blue-100 text-blue-800"
+                          : "bg-gray-100 text-gray-800"
                     }`}
                   >
                     {project.status.charAt(0).toUpperCase() +
@@ -1224,7 +1217,7 @@ export default function TimesheetPage() {
                 type="text"
                 placeholder="Search timesheets by project, month, or status..."
                 value={searchTerm}
-                onChange={(e) => handleSearchChange(e.target.value)}
+                onChange={e => handleSearchChange(e.target.value)}
                 className="w-full pl-12 pr-4 py-4 border border-gray-300 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400"
               />
               {isSearching && (
@@ -1238,11 +1231,11 @@ export default function TimesheetPage() {
             <div className="min-w-[200px]">
               <select
                 value={selectedProjectFilter}
-                onChange={(e) => setSelectedProjectFilter(e.target.value)}
+                onChange={e => setSelectedProjectFilter(e.target.value)}
                 className="w-full px-4 py-4 border border-gray-300 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
               >
                 <option value="all">All Projects</option>
-                {uniqueProjects.map((project) => (
+                {uniqueProjects.map(project => (
                   <option key={project.id} value={project.id}>
                     {project.name}
                   </option>
@@ -1254,13 +1247,13 @@ export default function TimesheetPage() {
             <div className="min-w-[150px]">
               <select
                 value={selectedMonthFilter}
-                onChange={(e) => setSelectedMonthFilter(e.target.value)}
+                onChange={e => setSelectedMonthFilter(e.target.value)}
                 className="w-full px-4 py-4 border border-gray-300 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
               >
                 <option value="all">All Months</option>
-                {uniqueMonths.map((month) => (
+                {uniqueMonths.map(month => (
                   <option key={month} value={month}>
-                    {format(new Date(month + "-01"), "MMMM yyyy")}
+                    {format(new Date(`${month  }-01`), "MMMM yyyy")}
                   </option>
                 ))}
               </select>
@@ -1305,14 +1298,14 @@ export default function TimesheetPage() {
               {selectedProjectFilter !== "all" && (
                 <span className="ml-2 inline-block bg-blue-100 dark:bg-blue-800 text-blue-800 dark:text-blue-200 px-2 py-1 rounded text-xs">
                   Project:{" "}
-                  {projects.find((p) => p.id === selectedProjectFilter)?.name ||
+                  {projects.find(p => p.id === selectedProjectFilter)?.name ||
                     "Unknown"}
                 </span>
               )}
               {selectedMonthFilter !== "all" && (
                 <span className="ml-2 inline-block bg-blue-100 dark:bg-blue-800 text-blue-800 dark:text-blue-200 px-2 py-1 rounded text-xs">
                   Month:{" "}
-                  {format(new Date(selectedMonthFilter + "-01"), "MMMM yyyy")}
+                  {format(new Date(`${selectedMonthFilter  }-01`), "MMMM yyyy")}
                 </span>
               )}
               <span className="ml-2 text-blue-600 dark:text-blue-300">
@@ -1351,9 +1344,9 @@ export default function TimesheetPage() {
                 </tr>
               </thead>
               <tbody className="bg-white dark:bg-gray-900 divide-y divide-gray-200 dark:divide-gray-700">
-                {projectFilteredTimesheets.map((timesheet) => {
+                {projectFilteredTimesheets.map(timesheet => {
                   const project = projects.find(
-                    (p) => p.id === timesheet.projectId
+                    p => p.id === timesheet.projectId
                   );
 
                   return (

@@ -31,24 +31,22 @@ export default function InvoiceUploadPage() {
   };
 
   const formatFileSize = (bytes: number) => {
-    if (bytes === 0) return "0 Bytes";
+    if (bytes === 0) {return "0 Bytes";}
     const k = 1024;
     const sizes = ["Bytes", "KB", "MB", "GB"];
     const i = Math.floor(Math.log(bytes) / Math.log(k));
-    return (bytes / Math.pow(k, i)).toFixed(2) + " " + sizes[i];
+    return `${(bytes / Math.pow(k, i)).toFixed(2)  } ${  sizes[i]}`;
   };
 
   const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const files = event.target.files;
-    if (!files) return;
+    const {files} = event.target;
+    if (!files) {return;}
 
     setUploading(true);
 
     // Simulate file upload
     setTimeout(() => {
-      Array.from(files).forEach((file) => {
-
-
+      Array.from(files).forEach(file => {
         addInvoiceFile("", {
           id: `file_${Date.now()}_${Math.random()}`,
           invoiceId: "", // Will be linked when invoice is selected
@@ -125,10 +123,10 @@ export default function InvoiceUploadPage() {
             <select
               id="month"
               value={selectedMonth}
-              onChange={(e) => setSelectedMonth(e.target.value)}
+              onChange={e => setSelectedMonth(e.target.value)}
               className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm rounded-md"
             >
-              {months.map((month) => (
+              {months.map(month => (
                 <option key={month.value} value={month.value}>
                   {month.label}
                 </option>
@@ -180,7 +178,7 @@ export default function InvoiceUploadPage() {
           <div className="flex items-center space-x-2">
             <FolderIcon className="h-6 w-6 text-primary-600" />
             <h3 className="text-lg font-medium text-gray-900">
-              Files for {format(new Date(selectedMonth + "-01"), "MMMM yyyy")}
+              Files for {format(new Date(`${selectedMonth  }-01`), "MMMM yyyy")}
             </h3>
           </div>
           <span className="text-sm text-gray-500">
@@ -197,7 +195,7 @@ export default function InvoiceUploadPage() {
           </div>
         ) : (
           <div className="space-y-3">
-            {getMonthFiles().map((file) => (
+            {getMonthFiles().map(file => (
               <div
                 key={file.id}
                 className="flex items-center justify-between p-4 bg-gray-50 rounded-lg"
@@ -267,7 +265,7 @@ export default function InvoiceUploadPage() {
             <p className="text-sm font-medium text-gray-600">Invoices</p>
             <p className="text-2xl font-bold text-gray-900">
               {
-                invoices.filter((invoice) => {
+                invoices.filter(invoice => {
                   const invoiceMonth = format(
                     new Date(invoice.issueDate),
                     "yyyy-MM"
@@ -284,11 +282,11 @@ export default function InvoiceUploadPage() {
       <Card>
         <h3 className="text-lg font-medium text-gray-900 mb-4">
           Recent Invoices for{" "}
-          {format(new Date(selectedMonth + "-01"), "MMMM yyyy")}
+          {format(new Date(`${selectedMonth  }-01`), "MMMM yyyy")}
         </h3>
         <div className="space-y-3">
           {invoices
-            .filter((invoice) => {
+            .filter(invoice => {
               const invoiceMonth = format(
                 new Date(invoice.issueDate),
                 "yyyy-MM"
@@ -296,7 +294,7 @@ export default function InvoiceUploadPage() {
               return invoiceMonth === selectedMonth;
             })
             .slice(0, 5)
-            .map((invoice) => (
+            .map(invoice => (
               <div
                 key={invoice.id}
                 className="flex items-center justify-between p-3 bg-blue-50 rounded-lg"
@@ -318,8 +316,8 @@ export default function InvoiceUploadPage() {
                       invoice.status === "paid"
                         ? "text-success-600 bg-success-100"
                         : invoice.status === "sent"
-                        ? "text-warning-600 bg-warning-100"
-                        : "text-gray-600 bg-gray-100"
+                          ? "text-warning-600 bg-warning-100"
+                          : "text-gray-600 bg-gray-100"
                     }`}
                   >
                     {invoice.status}

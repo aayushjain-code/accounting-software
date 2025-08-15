@@ -18,7 +18,7 @@ export const UpdateNotification: React.FC<UpdateNotificationProps> = ({
     if (changelog.length > 0) {
       const latest = changelog[0];
       const lastSeen = localStorage.getItem("lastSeenUpdate");
-      
+
       if (!lastSeen || new Date(latest.releaseDate) > new Date(lastSeen)) {
         setLatestUpdate(latest);
         setIsVisible(true);
@@ -29,7 +29,10 @@ export const UpdateNotification: React.FC<UpdateNotificationProps> = ({
   const handleDismiss = () => {
     setIsVisible(false);
     if (latestUpdate) {
-      localStorage.setItem("lastSeenUpdate", latestUpdate.releaseDate.toISOString());
+      localStorage.setItem(
+        "lastSeenUpdate",
+        latestUpdate.releaseDate.toISOString()
+      );
     }
     onDismiss?.();
   };
@@ -40,7 +43,7 @@ export const UpdateNotification: React.FC<UpdateNotificationProps> = ({
     handleDismiss();
   };
 
-  if (!isVisible || !latestUpdate) return null;
+  if (!isVisible || !latestUpdate) {return null;}
 
   return (
     <div className="fixed top-4 right-4 z-50 max-w-sm w-full">
@@ -51,7 +54,7 @@ export const UpdateNotification: React.FC<UpdateNotificationProps> = ({
               <BellIcon className="h-5 w-5 text-blue-600" />
             </div>
           </div>
-          
+
           <div className="flex-1 min-w-0">
             <div className="flex items-center justify-between mb-1">
               <h4 className="text-sm font-semibold text-gray-900">
@@ -64,11 +67,11 @@ export const UpdateNotification: React.FC<UpdateNotificationProps> = ({
                 <XMarkIcon className="h-4 w-4" />
               </button>
             </div>
-            
+
             <p className="text-sm text-gray-600 mb-2">
               {latestUpdate.title} - Version {latestUpdate.version}
             </p>
-            
+
             <div className="flex space-x-2">
               <button
                 onClick={handleViewUpdate}

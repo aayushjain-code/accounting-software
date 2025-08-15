@@ -40,9 +40,7 @@ const StatCard = React.memo(
           <p className="text-sm font-medium text-gray-600 dark:text-gray-400">
             {title}
           </p>
-          <p className={`text-2xl font-bold ${color}`}>
-            {value}
-          </p>
+          <p className={`text-2xl font-bold ${color}`}>{value}</p>
           {change && (
             <p
               className={`text-sm ${
@@ -60,8 +58,6 @@ const StatCard = React.memo(
 );
 StatCard.displayName = "StatCard";
 
-
-
 const getCategoryColor = (category: string) => {
   const colors = {
     "Office Supplies": "bg-blue-100 text-blue-800",
@@ -75,15 +71,12 @@ const getCategoryColor = (category: string) => {
     Insurance: "bg-teal-100 text-teal-800",
     Other: "bg-gray-100 text-gray-800",
   };
-  return (
-    colors[category as keyof typeof colors] || "bg-gray-100 text-gray-800"
-  );
+  return colors[category as keyof typeof colors] || "bg-gray-100 text-gray-800";
 };
 
-
-
 export default function Home() {
-  const { clients, projects, invoices, timesheets, expenses } = useAccountingStore();
+  const { clients, projects, invoices, timesheets, expenses } =
+    useAccountingStore();
 
   // Optimized memoized calculations - break down into smaller chunks for better performance
   const totalClients = useMemo(() => clients.length, [clients]);
@@ -91,61 +84,80 @@ export default function Home() {
   const totalInvoices = useMemo(() => invoices.length, [invoices]);
   const totalTimesheets = useMemo(() => timesheets.length, [timesheets]);
 
-  const totalRevenue = useMemo(() => 
-    invoices.reduce((sum: number, invoice: Invoice) => sum + (invoice.total || 0), 0), 
+  const totalRevenue = useMemo(
+    () =>
+      invoices.reduce(
+        (sum: number, invoice: Invoice) => sum + (invoice.total || 0),
+        0
+      ),
     [invoices]
   );
 
-  const pendingInvoices = useMemo(() => 
-    invoices.filter((invoice: Invoice) => invoice.status === "sent").length, 
+  const pendingInvoices = useMemo(
+    () =>
+      invoices.filter((invoice: Invoice) => invoice.status === "sent").length,
     [invoices]
   );
 
-  const activeProjects = useMemo(() => 
-    projects.filter((project: any) => project.status === "active").length, 
+  const activeProjects = useMemo(
+    () => projects.filter((project: any) => project.status === "active").length,
     [projects]
   );
 
-  const totalExpenses = useMemo(() => 
-    expenses.reduce((sum, expense) => sum + expense.amount, 0), 
+  const totalExpenses = useMemo(
+    () => expenses.reduce((sum, expense) => sum + expense.amount, 0),
     [expenses]
   );
 
-  const netProfit = useMemo(() => totalRevenue - totalExpenses, [totalRevenue, totalExpenses]);
-  
-  const outstandingAmount = useMemo(() => 
-    invoices
-      .filter((invoice) => invoice.status === "sent")
-      .reduce((sum, invoice) => sum + invoice.total, 0), 
+  const netProfit = useMemo(
+    () => totalRevenue - totalExpenses,
+    [totalRevenue, totalExpenses]
+  );
+
+  const outstandingAmount = useMemo(
+    () =>
+      invoices
+        .filter(invoice => invoice.status === "sent")
+        .reduce((sum, invoice) => sum + invoice.total, 0),
     [invoices]
   );
 
-  const stats = useMemo(() => ({
-    totalClients,
-    totalProjects,
-    totalInvoices,
-    totalTimesheets,
-    totalRevenue,
-    totalExpenses,
-    netProfit,
-    outstandingAmount,
-    pendingInvoices,
-    activeProjects,
-  }), [
-    totalClients, totalProjects, totalInvoices, totalTimesheets,
-    totalRevenue, totalExpenses, netProfit, outstandingAmount,
-    pendingInvoices, activeProjects
-  ]);
-
-
+  const stats = useMemo(
+    () => ({
+      totalClients,
+      totalProjects,
+      totalInvoices,
+      totalTimesheets,
+      totalRevenue,
+      totalExpenses,
+      netProfit,
+      outstandingAmount,
+      pendingInvoices,
+      activeProjects,
+    }),
+    [
+      totalClients,
+      totalProjects,
+      totalInvoices,
+      totalTimesheets,
+      totalRevenue,
+      totalExpenses,
+      netProfit,
+      outstandingAmount,
+      pendingInvoices,
+      activeProjects,
+    ]
+  );
 
   const expensesByCategory = useMemo(() => {
     return Object.entries(
-      expenses.reduce((acc, expense) => {
-        acc[expense.category] =
-          (acc[expense.category] || 0) + expense.amount;
-        return acc;
-      }, {} as Record<string, number>)
+      expenses.reduce(
+        (acc, expense) => {
+          acc[expense.category] = (acc[expense.category] || 0) + expense.amount;
+          return acc;
+        },
+        {} as Record<string, number>
+      )
     ).sort(([, a], [, b]) => b - a);
   }, [expenses]);
 
@@ -157,13 +169,13 @@ export default function Home() {
       return format(date, "yyyy-MM");
     });
 
-    return projects.map((project) => {
-      const monthlyStatus = last6Months.map((month) => {
+    return projects.map(project => {
+      const monthlyStatus = last6Months.map(month => {
         const timesheet = timesheets.find(
-          (t) => t.projectId === project.id && t.month === month
+          t => t.projectId === project.id && t.month === month
         );
 
-        if (!timesheet) return { month, status: "missing", timesheet: null };
+        if (!timesheet) {return { month, status: "missing", timesheet: null };}
 
         return {
           month,
@@ -178,7 +190,7 @@ export default function Home() {
         project,
         monthlyStatus,
         overallCompliance:
-          monthlyStatus.filter((m) => m.status !== "missing").length /
+          monthlyStatus.filter(m => m.status !== "missing").length /
           last6Months.length,
       };
     });
@@ -186,7 +198,7 @@ export default function Home() {
 
   const thisMonthExpenses = useMemo(() => {
     return expenses
-      .filter((e) => {
+      .filter(e => {
         const expenseDate = new Date(e.date);
         const now = new Date();
         return (
@@ -198,7 +210,9 @@ export default function Home() {
   }, [expenses]);
 
   const averageMonthlyExpenses = useMemo(() => {
-    return expenses.length > 0 ? expenses.reduce((sum, e) => sum + e.amount, 0) / 12 : 0;
+    return expenses.length > 0
+      ? expenses.reduce((sum, e) => sum + e.amount, 0) / 12
+      : 0;
   }, [expenses]);
 
   return (
@@ -286,7 +300,7 @@ export default function Home() {
                 Paid Invoices
               </span>
               <span className="text-sm font-medium text-gray-900 dark:text-white">
-                {invoices.filter((i) => i.status === "paid").length}
+                {invoices.filter(i => i.status === "paid").length}
               </span>
             </div>
             <div className="flex justify-between items-center">
@@ -294,7 +308,7 @@ export default function Home() {
                 Pending Invoices
               </span>
               <span className="text-sm font-medium text-gray-900 dark:text-white">
-                {invoices.filter((i) => i.status === "sent").length}
+                {invoices.filter(i => i.status === "sent").length}
               </span>
             </div>
             <div className="flex justify-between items-center">
@@ -302,7 +316,7 @@ export default function Home() {
                 Draft Invoices
               </span>
               <span className="text-sm font-medium text-gray-900 dark:text-white">
-                {invoices.filter((i) => i.status === "draft").length}
+                {invoices.filter(i => i.status === "draft").length}
               </span>
             </div>
           </div>
@@ -393,12 +407,12 @@ export default function Home() {
                   const date = new Date();
                   date.setMonth(date.getMonth() - i);
                   return format(date, "yyyy-MM");
-                }).map((month) => (
+                }).map(month => (
                   <th
                     key={month}
                     className="px-3 py-3 text-center text-xs font-semibold text-gray-500 uppercase tracking-wider"
                   >
-                    {format(new Date(month + "-01"), "MMM yyyy")}
+                    {format(new Date(`${month  }-01`), "MMM yyyy")}
                   </th>
                 ))}
                 <th className="px-4 py-3 text-center text-xs font-semibold text-gray-500 uppercase tracking-wider">
@@ -419,7 +433,7 @@ export default function Home() {
                           {project.name}
                         </div>
                         <div className="text-xs text-gray-500 dark:text-gray-400">
-                          {clients.find((c) => c.id === project.clientId)
+                          {clients.find(c => c.id === project.clientId)
                             ?.company || "N/A"}
                         </div>
                       </div>
@@ -513,7 +527,6 @@ export default function Home() {
           </div>
         </div>
       </Card>
-
     </div>
   );
 }

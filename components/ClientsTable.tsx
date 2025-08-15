@@ -46,9 +46,39 @@ export const ClientsTable: React.FC<ClientsTableProps> = ({
     }
   };
 
+  const getSortIcon = (field: keyof Client) => {
+    if (sortField !== field) {
+      return null;
+    }
+    return sortDirection === "asc" ? (
+      <ArrowUpIcon className="h-4 w-4 ml-1" />
+    ) : (
+      <ArrowDownIcon className="h-4 w-4 ml-1" />
+    );
+  };
+
+  const sortClients = (clients: Client[]) => {
+    if (!sortField) {
+      return clients;
+    }
+
+    return [...clients].sort((a, b) => {
+      const aValue = a[sortField];
+      const bValue = b[sortField];
+
+      if (aValue < bValue) {
+        return sortDirection === "asc" ? -1 : 1;
+      }
+      if (aValue > bValue) {
+        return sortDirection === "asc" ? 1 : -1;
+      }
+      return 0;
+    });
+  };
+
   // Excel-like filtering and sorting
   const filteredAndSortedClients = clients
-    .filter((client) => {
+    .filter(client => {
       const matchesSearch =
         client.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
         client.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -74,24 +104,19 @@ export const ClientsTable: React.FC<ClientsTableProps> = ({
       }
 
       if (aValue !== undefined && bValue !== undefined) {
-        if (aValue < bValue) return sortDirection === "asc" ? -1 : 1;
-        if (aValue > bValue) return sortDirection === "asc" ? 1 : -1;
+        if (aValue < bValue) {
+          return sortDirection === "asc" ? -1 : 1;
+        }
+        if (aValue > bValue) {
+          return sortDirection === "asc" ? 1 : -1;
+        }
       }
       return 0;
     });
 
-  const renderSortIcon = (field: keyof Client) => {
-    if (sortField !== field) return null;
-    return sortDirection === "asc" ? (
-      <ArrowUpIcon className="h-4 w-4 ml-1" />
-    ) : (
-      <ArrowDownIcon className="h-4 w-4 ml-1" />
-    );
-  };
-
   const renderReadOnlyCell = (
-    client: Client,
-    field: keyof Client,
+    _client: Client,
+    _field: keyof Client,
     value: string | number | boolean
   ) => {
     return <div className="px-2 py-1">{value?.toString() || "-"}</div>;
@@ -125,7 +150,7 @@ export const ClientsTable: React.FC<ClientsTableProps> = ({
                 type="text"
                 placeholder="Search clients..."
                 value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
+                onChange={e => setSearchTerm(e.target.value)}
                 className="pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
               />
             </div>
@@ -158,7 +183,7 @@ export const ClientsTable: React.FC<ClientsTableProps> = ({
               </label>
               <select
                 value={statusFilter}
-                onChange={(e) => setStatusFilter(e.target.value)}
+                onChange={e => setStatusFilter(e.target.value)}
                 className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
               >
                 <option value="all">All Statuses</option>
@@ -175,7 +200,7 @@ export const ClientsTable: React.FC<ClientsTableProps> = ({
               </label>
               <select
                 value={industryFilter}
-                onChange={(e) => setIndustryFilter(e.target.value)}
+                onChange={e => setIndustryFilter(e.target.value)}
                 className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
               >
                 <option value="all">All Industries</option>
@@ -206,7 +231,7 @@ export const ClientsTable: React.FC<ClientsTableProps> = ({
                 { key: "industry", label: "Industry", sortable: true },
                 { key: "createdAt", label: "Created", sortable: true },
                 { key: "actions", label: "Actions", sortable: false },
-              ].map((column) => (
+              ].map(column => (
                 <th
                   key={column.key}
                   className={`px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider ${
@@ -220,15 +245,14 @@ export const ClientsTable: React.FC<ClientsTableProps> = ({
                 >
                   <div className="flex items-center">
                     {column.label}
-                    {column.sortable &&
-                      renderSortIcon(column.key as keyof Client)}
+                    {column.sortable && getSortIcon(column.key as keyof Client)}
                   </div>
                 </th>
               ))}
             </tr>
           </thead>
           <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
-            {filteredAndSortedClients.map((client) => (
+            {filteredAndSortedClients.map(client => (
               <tr
                 key={client.id}
                 className="hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors"

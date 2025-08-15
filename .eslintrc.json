@@ -3,15 +3,17 @@
     "next/core-web-vitals",
     "next/typescript"
   ],
+  "parserOptions": {
+    "project": "./tsconfig.json"
+  },
   "rules": {
     "@typescript-eslint/no-unused-vars": "error",
     "@typescript-eslint/no-explicit-any": "error",
-    "@typescript-eslint/prefer-const": "error",
     "@typescript-eslint/no-var-requires": "error",
     "@typescript-eslint/explicit-function-return-type": "warn",
     "@typescript-eslint/no-non-null-assertion": "warn",
-    "@typescript-eslint/prefer-nullish-coalescing": "error",
-    "@typescript-eslint/prefer-optional-chain": "error",
+    "@typescript-eslint/prefer-nullish-coalescing": "warn",
+    "@typescript-eslint/prefer-optional-chain": "warn",
     "react/display-name": "error",
     "react-hooks/exhaustive-deps": "error",
     "react/jsx-key": "error",

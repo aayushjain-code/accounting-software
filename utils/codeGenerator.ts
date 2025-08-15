@@ -21,13 +21,13 @@ export class CodeGenerator {
   static generateClientCode(existingClients: any[] = []): string {
     const year = new Date().getFullYear();
     const existingCodes = existingClients
-      .map((client) => client.clientCode)
-      .filter((code) => code && code.startsWith(`CLT-${year}`));
+      .map(client => client.clientCode)
+      .filter(code => code && code.startsWith(`CLT-${year}`));
 
     let counter = 1;
     if (existingCodes.length > 0) {
       const maxNumber = Math.max(
-        ...existingCodes.map((code) => {
+        ...existingCodes.map(code => {
           const match = code.match(/CLT-\d{4}-(\d+)/);
           return match ? parseInt(match[1]) : 0;
         })
@@ -42,13 +42,13 @@ export class CodeGenerator {
   static generateProjectCode(existingProjects: any[] = []): string {
     const year = new Date().getFullYear();
     const existingCodes = existingProjects
-      .map((project) => project.projectCode)
-      .filter((code) => code && code.startsWith(`PRJ-${year}`));
+      .map(project => project.projectCode)
+      .filter(code => code && code.startsWith(`PRJ-${year}`));
 
     let counter = 1;
     if (existingCodes.length > 0) {
       const maxNumber = Math.max(
-        ...existingCodes.map((code) => {
+        ...existingCodes.map(code => {
           const match = code.match(/PRJ-\d{4}-(\d+)/);
           return match ? parseInt(match[1]) : 0;
         })
@@ -68,13 +68,13 @@ export class CodeGenerator {
     const monthCode = month.substring(0, 7); // YYYY-MM format
 
     const existingCodes = existingTimesheets
-      .map((timesheet) => timesheet.timesheetCode)
-      .filter((code) => code && code.startsWith(`TMS-${year}-${monthCode}`));
+      .map(timesheet => timesheet.timesheetCode)
+      .filter(code => code && code.startsWith(`TMS-${year}-${monthCode}`));
 
     let counter = 1;
     if (existingCodes.length > 0) {
       const maxNumber = Math.max(
-        ...existingCodes.map((code) => {
+        ...existingCodes.map(code => {
           const match = code.match(/TMS-\d{4}-\d{2}-(\d+)/);
           return match ? parseInt(match[1]) : 0;
         })
@@ -91,13 +91,13 @@ export class CodeGenerator {
   static generateInvoiceCode(existingInvoices: any[] = []): string {
     const year = new Date().getFullYear();
     const existingCodes = existingInvoices
-      .map((invoice) => invoice.invoiceNumber)
-      .filter((code) => code && code.startsWith(`INV-${year}`));
+      .map(invoice => invoice.invoiceNumber)
+      .filter(code => code && code.startsWith(`INV-${year}`));
 
     let counter = 1;
     if (existingCodes.length > 0) {
       const maxNumber = Math.max(
-        ...existingCodes.map((code) => {
+        ...existingCodes.map(code => {
           const match = code.match(/INV-\d{4}-(\d+)/);
           return match ? parseInt(match[1]) : 0;
         })
@@ -115,13 +115,13 @@ export class CodeGenerator {
     const monthStr = month.toString().padStart(2, "0");
 
     const existingCodes = existingExpenses
-      .map((expense) => expense.expenseCode)
-      .filter((code) => code && code.startsWith(`EXP-${year}-${monthStr}`));
+      .map(expense => expense.expenseCode)
+      .filter(code => code && code.startsWith(`EXP-${year}-${monthStr}`));
 
     let counter = 1;
     if (existingCodes.length > 0) {
       const maxNumber = Math.max(
-        ...existingCodes.map((code) => {
+        ...existingCodes.map(code => {
           const match = code.match(/EXP-\d{4}-\d{2}-(\d+)/);
           return match ? parseInt(match[1]) : 0;
         })
@@ -139,13 +139,13 @@ export class CodeGenerator {
     const monthStr = month.toString().padStart(2, "0");
 
     const existingCodes = existingReceipts
-      .map((receipt) => receipt.receiptCode)
-      .filter((code) => code && code.startsWith(`RCP-${year}-${monthStr}`));
+      .map(receipt => receipt.receiptCode)
+      .filter(code => code && code.startsWith(`RCP-${year}-${monthStr}`));
 
     let counter = 1;
     if (existingCodes.length > 0) {
       const maxNumber = Math.max(
-        ...existingCodes.map((code) => {
+        ...existingCodes.map(code => {
           const match = code.match(/RCP-\d{4}-\d{2}-(\d+)/);
           return match ? parseInt(match[1]) : 0;
         })
@@ -163,13 +163,13 @@ export class CodeGenerator {
     const monthStr = month.toString().padStart(2, "0");
 
     const existingCodes = existingPayments
-      .map((payment) => payment.paymentCode)
-      .filter((code) => code && code.startsWith(`PAY-${year}-${monthStr}`));
+      .map(payment => payment.paymentCode)
+      .filter(code => code && code.startsWith(`PAY-${year}-${monthStr}`));
 
     let counter = 1;
     if (existingCodes.length > 0) {
       const maxNumber = Math.max(
-        ...existingCodes.map((code) => {
+        ...existingCodes.map(code => {
           const match = code.match(/PAY-\d{4}-\d{2}-(\d+)/);
           return match ? parseInt(match[1]) : 0;
         })
@@ -196,13 +196,13 @@ export class CodeGenerator {
   ): string {
     const year = new Date().getFullYear();
     const existingCodes = existingItems
-      .map((item) => item[codeField])
-      .filter((code) => code && code.startsWith(`${prefix}-${year}`));
+      .map(item => item[codeField])
+      .filter(code => code && code.startsWith(`${prefix}-${year}`));
 
     let counter = 1;
     if (existingCodes.length > 0) {
       const maxNumber = Math.max(
-        ...existingCodes.map((code) => {
+        ...existingCodes.map(code => {
           const match = new RegExp(`${prefix}-\\d{4}-(\\d+)`).exec(code);
           return match ? parseInt(match[1]) : 0;
         })
@@ -265,13 +265,13 @@ export class CodeGenerator {
     byMonth: Record<string, number>;
     latestCode: string | null;
   } {
-    const codes = items.map((item) => item[codeField]).filter((code) => code);
+    const codes = items.map(item => item[codeField]).filter(code => code);
 
     const byYear: Record<number, number> = {};
     const byMonth: Record<string, number> = {};
     let latestCode: string | null = null;
 
-    codes.forEach((code) => {
+    codes.forEach(code => {
       const info = this.extractCodeInfo(code);
       if (info) {
         byYear[info.year] = (byYear[info.year] || 0) + 1;

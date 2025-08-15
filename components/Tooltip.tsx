@@ -28,7 +28,7 @@ export const Tooltip: React.FC<TooltipProps> = ({
   const timeoutRef = useRef<NodeJS.Timeout>();
 
   const showTooltip = () => {
-    if (disabled) return;
+    if (disabled) {return;}
 
     timeoutRef.current = setTimeout(() => {
       setIsVisible(true);
@@ -44,7 +44,7 @@ export const Tooltip: React.FC<TooltipProps> = ({
   };
 
   const updatePosition = useCallback(() => {
-    if (!triggerRef.current || !tooltipRef.current) return;
+    if (!triggerRef.current || !tooltipRef.current) {return;}
 
     const triggerRect = triggerRef.current.getBoundingClientRect();
     const tooltipRect = tooltipRef.current.getBoundingClientRect();
@@ -86,7 +86,7 @@ export const Tooltip: React.FC<TooltipProps> = ({
     } else {
       // Try alternative positions
       const alternatives = ["top", "bottom", "left", "right"].filter(
-        (p) => p !== position
+        p => p !== position
       );
 
       for (const altPosition of alternatives) {

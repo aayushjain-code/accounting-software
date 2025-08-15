@@ -207,8 +207,8 @@ export const lazyLoading = {
 
   // Lazy load images
   lazyLoadImage: (imgElement: HTMLImageElement, src: string) => {
-    const observer = lazyLoading.createObserver((entries) => {
-      entries.forEach((entry) => {
+    const observer = lazyLoading.createObserver(entries => {
+      entries.forEach(entry => {
         if (entry.isIntersecting) {
           const img = entry.target as HTMLImageElement;
           img.src = src;
@@ -289,7 +289,7 @@ export const pagination = {
     let startIndex = 0;
 
     if (cursor) {
-      const cursorIndex = items.findIndex((item) => getCursor(item) === cursor);
+      const cursorIndex = items.findIndex(item => getCursor(item) === cursor);
       startIndex = cursorIndex + 1;
     }
 
@@ -401,7 +401,11 @@ export const performanceMonitor = {
   },
 
   // Track interaction performance
-  trackInteraction: (componentName: string, interactionName: string, duration: number) => {
+  trackInteraction: (
+    componentName: string,
+    interactionName: string,
+    duration: number
+  ) => {
     const key = `${componentName}-${interactionName}`;
     if (!performanceMonitor.metrics.interactionTimes[key]) {
       performanceMonitor.metrics.interactionTimes[key] = [];
@@ -410,7 +414,11 @@ export const performanceMonitor = {
   },
 
   // Track data load performance
-  trackDataLoad: (componentName: string, dataSize: number, loadTime: number) => {
+  trackDataLoad: (
+    componentName: string,
+    dataSize: number,
+    loadTime: number
+  ) => {
     const key = `${componentName}-dataLoad`;
     if (!performanceMonitor.metrics.dataLoadTimes[key]) {
       performanceMonitor.metrics.dataLoadTimes[key] = [];
@@ -427,11 +435,17 @@ export const performanceMonitor = {
   },
 
   // Track data processing performance
-  trackDataProcessing: (processorName: string, dataSize: number, processingTime: number) => {
+  trackDataProcessing: (
+    processorName: string,
+    dataSize: number,
+    processingTime: number
+  ) => {
     if (!performanceMonitor.metrics.dataProcessingTimes[processorName]) {
       performanceMonitor.metrics.dataProcessingTimes[processorName] = [];
     }
-    performanceMonitor.metrics.dataProcessingTimes[processorName].push(processingTime);
+    performanceMonitor.metrics.dataProcessingTimes[processorName].push(
+      processingTime
+    );
   },
 
   // Get all metrics
@@ -462,8 +476,11 @@ export const performanceMonitor = {
     const avgRenderTime =
       Object.values(performanceMonitor.metrics.renderTimes)
         .flat()
-        .reduce((a, b) => a + b, 0) / 
-        Math.max(Object.values(performanceMonitor.metrics.renderTimes).flat().length, 1);
+        .reduce((a, b) => a + b, 0) /
+      Math.max(
+        Object.values(performanceMonitor.metrics.renderTimes).flat().length,
+        1
+      );
 
     const avgMemoryUsage =
       performanceMonitor.metrics.memoryUsage.length > 0
@@ -485,7 +502,8 @@ export const performanceMonitor = {
       avgRenderTime: `${avgRenderTime.toFixed(2)}ms`,
       avgMemoryUsage: `${(avgMemoryUsage * 100).toFixed(2)}%`,
       cacheHitRate: `${cacheHitRate.toFixed(2)}%`,
-      totalRenders: Object.values(performanceMonitor.metrics.renderTimes).flat().length,
+      totalRenders: Object.values(performanceMonitor.metrics.renderTimes).flat()
+        .length,
       cacheHits: performanceMonitor.metrics.cacheHits,
       cacheMisses: performanceMonitor.metrics.cacheMisses,
     };

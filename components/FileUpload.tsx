@@ -38,22 +38,25 @@ const FileUpload: React.FC<FileUploadProps> = ({
   const [isDragOver, setIsDragOver] = useState(false);
   const [error, setError] = useState<string>("");
 
-  const validateFile = useCallback((file: File): string | null => {
-    // Check file size
-    if (file.size > maxSize * 1024 * 1024) {
-      return `File size must be less than ${maxSize}MB`;
-    }
+  const validateFile = useCallback(
+    (file: File): string | null => {
+      // Check file size
+      if (file.size > maxSize * 1024 * 1024) {
+        return `File size must be less than ${maxSize}MB`;
+      }
 
-    // Check file type
-    const fileExtension = "." + file.name.split(".").pop()?.toLowerCase();
-    if (!acceptedTypes.includes(fileExtension)) {
-      return `File type not supported. Accepted types: ${acceptedTypes.join(
-        ", "
-      )}`;
-    }
+      // Check file type
+      const fileExtension = `.${  file.name.split(".").pop()?.toLowerCase()}`;
+      if (!acceptedTypes.includes(fileExtension)) {
+        return `File type not supported. Accepted types: ${acceptedTypes.join(
+          ", "
+        )}`;
+      }
 
-    return null;
-  }, [maxSize, acceptedTypes]);
+      return null;
+    },
+    [maxSize, acceptedTypes]
+  );
 
   const handleFiles = useCallback(
     (newFiles: FileList) => {
@@ -71,7 +74,7 @@ const FileUpload: React.FC<FileUploadProps> = ({
         validFiles.push(file);
       }
 
-      if (hasError) return;
+      if (hasError) {return;}
 
       if (files.length + validFiles.length > maxFiles) {
         setError(`Maximum ${maxFiles} files allowed`);
@@ -120,11 +123,11 @@ const FileUpload: React.FC<FileUploadProps> = ({
   );
 
   const formatFileSize = (bytes: number): string => {
-    if (bytes === 0) return "0 Bytes";
+    if (bytes === 0) {return "0 Bytes";}
     const k = 1024;
     const sizes = ["Bytes", "KB", "MB", "GB"];
     const i = Math.floor(Math.log(bytes) / Math.log(k));
-    return (bytes / Math.pow(k, i)).toFixed(2) + " " + sizes[i];
+    return `${(bytes / Math.pow(k, i)).toFixed(2)  } ${  sizes[i]}`;
   };
 
   return (

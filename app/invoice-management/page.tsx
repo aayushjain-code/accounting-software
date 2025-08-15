@@ -30,7 +30,9 @@ export default function InvoiceManagementPage() {
   const [uploadedFile, setUploadedFile] = useState<File | null>(null);
   const [isDragOver, setIsDragOver] = useState(false);
   const [invoiceUploads, setInvoiceUploads] = useState<InvoiceUpload[]>([]);
-  const [viewingInvoice, setViewingInvoice] = useState<InvoiceUpload | null>(null);
+  const [viewingInvoice, setViewingInvoice] = useState<InvoiceUpload | null>(
+    null
+  );
   const [isViewModalOpen, setIsViewModalOpen] = useState(false);
 
   // Get current month for default selection
@@ -41,8 +43,10 @@ export default function InvoiceManagementPage() {
 
   // Filter invoices by selected project
   const projectInvoices = useMemo(() => {
-    if (!selectedProject) return [];
-    return invoiceUploads.filter((invoice) => invoice.projectId === selectedProject);
+    if (!selectedProject) {return [];}
+    return invoiceUploads.filter(
+      invoice => invoice.projectId === selectedProject
+    );
   }, [selectedProject, invoiceUploads]);
 
   // Handle file drag and drop
@@ -59,7 +63,7 @@ export default function InvoiceManagementPage() {
   const handleDrop = (e: React.DragEvent) => {
     e.preventDefault();
     setIsDragOver(false);
-    
+
     const files = Array.from(e.dataTransfer.files);
     if (files.length > 0) {
       setUploadedFile(files[0]);
@@ -76,10 +80,10 @@ export default function InvoiceManagementPage() {
 
   // Submit invoice upload
   const handleSubmitInvoice = () => {
-    if (!uploadedFile || !selectedProject) return;
+    if (!uploadedFile || !selectedProject) {return;}
 
-    const project = projects.find((p) => p.id === selectedProject);
-    const client = clients.find((c) => c.id === project?.clientId);
+    const project = projects.find(p => p.id === selectedProject);
+    const client = clients.find(c => c.id === project?.clientId);
 
     const newInvoice: InvoiceUpload = {
       id: Date.now().toString(),
@@ -94,14 +98,17 @@ export default function InvoiceManagementPage() {
       file: uploadedFile,
     };
 
-    setInvoiceUploads((prev) => [...prev, newInvoice]);
+    setInvoiceUploads(prev => [...prev, newInvoice]);
     setUploadedFile(null);
   };
 
   // Handle status changes
-  const handleStatusChange = (invoiceId: string, newStatus: "approved" | "rejected") => {
-    setInvoiceUploads((prev) =>
-      prev.map((invoice) =>
+  const handleStatusChange = (
+    invoiceId: string,
+    newStatus: "approved" | "rejected"
+  ) => {
+    setInvoiceUploads(prev =>
+      prev.map(invoice =>
         invoice.id === invoiceId ? { ...invoice, status: newStatus } : invoice
       )
     );
@@ -109,7 +116,7 @@ export default function InvoiceManagementPage() {
 
   // Delete invoice
   const handleDeleteInvoice = (invoiceId: string) => {
-    setInvoiceUploads((prev) => prev.filter((invoice) => invoice.id !== invoiceId));
+    setInvoiceUploads(prev => prev.filter(invoice => invoice.id !== invoiceId));
   };
 
   // View invoice details
@@ -147,11 +154,11 @@ export default function InvoiceManagementPage() {
   };
 
   const formatFileSize = (bytes: number) => {
-    if (bytes === 0) return "0 Bytes";
+    if (bytes === 0) {return "0 Bytes";}
     const k = 1024;
     const sizes = ["Bytes", "KB", "MB", "GB"];
     const i = Math.floor(Math.log(bytes) / Math.log(k));
-    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + " " + sizes[i];
+    return `${parseFloat((bytes / Math.pow(k, i)).toFixed(2))  } ${  sizes[i]}`;
   };
 
   return (
@@ -173,12 +180,12 @@ export default function InvoiceManagementPage() {
             Project Tabs
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-            {projects.map((project) => {
+            {projects.map(project => {
               const projectInvoices = invoiceUploads.filter(
-                (invoice) => invoice.projectId === project.id
+                invoice => invoice.projectId === project.id
               );
               const isSelected = selectedProject === project.id;
-              const client = clients.find((c) => c.id === project.clientId);
+              const client = clients.find(c => c.id === project.clientId);
 
               return (
                 <div
@@ -215,15 +222,26 @@ export default function InvoiceManagementPage() {
               <div className="flex items-center justify-between">
                 <div>
                   <h3 className="text-xl font-semibold text-gray-900 dark:text-white">
-                    {projects.find((p) => p.id === selectedProject)?.name}
+                    {projects.find(p => p.id === selectedProject)?.name}
                   </h3>
                   <p className="text-gray-600 dark:text-gray-400">
-                    Client: {clients.find((c) => c.id === projects.find((p) => p.id === selectedProject)?.clientId)?.name}
+                    Client:{" "}
+                    {
+                      clients.find(
+                        c =>
+                          c.id ===
+                          projects.find(p => p.id === selectedProject)?.clientId
+                      )?.name
+                    }
                   </p>
                 </div>
                 <div className="text-right">
-                  <p className="text-sm text-gray-500 dark:text-gray-400">Current Month</p>
-                  <p className="font-semibold text-gray-900 dark:text-white">{currentMonth}</p>
+                  <p className="text-sm text-gray-500 dark:text-gray-400">
+                    Current Month
+                  </p>
+                  <p className="font-semibold text-gray-900 dark:text-white">
+                    {currentMonth}
+                  </p>
                 </div>
               </div>
             </div>
@@ -233,7 +251,7 @@ export default function InvoiceManagementPage() {
               <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
                 Upload New Invoice
               </h3>
-              
+
               <div
                 className={`border-2 border-dashed rounded-lg p-8 text-center transition-colors ${
                   isDragOver
@@ -311,25 +329,39 @@ export default function InvoiceManagementPage() {
                   <div className="text-2xl font-bold text-gray-900 dark:text-white">
                     {projectInvoices.length}
                   </div>
-                  <div className="text-sm text-gray-500 dark:text-gray-400">Total</div>
+                  <div className="text-sm text-gray-500 dark:text-gray-400">
+                    Total
+                  </div>
                 </div>
                 <div className="text-center">
                   <div className="text-2xl font-bold text-yellow-600">
-                    {projectInvoices.filter((i) => i.status === "pending").length}
+                    {projectInvoices.filter(i => i.status === "pending").length}
                   </div>
-                  <div className="text-sm text-gray-500 dark:text-gray-400">Pending</div>
+                  <div className="text-sm text-gray-500 dark:text-gray-400">
+                    Pending
+                  </div>
                 </div>
                 <div className="text-center">
                   <div className="text-2xl font-bold text-green-600">
-                    {projectInvoices.filter((i) => i.status === "approved").length}
+                    {
+                      projectInvoices.filter(i => i.status === "approved")
+                        .length
+                    }
                   </div>
-                  <div className="text-sm text-gray-500 dark:text-gray-400">Approved</div>
+                  <div className="text-sm text-gray-500 dark:text-gray-400">
+                    Approved
+                  </div>
                 </div>
                 <div className="text-center">
                   <div className="text-2xl font-bold text-red-600">
-                    {projectInvoices.filter((i) => i.status === "rejected").length}
+                    {
+                      projectInvoices.filter(i => i.status === "rejected")
+                        .length
+                    }
                   </div>
-                  <div className="text-sm text-gray-500 dark:text-gray-400">Rejected</div>
+                  <div className="text-sm text-gray-500 dark:text-gray-400">
+                    Rejected
+                  </div>
                 </div>
               </div>
             </div>
@@ -341,7 +373,11 @@ export default function InvoiceManagementPage() {
                   Previous Invoices
                 </h3>
                 <button
-                  onClick={() => document.getElementById("invoices-table")?.scrollIntoView({ behavior: "smooth" })}
+                  onClick={() =>
+                    document
+                      .getElementById("invoices-table")
+                      ?.scrollIntoView({ behavior: "smooth" })
+                  }
                   className="text-sm text-primary-600 hover:text-primary-700 dark:text-primary-400 dark:hover:text-primary-300"
                 >
                   View All
@@ -375,7 +411,7 @@ export default function InvoiceManagementPage() {
                       </tr>
                     </thead>
                     <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
-                      {projectInvoices.map((invoice) => (
+                      {projectInvoices.map(invoice => (
                         <tr key={invoice.id} id="invoices-table">
                           <td className="px-6 py-4 whitespace-nowrap">
                             <div className="flex items-center">
@@ -398,7 +434,9 @@ export default function InvoiceManagementPage() {
                               )}`}
                             >
                               {getStatusIcon(invoice.status)}
-                              <span className="ml-1 capitalize">{invoice.status}</span>
+                              <span className="ml-1 capitalize">
+                                {invoice.status}
+                              </span>
                             </span>
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-2">
@@ -411,13 +449,17 @@ export default function InvoiceManagementPage() {
                             {invoice.status === "pending" && (
                               <>
                                 <button
-                                  onClick={() => handleStatusChange(invoice.id, "approved")}
+                                  onClick={() =>
+                                    handleStatusChange(invoice.id, "approved")
+                                  }
                                   className="text-green-600 hover:text-green-900 dark:text-green-400 dark:hover:text-green-300"
                                 >
                                   Approve
                                 </button>
                                 <button
-                                  onClick={() => handleStatusChange(invoice.id, "rejected")}
+                                  onClick={() =>
+                                    handleStatusChange(invoice.id, "rejected")
+                                  }
                                   className="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300"
                                 >
                                   Reject
@@ -468,30 +510,42 @@ export default function InvoiceManagementPage() {
               </h4>
               <div className="space-y-2 text-sm">
                 <div className="flex justify-between">
-                  <span className="text-gray-500 dark:text-gray-400">File Name:</span>
-                  <span className="text-gray-900 dark:text-white">{viewingInvoice.fileName}</span>
+                  <span className="text-gray-500 dark:text-gray-400">
+                    File Name:
+                  </span>
+                  <span className="text-gray-900 dark:text-white">
+                    {viewingInvoice.fileName}
+                  </span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-gray-500 dark:text-gray-400">File Size:</span>
+                  <span className="text-gray-500 dark:text-gray-400">
+                    File Size:
+                  </span>
                   <span className="text-gray-900 dark:text-white">
                     {formatFileSize(viewingInvoice.fileSize)}
                   </span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-gray-500 dark:text-gray-400">Upload Date:</span>
+                  <span className="text-gray-500 dark:text-gray-400">
+                    Upload Date:
+                  </span>
                   <span className="text-gray-900 dark:text-white">
                     {viewingInvoice.uploadDate.toLocaleDateString()}
                   </span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-gray-500 dark:text-gray-400">Status:</span>
+                  <span className="text-gray-500 dark:text-gray-400">
+                    Status:
+                  </span>
                   <span
                     className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium border ${getStatusColor(
                       viewingInvoice.status
                     )}`}
                   >
                     {getStatusIcon(viewingInvoice.status)}
-                    <span className="ml-1 capitalize">{viewingInvoice.status}</span>
+                    <span className="ml-1 capitalize">
+                      {viewingInvoice.status}
+                    </span>
                   </span>
                 </div>
               </div>
@@ -504,16 +558,28 @@ export default function InvoiceManagementPage() {
               </h4>
               <div className="space-y-2 text-sm">
                 <div className="flex justify-between">
-                  <span className="text-gray-500 dark:text-gray-400">Project:</span>
-                  <span className="text-gray-900 dark:text-white">{viewingInvoice.projectName}</span>
+                  <span className="text-gray-500 dark:text-gray-400">
+                    Project:
+                  </span>
+                  <span className="text-gray-900 dark:text-white">
+                    {viewingInvoice.projectName}
+                  </span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-gray-500 dark:text-gray-400">Client:</span>
-                  <span className="text-gray-900 dark:text-white">{viewingInvoice.clientName}</span>
+                  <span className="text-gray-500 dark:text-gray-400">
+                    Client:
+                  </span>
+                  <span className="text-gray-900 dark:text-white">
+                    {viewingInvoice.clientName}
+                  </span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-gray-500 dark:text-gray-400">Month:</span>
-                  <span className="text-gray-900 dark:text-white">{viewingInvoice.month}</span>
+                  <span className="text-gray-500 dark:text-gray-400">
+                    Month:
+                  </span>
+                  <span className="text-gray-900 dark:text-white">
+                    {viewingInvoice.month}
+                  </span>
                 </div>
               </div>
             </div>

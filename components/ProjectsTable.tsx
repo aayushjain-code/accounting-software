@@ -51,7 +51,7 @@ export const ProjectsTable: React.FC<ProjectsTableProps> = ({
   // Removed inline editing functionality - users must use explicit edit button
 
   const renderSortIcon = (field: keyof Project) => {
-    if (sortField !== field) return null;
+    if (sortField !== field) {return null;}
     return sortDirection === "asc" ? (
       <ArrowUpIcon className="h-4 w-4 ml-1" />
     ) : (
@@ -100,7 +100,7 @@ export const ProjectsTable: React.FC<ProjectsTableProps> = ({
         <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
           <thead className="bg-gray-50 dark:bg-gray-700">
             <tr>
-              {columns.map((column) => (
+              {columns.map(column => (
                 <th
                   key={column.key}
                   className={`px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider ${
@@ -134,12 +134,12 @@ export const ProjectsTable: React.FC<ProjectsTableProps> = ({
                 }
 
                 if (aValue !== undefined && bValue !== undefined) {
-                  if (aValue < bValue) return sortDirection === "asc" ? -1 : 1;
-                  if (aValue > bValue) return sortDirection === "asc" ? 1 : -1;
+                  if (aValue < bValue) {return sortDirection === "asc" ? -1 : 1;}
+                  if (aValue > bValue) {return sortDirection === "asc" ? 1 : -1;}
                 }
                 return 0;
               })
-              .map((project) => (
+              .map(project => (
                 <tr
                   key={project.id}
                   className="hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"

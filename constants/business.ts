@@ -1,5 +1,34 @@
 // Business logic constants
 
+export const EXPENSE_CATEGORIES = [
+  { value: "office-supplies", label: "Office Supplies", color: "blue" },
+  { value: "software-tools", label: "Software & Tools", color: "purple" },
+  {
+    value: "travel-transportation",
+    label: "Travel & Transportation",
+    color: "green",
+  },
+  {
+    value: "meals-entertainment",
+    label: "Meals & Entertainment",
+    color: "yellow",
+  },
+  {
+    value: "professional-services",
+    label: "Professional Services",
+    color: "indigo",
+  },
+  {
+    value: "marketing-advertising",
+    label: "Marketing & Advertising",
+    color: "pink",
+  },
+  { value: "utilities", label: "Utilities", color: "gray" },
+  { value: "rent-equipment", label: "Rent & Equipment", color: "red" },
+  { value: "insurance", label: "Insurance", color: "teal" },
+  { value: "other", label: "Other", color: "gray" },
+] as const;
+
 export const BUSINESS_CONFIG = {
   company: {
     name: "Brandsmashers Tech",
@@ -29,14 +58,26 @@ export const BUSINESS_CONFIG = {
   },
   projects: {
     defaultStatus: "active" as const,
-    statuses: ["active", "inactive", "completed", "on-hold", "archived"] as const,
+    statuses: [
+      "active",
+      "inactive",
+      "completed",
+      "on-hold",
+      "archived",
+    ] as const,
     defaultEstimatedHours: 160, // 1 month at 8 hours/day
     maxBudget: 10000000, // 1 crore
   },
   clients: {
     defaultStatus: "active" as const,
     statuses: ["active", "inactive", "prospect", "lead"] as const,
-    companySizes: ["startup", "small", "medium", "large", "enterprise"] as const,
+    companySizes: [
+      "startup",
+      "small",
+      "medium",
+      "large",
+      "enterprise",
+    ] as const,
     industries: [
       "Technology",
       "Healthcare",
@@ -52,7 +93,13 @@ export const BUSINESS_CONFIG = {
   },
   timesheets: {
     defaultStatus: "draft" as const,
-    statuses: ["draft", "submitted", "approved", "rejected", "invoiced"] as const,
+    statuses: [
+      "draft",
+      "submitted",
+      "approved",
+      "rejected",
+      "invoiced",
+    ] as const,
     defaultHoursPerDay: 8,
     maxHoursPerDay: 12,
     workingDaysPerWeek: 5,
@@ -131,10 +178,14 @@ export const VALIDATION_MESSAGES = {
   required: "This field is required",
   email: "Please enter a valid email address",
   phone: "Please enter a valid phone number",
-  minLength: (field: string, length: number) => `${field} must be at least ${length} characters`,
-  maxLength: (field: string, length: number) => `${field} must be no more than ${length} characters`,
-  minValue: (field: string, value: number) => `${field} must be at least ${value}`,
-  maxValue: (field: string, value: number) => `${field} must be no more than ${value}`,
+  minLength: (field: string, length: number) =>
+    `${field} must be at least ${length} characters`,
+  maxLength: (field: string, length: number) =>
+    `${field} must be no more than ${length} characters`,
+  minValue: (field: string, value: number) =>
+    `${field} must be at least ${value}`,
+  maxValue: (field: string, value: number) =>
+    `${field} must be no more than ${value}`,
   positiveNumber: "Please enter a positive number",
   validDate: "Please enter a valid date",
   futureDate: "Date must be in the future",

@@ -1,11 +1,19 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useAccountingStore } from "@/store";
 import { Invoice } from "@/types";
-import { DocumentTextIcon } from "@heroicons/react/24/outline";
 import {
   PlusIcon,
+  PencilIcon,
+  TrashIcon,
+  MagnifyingGlassIcon,
+  FunnelIcon,
+  EyeIcon,
+  DocumentTextIcon,
+  ClockIcon,
+  CurrencyDollarIcon,
+  CalendarIcon,
 } from "@heroicons/react/24/outline";
 import { format } from "date-fns";
 import toast from "react-hot-toast";
@@ -55,7 +63,7 @@ export default function InvoicesPage() {
     let filtered = searchFilteredInvoices;
 
     if (statusFilter !== "all") {
-      filtered = filtered.filter((invoice) => invoice.status === statusFilter);
+      filtered = filtered.filter(invoice => invoice.status === statusFilter);
     }
 
     return filtered;
@@ -131,8 +139,6 @@ export default function InvoicesPage() {
     }
   };
 
-
-
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -182,7 +188,7 @@ export default function InvoicesPage() {
               type="text"
               placeholder="Search invoices by number or description..."
               value={searchTerm}
-              onChange={(e) => handleSearchChange(e.target.value)}
+              onChange={e => handleSearchChange(e.target.value)}
               className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400"
             />
             {isSearching && (
@@ -194,7 +200,7 @@ export default function InvoicesPage() {
           <div className="flex items-center space-x-3">
             <select
               value={statusFilter}
-              onChange={(e) => setStatusFilter(e.target.value)}
+              onChange={e => setStatusFilter(e.target.value)}
               className="px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200"
             >
               <option value="all">All Status</option>
@@ -299,8 +305,8 @@ export default function InvoicesPage() {
             <input
               type="text"
               value={formData.invoiceNumber}
-              onChange={(e) =>
-                setFormData((f) => ({ ...f, invoiceNumber: e.target.value }))
+              onChange={e =>
+                setFormData(f => ({ ...f, invoiceNumber: e.target.value }))
               }
               className="input"
               required
@@ -313,14 +319,14 @@ export default function InvoicesPage() {
             </label>
             <select
               value={formData.clientId}
-              onChange={(e) =>
-                setFormData((f) => ({ ...f, clientId: e.target.value }))
+              onChange={e =>
+                setFormData(f => ({ ...f, clientId: e.target.value }))
               }
               className="input"
               required
             >
               <option value="">Select Client</option>
-              {clients.map((client) => (
+              {clients.map(client => (
                 <option key={client.id} value={client.id}>
                   {client.name} ({client.company})
                 </option>
@@ -334,14 +340,14 @@ export default function InvoicesPage() {
             </label>
             <select
               value={formData.projectId}
-              onChange={(e) =>
-                setFormData((f) => ({ ...f, projectId: e.target.value }))
+              onChange={e =>
+                setFormData(f => ({ ...f, projectId: e.target.value }))
               }
               className="input"
               required
             >
               <option value="">Select Project</option>
-              {projects.map((project) => (
+              {projects.map(project => (
                 <option key={project.id} value={project.id}>
                   {project.projectCode} - {project.name}
                 </option>
@@ -357,8 +363,8 @@ export default function InvoicesPage() {
             <input
               type="number"
               value={formData.amount}
-              onChange={(e) =>
-                setFormData((f) => ({ ...f, amount: e.target.value }))
+              onChange={e =>
+                setFormData(f => ({ ...f, amount: e.target.value }))
               }
               className="input"
               required
@@ -373,8 +379,8 @@ export default function InvoicesPage() {
             </label>
             <select
               value={formData.status}
-              onChange={(e) =>
-                setFormData((f) => ({
+              onChange={e =>
+                setFormData(f => ({
                   ...f,
                   status: e.target.value as "draft" | "sent" | "paid",
                 }))
@@ -394,8 +400,8 @@ export default function InvoicesPage() {
             <input
               type="date"
               value={formData.issueDate}
-              onChange={(e) =>
-                setFormData((f) => ({ ...f, issueDate: e.target.value }))
+              onChange={e =>
+                setFormData(f => ({ ...f, issueDate: e.target.value }))
               }
               className="input"
               required
@@ -409,8 +415,8 @@ export default function InvoicesPage() {
             <input
               type="date"
               value={formData.dueDate}
-              onChange={(e) =>
-                setFormData((f) => ({ ...f, dueDate: e.target.value }))
+              onChange={e =>
+                setFormData(f => ({ ...f, dueDate: e.target.value }))
               }
               className="input"
               required

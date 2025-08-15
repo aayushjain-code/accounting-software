@@ -1,31 +1,31 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   experimental: {
-    optimizePackageImports: ['@heroicons/react', 'date-fns'],
+    optimizePackageImports: ["@heroicons/react", "date-fns"],
   },
   webpack: (config, { dev, isServer }) => {
     // Optimize bundle splitting
     if (!dev && !isServer) {
       config.optimization.splitChunks = {
-        chunks: 'all',
+        chunks: "all",
         cacheGroups: {
           vendor: {
             test: /[\\/]node_modules[\\/]/,
-            name: 'vendors',
-            chunks: 'all',
+            name: "vendors",
+            chunks: "all",
             priority: 10,
           },
           common: {
-            name: 'common',
+            name: "common",
             minChunks: 2,
-            chunks: 'all',
+            chunks: "all",
             priority: 5,
             reuseExistingChunk: true,
           },
           icons: {
             test: /[\\/]node_modules[\\/]@heroicons[\\/]/,
-            name: 'heroicons',
-            chunks: 'all',
+            name: "heroicons",
+            chunks: "all",
             priority: 20,
           },
         },
@@ -33,11 +33,11 @@ const nextConfig = {
     }
 
     // Add bundle analyzer in development
-    if (dev && process.env.ANALYZE === 'true') {
-      const { BundleAnalyzerPlugin } = require('webpack-bundle-analyzer');
+    if (dev && process.env.ANALYZE === "true") {
+      const { BundleAnalyzerPlugin } = require("webpack-bundle-analyzer");
       config.plugins.push(
         new BundleAnalyzerPlugin({
-          analyzerMode: 'server',
+          analyzerMode: "server",
           analyzerPort: 8888,
           openAnalyzer: true,
         })
@@ -50,7 +50,7 @@ const nextConfig = {
   compress: true,
   // Optimize images
   images: {
-    formats: ['image/webp', 'image/avif'],
+    formats: ["image/webp", "image/avif"],
     deviceSizes: [640, 750, 828, 1080, 1200, 1920, 2048, 3840],
     imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
   },

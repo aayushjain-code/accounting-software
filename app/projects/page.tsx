@@ -1,10 +1,20 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useAccountingStore } from "@/store";
 import { Project } from "@/types";
-import { BuildingOfficeIcon } from "@heroicons/react/24/outline";
-import { PlusIcon } from "@heroicons/react/24/outline";
+import {
+  PlusIcon,
+  PencilIcon,
+  TrashIcon,
+  MagnifyingGlassIcon,
+  FunnelIcon,
+  EyeIcon,
+  FolderIcon,
+  ClockIcon,
+  CurrencyDollarIcon,
+  CalendarIcon,
+} from "@heroicons/react/24/outline";
 import { format } from "date-fns";
 import toast from "react-hot-toast";
 import { ActionTooltip } from "@/components/Tooltip";
@@ -146,7 +156,7 @@ export default function ProjectsPage() {
   };
 
   const getClientName = (clientId: string) => {
-    const client = clients.find((c) => c.id === clientId);
+    const client = clients.find(c => c.id === clientId);
     return client ? `${client.name} - ${client.company}` : "Client not found";
   };
 
@@ -163,7 +173,7 @@ export default function ProjectsPage() {
     let filtered = searchFilteredProjects;
 
     if (statusFilter !== "all") {
-      filtered = filtered.filter((project) => project.status === statusFilter);
+      filtered = filtered.filter(project => project.status === statusFilter);
     }
 
     return filtered;
@@ -183,7 +193,7 @@ export default function ProjectsPage() {
             </p>
             <div className="flex items-center space-x-4 mt-3">
               <div className="flex items-center space-x-2 text-sm text-gray-600 dark:text-gray-400">
-                <BuildingOfficeIcon className="h-4 w-4 text-primary-600" />
+                <FolderIcon className="h-4 w-4 text-primary-600" />
                 <span>
                   <span className="font-semibold text-primary-600">
                     {projects.length}
@@ -218,7 +228,7 @@ export default function ProjectsPage() {
               type="text"
               placeholder="Search projects by name or description..."
               value={searchTerm}
-              onChange={(e) => handleSearchChange(e.target.value)}
+              onChange={e => handleSearchChange(e.target.value)}
               className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400"
             />
             {isSearching && (
@@ -230,7 +240,7 @@ export default function ProjectsPage() {
           <div className="flex items-center space-x-3">
             <select
               value={statusFilter}
-              onChange={(e) => setStatusFilter(e.target.value)}
+              onChange={e => setStatusFilter(e.target.value)}
               className="px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200"
             >
               <option value="all">All Status</option>
@@ -258,7 +268,7 @@ export default function ProjectsPage() {
       {filteredProjects.length === 0 && (
         <div className="text-center py-12">
           <div className="mx-auto h-16 w-16 text-gray-400 mb-4">
-            <BuildingOfficeIcon className="h-16 w-16" />
+            <FolderIcon className="h-16 w-16" />
           </div>
           <p className="text-gray-500 text-lg font-medium mb-4">
             {searchTerm || statusFilter !== "all"
@@ -312,7 +322,7 @@ export default function ProjectsPage() {
                 type="text"
                 required
                 value={formData.name}
-                onChange={(e) =>
+                onChange={e =>
                   setFormData({ ...formData, name: e.target.value })
                 }
                 className="input"
@@ -325,13 +335,13 @@ export default function ProjectsPage() {
               <select
                 required
                 value={formData.clientId}
-                onChange={(e) =>
+                onChange={e =>
                   setFormData({ ...formData, clientId: e.target.value })
                 }
                 className="input"
               >
                 <option value="">Select a client</option>
-                {clients.map((client) => (
+                {clients.map(client => (
                   <option key={client.id} value={client.id}>
                     {client.name} - {client.company}
                   </option>
@@ -345,7 +355,7 @@ export default function ProjectsPage() {
               <select
                 required
                 value={formData.status}
-                onChange={(e) =>
+                onChange={e =>
                   setFormData({
                     ...formData,
                     status: e.target.value as
@@ -375,7 +385,7 @@ export default function ProjectsPage() {
                 min="0"
                 step="0.01"
                 value={formData.budget}
-                onChange={(e) =>
+                onChange={e =>
                   setFormData({
                     ...formData,
                     budget: e.target.value,
@@ -391,7 +401,7 @@ export default function ProjectsPage() {
               <select
                 required
                 value={formData.billingTerms}
-                onChange={(e) =>
+                onChange={e =>
                   setFormData({
                     ...formData,
                     billingTerms: e.target.value,
@@ -416,7 +426,7 @@ export default function ProjectsPage() {
                 min="0"
                 step="0.01"
                 value={formData.billingRate}
-                onChange={(e) =>
+                onChange={e =>
                   setFormData({
                     ...formData,
                     billingRate: e.target.value,
@@ -435,7 +445,7 @@ export default function ProjectsPage() {
                 min="0"
                 step="0.01"
                 value={formData.estimatedHours}
-                onChange={(e) =>
+                onChange={e =>
                   setFormData({
                     ...formData,
                     estimatedHours: e.target.value,
@@ -452,7 +462,7 @@ export default function ProjectsPage() {
               <input
                 type="text"
                 value={formData.personAssigned}
-                onChange={(e) =>
+                onChange={e =>
                   setFormData({
                     ...formData,
                     personAssigned: e.target.value,
@@ -473,7 +483,7 @@ export default function ProjectsPage() {
                 max="100"
                 step="0.01"
                 value={formData.gstRate}
-                onChange={(e) =>
+                onChange={e =>
                   setFormData({
                     ...formData,
                     gstRate: e.target.value,
@@ -530,7 +540,7 @@ export default function ProjectsPage() {
                 type="date"
                 required
                 value={formData.startDate}
-                onChange={(e) =>
+                onChange={e =>
                   setFormData({ ...formData, startDate: e.target.value })
                 }
                 className="input"
@@ -542,7 +552,7 @@ export default function ProjectsPage() {
               </label>
               <textarea
                 value={formData.description}
-                onChange={(e) =>
+                onChange={e =>
                   setFormData({
                     ...formData,
                     description: e.target.value,

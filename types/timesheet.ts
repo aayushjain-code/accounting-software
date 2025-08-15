@@ -5,32 +5,37 @@ export interface Timesheet extends BaseEntity {
   projectId: string;
   month: string; // Format: "YYYY-MM"
   year: number;
-  status: StatusOptions["draft"] | StatusOptions["submitted"] | StatusOptions["approved"] | StatusOptions["rejected"] | StatusOptions["invoiced"];
-  
+  status:
+    | StatusOptions["draft"]
+    | StatusOptions["submitted"]
+    | StatusOptions["approved"]
+    | StatusOptions["rejected"]
+    | StatusOptions["invoiced"];
+
   // Work calculations
   totalWorkingDays: number; // Total days in the month (excluding weekends)
   daysWorked: number; // Actual days worked
   daysLeave: number; // Leave days taken
   hoursPerDay?: number; // Default 8 hours per day (optional)
-  
+
   // Costing calculations (derived from project)
   billingRate?: number; // Per hour rate from project (optional)
   totalHours?: number; // daysWorked * hoursPerDay (optional)
   totalAmount?: number; // totalHours * billingRate (optional)
-  
+
   // Approval workflow
   submittedAt?: Date;
   approvedAt?: Date;
   approvedBy?: string;
   rejectionReason?: string;
-  
+
   // Invoice tracking
   invoiceId?: string; // Reference to generated invoice
   invoicedAt?: Date;
-  
+
   // File attachments
   files?: TimesheetFile[];
-  
+
   // Entries for detailed time tracking
   entries?: TimesheetEntry[];
 }
@@ -59,7 +64,10 @@ export interface TimesheetFormData {
   hoursPerDay: string;
   totalWorkingDays: string;
   status: Timesheet["status"];
-  entries?: Omit<TimesheetEntry, "id" | "timesheetId" | "createdAt" | "updatedAt">[];
+  entries?: Omit<
+    TimesheetEntry,
+    "id" | "timesheetId" | "createdAt" | "updatedAt"
+  >[];
 }
 
 export interface TimesheetFilters {

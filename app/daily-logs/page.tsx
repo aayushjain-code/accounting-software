@@ -1,20 +1,21 @@
 "use client";
 
-import React, { useState, useMemo } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useAccountingStore } from "@/store";
-import { DailyLog } from "@/types";
+import { DailyLog, Client, Project } from "@/types";
+import { format } from "date-fns";
 import {
   PlusIcon,
+  PencilIcon,
+  TrashIcon,
   MagnifyingGlassIcon,
-  CalendarIcon,
-  ExclamationTriangleIcon,
-  CheckCircleIcon,
-  ClockIcon,
-  StarIcon,
-  InformationCircleIcon,
   FunnelIcon,
+  EyeIcon,
+  DocumentTextIcon,
+  ClockIcon,
+  UserIcon,
+  CalendarIcon,
 } from "@heroicons/react/24/outline";
-import { format } from "date-fns";
 import { useSearch } from "@/hooks/useSearch";
 import { IconTooltip } from "@/components/Tooltip";
 import Modal from "@/components/Modal";
@@ -112,10 +113,15 @@ const LogModal = React.memo(
       e.preventDefault();
       const newErrors: Record<string, string> = {};
 
-      if (!formData.title.trim()) newErrors.title = "Title is required";
-      if (!formData.description.trim())
+      if (!formData.title.trim()) {
+        newErrors.title = "Title is required";
+      }
+      if (!formData.description.trim()) {
         newErrors.description = "Description is required";
-      if (!formData.date) newErrors.date = "Date is required";
+      }
+      if (!formData.date) {
+        newErrors.date = "Date is required";
+      }
 
       if (Object.keys(newErrors).length > 0) {
         setErrors(newErrors);
@@ -124,8 +130,8 @@ const LogModal = React.memo(
 
       const tags = formData.tags
         .split(",")
-        .map((tag) => tag.trim())
-        .filter((tag) => tag.length > 0);
+        .map(tag => tag.trim())
+        .filter(tag => tag.length > 0);
 
       // Handle file uploads
       const files: DailyLogFile[] = [];
@@ -161,7 +167,9 @@ const LogModal = React.memo(
       onClose();
     };
 
-    if (!isOpen) return null;
+    if (!isOpen) {
+      return null;
+    }
 
     return (
       <Modal
@@ -200,7 +208,7 @@ const LogModal = React.memo(
                 type="text"
                 required
                 value={formData.title}
-                onChange={(e) =>
+                onChange={e =>
                   setFormData({ ...formData, title: e.target.value })
                 }
                 className={`w-full px-4 py-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200 ${
@@ -227,7 +235,7 @@ const LogModal = React.memo(
                 type="date"
                 required
                 value={formData.date}
-                onChange={(e) =>
+                onChange={e =>
                   setFormData({ ...formData, date: e.target.value })
                 }
                 className={`w-full px-4 py-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200 ${
@@ -255,7 +263,7 @@ const LogModal = React.memo(
               required
               rows={4}
               value={formData.description}
-              onChange={(e) =>
+              onChange={e =>
                 setFormData({ ...formData, description: e.target.value })
               }
               className={`w-full px-4 py-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200 ${
@@ -282,7 +290,7 @@ const LogModal = React.memo(
               </label>
               <select
                 value={formData.category}
-                onChange={(e) =>
+                onChange={e =>
                   setFormData({
                     ...formData,
                     category: e.target.value as
@@ -313,7 +321,7 @@ const LogModal = React.memo(
               </label>
               <select
                 value={formData.priority}
-                onChange={(e) =>
+                onChange={e =>
                   setFormData({
                     ...formData,
                     priority: e.target.value as
@@ -345,7 +353,7 @@ const LogModal = React.memo(
               <input
                 type="text"
                 value={formData.tags}
-                onChange={(e) =>
+                onChange={e =>
                   setFormData({ ...formData, tags: e.target.value })
                 }
                 className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200"
@@ -416,7 +424,7 @@ export default function DailyLogsPage() {
   } = useSearch(dailyLogs, ["title", "description", "tags"]);
 
   const filteredByFilters = useMemo(() => {
-    return filteredLogs.filter((log) => {
+    return filteredLogs.filter(log => {
       const categoryMatch =
         selectedCategory === "all" || log.category === selectedCategory;
       const priorityMatch =
@@ -428,16 +436,16 @@ export default function DailyLogsPage() {
   const stats = useMemo(() => {
     const totalLogs = dailyLogs.length;
     const accountingLogs = dailyLogs.filter(
-      (l) => l.category === "accounting"
+      l => l.category === "accounting"
     ).length;
     const importantLogs = dailyLogs.filter(
-      (l) => l.category === "important"
+      l => l.category === "important"
     ).length;
     const criticalLogs = dailyLogs.filter(
-      (l) => l.priority === "critical"
+      l => l.priority === "critical"
     ).length;
     const highPriorityLogs = dailyLogs.filter(
-      (l) => l.priority === "high"
+      l => l.priority === "high"
     ).length;
 
     return {
@@ -611,7 +619,7 @@ export default function DailyLogsPage() {
               type="text"
               placeholder="Search logs by title, description, or tags..."
               value={searchTerm}
-              onChange={(e) => handleSearchChange(e.target.value)}
+              onChange={e => handleSearchChange(e.target.value)}
               className="w-full pl-12 pr-4 py-4 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200"
             />
             {isSearching && (
@@ -625,7 +633,7 @@ export default function DailyLogsPage() {
               <FunnelIcon className="h-5 w-5 text-gray-400" />
               <select
                 value={selectedCategory}
-                onChange={(e) => setSelectedCategory(e.target.value)}
+                onChange={e => setSelectedCategory(e.target.value)}
                 className="px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200"
               >
                 <option value="all">All Categories</option>
@@ -638,7 +646,7 @@ export default function DailyLogsPage() {
             <div className="flex items-center space-x-2">
               <select
                 value={selectedPriority}
-                onChange={(e) => setSelectedPriority(e.target.value)}
+                onChange={e => setSelectedPriority(e.target.value)}
                 className="px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200"
               >
                 <option value="all">All Priorities</option>
@@ -780,7 +788,7 @@ export default function DailyLogsPage() {
                   Related Project
                 </label>
                 <p className="text-gray-900 dark:text-white">
-                  {projects.find((p) => p.id === viewLog.projectId)?.name ||
+                  {projects.find(p => p.id === viewLog.projectId)?.name ||
                     "Unknown Project"}
                 </p>
               </div>

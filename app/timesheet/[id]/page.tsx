@@ -99,7 +99,7 @@ const StatusChangeDropdown = React.memo(
         <StatusBadge status={currentStatus} />
         <select
           value={currentStatus}
-          onChange={(e) => {
+          onChange={e => {
             const selectedValue = e.target.value;
             console.log("🔄 StatusChangeDropdown onChange:", {
               selectedValue,
@@ -112,7 +112,7 @@ const StatusChangeDropdown = React.memo(
           }}
           className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
         >
-          {statusOptions.map((option) => (
+          {statusOptions.map(option => (
             <option key={option.value} value={option.value}>
               {option.label}
             </option>
@@ -394,7 +394,7 @@ export default function TimesheetDetailPage({
           console.log("🔄 Loading timesheet from store:", params.id);
           // For web-based app, data is already loaded in the store
           // Just update the local status state
-          const found = timesheets.find((t) => t.id === params.id);
+          const found = timesheets.find(t => t.id === params.id);
           if (found) {
             setCurrentStatus(found.status);
           }
@@ -408,7 +408,7 @@ export default function TimesheetDetailPage({
 
   // Get timesheet data
   const timesheet = useMemo(() => {
-    const found = timesheets.find((t) => t.id === params.id);
+    const found = timesheets.find(t => t.id === params.id);
     console.log("🔄 Current timesheet in store:", found);
     console.log("🔄 Current status in store:", found?.status);
     console.log("🔄 Local currentStatus state:", currentStatus);
@@ -432,11 +432,11 @@ export default function TimesheetDetailPage({
   }, [currentStatus, timesheet?.status]);
 
   const project = useMemo(() => {
-    return projects.find((p) => p.id === timesheet?.projectId);
+    return projects.find(p => p.id === timesheet?.projectId);
   }, [projects, timesheet]);
 
   const handleFileUpload = async () => {
-    if (!timesheet) return;
+    if (!timesheet) {return;}
 
     try {
       const input = document.createElement("input");
@@ -444,8 +444,8 @@ export default function TimesheetDetailPage({
       input.multiple = true;
       input.accept = ".pdf,.doc,.docx,.xls,.xlsx,.jpg,.jpeg,.png";
 
-      input.onchange = async (e) => {
-        const files = (e.target as HTMLInputElement).files;
+      input.onchange = async e => {
+        const {files} = (e.target as HTMLInputElement);
         if (files) {
           for (let i = 0; i < files.length; i++) {
             const file = files[i];
@@ -508,7 +508,14 @@ export default function TimesheetDetailPage({
             id: timesheet.id,
             status: newStatus,
           });
-          await updateTimesheet(timesheet.id, { status: newStatus as "draft" | "submitted" | "approved" | "rejected" | "invoiced" });
+          await updateTimesheet(timesheet.id, {
+            status: newStatus as
+              | "draft"
+              | "submitted"
+              | "approved"
+              | "rejected"
+              | "invoiced",
+          });
           console.log("🔄 updateTimesheet completed");
 
           // Force reload from database to ensure UI shows correct data
@@ -570,7 +577,7 @@ export default function TimesheetDetailPage({
               </h1>
               <p className="text-gray-600 mt-2">
                 {project?.name} -{" "}
-                {format(new Date(timesheet.month + "-01"), "MMMM yyyy")}
+                {format(new Date(`${timesheet.month  }-01`), "MMMM yyyy")}
               </p>
             </div>
           </div>
@@ -581,7 +588,6 @@ export default function TimesheetDetailPage({
       {/* Work Calculations */}
       <WorkCalculationCard
         timesheet={timesheet}
-
         onStatusChange={handleStatusChange}
         currentStatus={currentStatus}
       />

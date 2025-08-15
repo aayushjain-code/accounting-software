@@ -139,9 +139,9 @@ export const ExpensesTable: React.FC<ExpensesTableProps> = ({
             </tr>
           </thead>
           <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
-            {expenses.map((expense) => {
+            {expenses.map(expense => {
               const project = expense.projectId
-                ? projects.find((p) => p.id === expense.projectId)
+                ? projects.find(p => p.id === expense.projectId)
                 : null;
               return (
                 <tr

@@ -74,7 +74,7 @@ export const ProfileUpdateModal: React.FC<ProfileUpdateModalProps> = ({
     subField?: string
   ) => {
     if (subField) {
-      setFormData((prev) => {
+      setFormData(prev => {
         const currentValue = prev[field as keyof typeof prev];
         // Only spread if the current value is an object
         if (
@@ -100,14 +100,14 @@ export const ProfileUpdateModal: React.FC<ProfileUpdateModalProps> = ({
         }
       });
     } else {
-      setFormData((prev) => ({
+      setFormData(prev => ({
         ...prev,
         [field]: value,
       }));
     }
   };
 
-  if (!isOpen) return null;
+  if (!isOpen) {return null;}
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
@@ -171,7 +171,7 @@ export const ProfileUpdateModal: React.FC<ProfileUpdateModalProps> = ({
                   <input
                     type="text"
                     value={formData.firstName}
-                    onChange={(e) => handleChange("firstName", e.target.value)}
+                    onChange={e => handleChange("firstName", e.target.value)}
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                     required
                   />
@@ -183,7 +183,7 @@ export const ProfileUpdateModal: React.FC<ProfileUpdateModalProps> = ({
                   <input
                     type="text"
                     value={formData.lastName}
-                    onChange={(e) => handleChange("lastName", e.target.value)}
+                    onChange={e => handleChange("lastName", e.target.value)}
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                     required
                   />
@@ -197,7 +197,7 @@ export const ProfileUpdateModal: React.FC<ProfileUpdateModalProps> = ({
                   <input
                     type="tel"
                     value={formData.phone}
-                    onChange={(e) => handleChange("phone", e.target.value)}
+                    onChange={e => handleChange("phone", e.target.value)}
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                   />
                 </div>
@@ -208,7 +208,7 @@ export const ProfileUpdateModal: React.FC<ProfileUpdateModalProps> = ({
                   <input
                     type="text"
                     value={formData.department}
-                    onChange={(e) => handleChange("department", e.target.value)}
+                    onChange={e => handleChange("department", e.target.value)}
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                   />
                 </div>
@@ -220,7 +220,7 @@ export const ProfileUpdateModal: React.FC<ProfileUpdateModalProps> = ({
                 <input
                   type="text"
                   value={formData.position}
-                  onChange={(e) => handleChange("position", e.target.value)}
+                  onChange={e => handleChange("position", e.target.value)}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
               </div>
@@ -230,7 +230,7 @@ export const ProfileUpdateModal: React.FC<ProfileUpdateModalProps> = ({
                 </label>
                 <textarea
                   value={formData.bio}
-                  onChange={(e) => handleChange("bio", e.target.value)}
+                  onChange={e => handleChange("bio", e.target.value)}
                   rows={3}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                   placeholder="Tell us about yourself..."
@@ -250,7 +250,7 @@ export const ProfileUpdateModal: React.FC<ProfileUpdateModalProps> = ({
                   </label>
                   <select
                     value={formData.theme}
-                    onChange={(e) => handleChange("theme", e.target.value)}
+                    onChange={e => handleChange("theme", e.target.value)}
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                   >
                     <option value="light">Light</option>
@@ -264,7 +264,7 @@ export const ProfileUpdateModal: React.FC<ProfileUpdateModalProps> = ({
                   </label>
                   <select
                     value={formData.language}
-                    onChange={(e) => handleChange("language", e.target.value)}
+                    onChange={e => handleChange("language", e.target.value)}
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                   >
                     <option value="en">English</option>
@@ -285,7 +285,7 @@ export const ProfileUpdateModal: React.FC<ProfileUpdateModalProps> = ({
                   <input
                     type="checkbox"
                     checked={formData.emailNotifications}
-                    onChange={(e) =>
+                    onChange={e =>
                       handleChange("emailNotifications", e.target.checked)
                     }
                     className="mr-3 h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
@@ -298,7 +298,7 @@ export const ProfileUpdateModal: React.FC<ProfileUpdateModalProps> = ({
                   <input
                     type="checkbox"
                     checked={formData.pushNotifications}
-                    onChange={(e) =>
+                    onChange={e =>
                       handleChange("pushNotifications", e.target.checked)
                     }
                     className="mr-3 h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
@@ -311,7 +311,7 @@ export const ProfileUpdateModal: React.FC<ProfileUpdateModalProps> = ({
                   <input
                     type="checkbox"
                     checked={formData.smsNotifications}
-                    onChange={(e) =>
+                    onChange={e =>
                       handleChange("smsNotifications", e.target.checked)
                     }
                     className="mr-3 h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"

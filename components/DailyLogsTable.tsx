@@ -119,7 +119,7 @@ export const DailyLogsTable: React.FC<DailyLogsTableProps> = ({
                 (a, b) =>
                   new Date(b.date).getTime() - new Date(a.date).getTime()
               )
-              .map((dailyLog) => {
+              .map(dailyLog => {
                 return (
                   <tr
                     key={dailyLog.id}

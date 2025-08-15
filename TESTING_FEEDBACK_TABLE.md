@@ -305,12 +305,12 @@ _Please provide any additional feedback, suggestions, or observations:_
 
 ## 👤 **Tester Information**
 
-- **Name**: ********\_********
-- **Role**: ********\_********
-- **Testing Date**: ********\_********
-- **Testing Duration**: ********\_********
-- **Browser/Device**: ********\_********
-- **Contact Email**: ********\_********
+- **Name**: **\*\*\*\***\_**\*\*\*\***
+- **Role**: **\*\*\*\***\_**\*\*\*\***
+- **Testing Date**: **\*\*\*\***\_**\*\*\*\***
+- **Testing Duration**: **\*\*\*\***\_**\*\*\*\***
+- **Browser/Device**: **\*\*\*\***\_**\*\*\*\***
+- **Contact Email**: **\*\*\*\***\_**\*\*\*\***
 
 ---
 

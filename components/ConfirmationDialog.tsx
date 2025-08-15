@@ -22,7 +22,7 @@ export const ConfirmationDialog: React.FC<ConfirmationDialogProps> = ({
   cancelText = "Cancel",
   variant = "danger",
 }) => {
-  if (!isOpen) return null;
+  if (!isOpen) {return null;}
 
   const getVariantStyles = () => {
     switch (variant) {

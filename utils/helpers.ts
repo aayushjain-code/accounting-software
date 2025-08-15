@@ -48,8 +48,8 @@ export const searchFilter = <T extends Record<string, any>>(
   if (!searchTerm) return items;
 
   const searchLower = searchTerm.toLowerCase();
-  return items.filter((item) =>
-    searchFields.some((field) =>
+  return items.filter(item =>
+    searchFields.some(field =>
       String(item[field]).toLowerCase().includes(searchLower)
     )
   );

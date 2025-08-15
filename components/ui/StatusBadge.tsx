@@ -29,20 +29,24 @@ export const StatusBadge: React.FC<StatusBadgeProps> = ({
 
   const getVariantClasses = () => {
     const baseClasses = getStatusColor(status);
-    
+
     switch (variant) {
       case "outline":
-        return baseClasses.replace(/bg-\w+-\d+/, "bg-transparent").replace(/text-\w+-\d+/, "text-gray-700 dark:text-gray-300");
+        return baseClasses
+          .replace(/bg-\w+-\d+/, "bg-transparent")
+          .replace(/text-\w+-\d+/, "text-gray-700 dark:text-gray-300");
       case "solid":
-        return baseClasses.replace(/bg-\w+-\d+/, "bg-gray-900 dark:bg-gray-100").replace(/text-\w+-\d+/, "text-white dark:text-gray-900");
+        return baseClasses
+          .replace(/bg-\w+-\d+/, "bg-gray-900 dark:bg-gray-100")
+          .replace(/text-\w+-\d+/, "text-white dark:text-gray-900");
       default:
         return baseClasses;
     }
   };
 
   const getStatusIcon = () => {
-    if (!showIcon) return null;
-    
+    if (!showIcon) {return null;}
+
     switch (status?.toLowerCase()) {
       case "active":
       case "paid":
@@ -81,4 +85,4 @@ export const StatusBadge: React.FC<StatusBadgeProps> = ({
       {status}
     </span>
   );
-}; 
+};

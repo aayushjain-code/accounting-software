@@ -72,10 +72,10 @@ export const Pagination: React.FC<PaginationProps> = ({
           </span>
           <select
             value={pageSize}
-            onChange={(e) => onPageSizeChange(Number(e.target.value))}
+            onChange={e => onPageSizeChange(Number(e.target.value))}
             className="border border-gray-300 dark:border-gray-600 rounded-md px-2 py-1 text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
           >
-            {pageSizeOptions.map((size) => (
+            {pageSizeOptions.map(size => (
               <option key={size} value={size}>
                 {size}
               </option>

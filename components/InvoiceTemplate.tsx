@@ -232,7 +232,6 @@ export const InvoiceTemplate: React.FC<InvoiceTemplateProps> = (props) => {
     clientInfo?.state || client.companyAddress || "Client State";
   const clientGstin = clientInfo?.gstin || client.gstId || "Client GSTIN";
   const clientStateCode = clientInfo?.stateCode || "Client State Code";
-  const clientPoNumber = clientInfo?.poNumber || client.poNumber || "";
 
   const technology = itemDetails?.technology || ".Net + Angular";
   const poNumber = itemDetails?.poNumber || "PO/GSPL/202526/000496";
@@ -443,7 +442,7 @@ export const InvoiceTemplate: React.FC<InvoiceTemplateProps> = (props) => {
                               "Other References"
                             ),
                             React.createElement("br"),
-                            invoice.buyerOrderNo || "",
+                            buyerOrderNo,
                           ]
                         ),
                       ]),
@@ -463,7 +462,7 @@ export const InvoiceTemplate: React.FC<InvoiceTemplateProps> = (props) => {
                               "Buyer's Order No."
                             ),
                             React.createElement("br"),
-                            buyerOrderNo || clientPoNumber,
+                            buyerOrderNo,
                           ]
                         ),
                         React.createElement(
@@ -477,7 +476,7 @@ export const InvoiceTemplate: React.FC<InvoiceTemplateProps> = (props) => {
                           [
                             React.createElement("strong", {}, "Dated"),
                             React.createElement("br"),
-                            buyerOrderDate || invoice.buyerOrderDate || "",
+                            buyerOrderDate,
                           ]
                         ),
                       ]),

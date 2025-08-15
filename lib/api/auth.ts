@@ -68,7 +68,7 @@ export class AuthService {
               last_name: signUpData.last_name,
               email: signUpData.email,
               phone: signUpData.phone,
-              role: signUpData.role || "user",
+              role: signUpData.role ?? "user",
               department: signUpData.department,
               position: signUpData.position,
             },
@@ -280,7 +280,7 @@ export class AuthService {
       if (error) {
         throw error;
       }
-      return data || [];
+      return data ?? [];
     } catch (error) {
       console.error("Error getting all users:", error);
       throw error;
@@ -331,7 +331,7 @@ export class AuthService {
   // Check if user is admin
   static async isAdmin(userId?: string): Promise<boolean> {
     try {
-      const currentUserId = userId || (await this.getCurrentUser())?.id;
+      const currentUserId = userId ?? (await this.getCurrentUser())?.id;
       if (!currentUserId) {
         return false;
       }

@@ -93,10 +93,10 @@ export class TimesheetService {
       }
 
       return {
-        data: data || [],
+        data: data ?? [],
         page,
         limit,
-        totalPages: Math.ceil((count || 0) / limit),
+        totalPages: Math.ceil((count ?? 0) / limit),
       };
     } catch (error) {
       console.error("Error fetching timesheets:", error);
@@ -404,7 +404,7 @@ export class TimesheetService {
       if (error) {
         throw error;
       }
-      return data || [];
+      return data ?? [];
     } catch (error) {
       console.error("Error fetching timesheet entries:", error);
       throw error;
@@ -416,9 +416,9 @@ export class TimesheetService {
     try {
       const entries = await this.getTimesheetEntries(timesheetId);
 
-      const totalHours = entries.reduce((sum, entry) => sum + (entry.hours || 0), 0);
+      const totalHours = entries.reduce((sum, entry) => sum + (entry.hours ?? 0), 0);
       const totalAmount = entries.reduce(
-        (sum, entry) => sum + ((entry.hours || 0) * (entry.hourly_rate || 0)),
+        (sum, entry) => sum + ((entry.hours ?? 0) * (entry.hourly_rate ?? 0)),
         0
       );
 
@@ -452,7 +452,7 @@ export class TimesheetService {
       if (error) {
         throw error;
       }
-      return data || [];
+      return data ?? [];
     } catch (error) {
       console.error("Error fetching timesheets by user:", error);
       throw error;
@@ -476,7 +476,7 @@ export class TimesheetService {
       if (error) {
         throw error;
       }
-      return data || [];
+      return data ?? [];
     } catch (error) {
       console.error("Error fetching timesheets by project:", error);
       throw error;
@@ -502,7 +502,7 @@ export class TimesheetService {
       if (error) {
         throw error;
       }
-      return data || [];
+      return data ?? [];
     } catch (error) {
       console.error("Error fetching timesheets by status:", error);
       throw error;
@@ -529,14 +529,14 @@ export class TimesheetService {
         throw error;
       }
 
-      const total = data?.length || 0;
-      const draft = data?.filter(t => t.status === "draft").length || 0;
-      const submitted = data?.filter(t => t.status === "submitted").length || 0;
-      const approved = data?.filter(t => t.status === "approved").length || 0;
-      const rejected = data?.filter(t => t.status === "rejected").length || 0;
-      const invoiced = data?.filter(t => t.status === "invoiced").length || 0;
-      const totalHours = data?.reduce((sum, t) => sum + (t.total_hours || 0), 0) || 0;
-      const totalAmount = data?.reduce((sum, t) => sum + (t.total_amount || 0), 0) || 0;
+      const total = data?.length ?? 0;
+      const draft = data?.filter(t => t.status === "draft").length ?? 0;
+      const submitted = data?.filter(t => t.status === "submitted").length ?? 0;
+      const approved = data?.filter(t => t.status === "approved").length ?? 0;
+      const rejected = data?.filter(t => t.status === "rejected").length ?? 0;
+      const invoiced = data?.filter(t => t.status === "invoiced").length ?? 0;
+      const totalHours = data?.reduce((sum, t) => sum + (t.total_hours ?? 0), 0) ?? 0;
+      const totalAmount = data?.reduce((sum, t) => sum + (t.total_amount ?? 0), 0) ?? 0;
 
       return {
         total,
@@ -573,7 +573,7 @@ export class TimesheetService {
       if (error) {
         throw error;
       }
-      return data || [];
+      return data ?? [];
     } catch (error) {
       console.error("Error searching timesheets:", error);
       throw error;
@@ -627,7 +627,7 @@ export class TimesheetService {
       if (error) {
         throw error;
       }
-      return data || [];
+      return data ?? [];
     } catch (error) {
       console.error("Error bulk updating timesheets:", error);
       throw error;

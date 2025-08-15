@@ -83,10 +83,10 @@ export class ProjectService {
       }
 
       return {
-        data: data || [],
+        data: data ?? [],
         page,
         limit,
-        totalPages: Math.ceil((count || 0) / limit),
+        totalPages: Math.ceil((count ?? 0) / limit),
       };
     } catch (error) {
       console.error("Error fetching projects:", error);
@@ -219,7 +219,7 @@ export class ProjectService {
       if (error) {
         throw error;
       }
-      return data || [];
+      return data ?? [];
     } catch (error) {
       console.error("Error fetching projects by client:", error);
       throw error;
@@ -243,7 +243,7 @@ export class ProjectService {
       if (error) {
         throw error;
       }
-      return data || [];
+      return data ?? [];
     } catch (error) {
       console.error("Error fetching projects by status:", error);
       throw error;
@@ -267,7 +267,7 @@ export class ProjectService {
       if (error) {
         throw error;
       }
-      return data || [];
+      return data ?? [];
     } catch (error) {
       console.error("Error fetching projects by manager:", error);
       throw error;
@@ -291,7 +291,7 @@ export class ProjectService {
       if (error) {
         throw error;
       }
-      return data || [];
+      return data ?? [];
     } catch (error) {
       console.error("Error fetching active projects:", error);
       throw error;
@@ -314,13 +314,13 @@ export class ProjectService {
         throw error;
       }
 
-      const total = data?.length || 0;
-      const active = data?.filter(p => p.status === "active").length || 0;
-      const completed = data?.filter(p => p.status === "completed").length || 0;
-      const onHold = data?.filter(p => p.status === "on-hold").length || 0;
-      const cancelled = data?.filter(p => p.status === "cancelled").length || 0;
+      const total = data?.length ?? 0;
+      const active = data?.filter(p => p.status === "active").length ?? 0;
+      const completed = data?.filter(p => p.status === "completed").length ?? 0;
+      const onHold = data?.filter(p => p.status === "on-hold").length ?? 0;
+      const cancelled = data?.filter(p => p.status === "cancelled").length ?? 0;
       const totalBudget =
-        data?.reduce((sum, p) => sum + (p.budget || 0), 0) || 0;
+        data?.reduce((sum, p) => sum + (p.budget ?? 0), 0) ?? 0;
 
       return {
         total,
@@ -353,7 +353,7 @@ export class ProjectService {
       if (error) {
         throw error;
       }
-      return data || [];
+      return data ?? [];
     } catch (error) {
       console.error("Error searching projects:", error);
       throw error;
@@ -368,7 +368,7 @@ export class ProjectService {
         throw new Error("Project not found");
       }
 
-      const currentMembers = project.team_members || [];
+      const currentMembers = project.team_members ?? [];
       if (currentMembers.includes(userId)) {
         throw new Error("User is already a team member");
       }
@@ -398,7 +398,7 @@ export class ProjectService {
         throw new Error("Project not found");
       }
 
-      const currentMembers = project.team_members || [];
+      const currentMembers = project.team_members ?? [];
       const updatedMembers = currentMembers.filter((id: string) => id !== userId);
 
       const { data, error } = await supabase
@@ -488,7 +488,7 @@ export class ProjectService {
       if (error) {
         throw error;
       }
-      return data || [];
+      return data ?? [];
     } catch (error) {
       console.error("Error bulk updating projects:", error);
       throw error;

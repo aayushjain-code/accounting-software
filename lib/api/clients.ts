@@ -87,10 +87,10 @@ export class ClientService {
       }
 
       return {
-        data: data || [],
+        data: data ?? [],
         page,
         limit,
-        totalPages: Math.ceil((count || 0) / limit),
+        totalPages: Math.ceil((count ?? 0) / limit),
       };
     } catch (error) {
       console.error("Error fetching clients:", error);
@@ -225,7 +225,7 @@ export class ClientService {
       if (error) {
         throw error;
       }
-      return data || [];
+      return data ?? [];
     } catch (error) {
       console.error("Error fetching clients by status:", error);
       throw error;
@@ -253,7 +253,7 @@ export class ClientService {
       if (error) {
         throw error;
       }
-      return data || [];
+      return data ?? [];
     } catch (error) {
       console.error("Error fetching clients by location:", error);
       throw error;
@@ -274,7 +274,7 @@ export class ClientService {
       if (error) {
         throw error;
       }
-      return data || [];
+      return data ?? [];
     } catch (error) {
       console.error("Error searching clients:", error);
       throw error;
@@ -328,7 +328,7 @@ export class ClientService {
       if (error) {
         throw error;
       }
-      return data || [];
+      return data ?? [];
     } catch (error) {
       console.error("Error bulk updating clients:", error);
       throw error;

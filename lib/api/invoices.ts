@@ -108,10 +108,10 @@ export class InvoiceService {
       }
 
       return {
-        data: data || [],
+        data: data ?? [],
         page,
         limit,
-        totalPages: Math.ceil((count || 0) / limit),
+        totalPages: Math.ceil((count ?? 0) / limit),
       };
     } catch (error) {
       console.error("Error fetching invoices:", error);
@@ -237,7 +237,7 @@ export class InvoiceService {
         .from("invoices")
         .update({
           status: "paid",
-          paid_date: paymentDate || new Date().toISOString(),
+          paid_date: paymentDate ?? new Date().toISOString(),
         })
         .eq("id", id)
         .select()
@@ -282,7 +282,7 @@ export class InvoiceService {
       }
 
       // Calculate totals
-      const subtotal = entries?.reduce((sum, entry) => sum + (entry.total_price || 0), 0) || 0;
+      const subtotal = entries?.reduce((sum, entry) => sum + (entry.total_price ?? 0), 0) ?? 0;
       const taxRate = 0.1; // 10% tax rate - you can make this configurable
       const taxAmount = subtotal * taxRate;
       const totalAmount = subtotal + taxAmount;
@@ -290,9 +290,9 @@ export class InvoiceService {
       // Create invoice
       const invoiceData: CreateInvoiceData = {
         client_id: clientId,
-        project_id: projectId || null,
-        issue_date: new Date().toISOString().split("T")[0] || "",
-        due_date: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split("T")[0] || "", // 30 days from now
+        project_id: projectId ?? null,
+        issue_date: new Date().toISOString().split("T")[0] ?? "",
+        due_date: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split("T")[0] ?? "", // 30 days from now
         status: "draft",
         subtotal,
         tax_rate: taxRate,
@@ -310,8 +310,8 @@ export class InvoiceService {
             invoice_id: invoice.id,
             description: entry.description,
             quantity: entry.hours,
-            unit_price: entry.hourly_rate || 0,
-            total_price: entry.hours * (entry.hourly_rate || 0),
+            unit_price: entry.hourly_rate ?? 0,
+            total_price: entry.hours * (entry.hourly_rate ?? 0),
             item_type: "time",
             timesheet_id: timesheetId,
           });
@@ -419,7 +419,7 @@ export class InvoiceService {
       if (error) {
         throw error;
       }
-      return data || [];
+      return data ?? [];
     } catch (error) {
       console.error("Error fetching invoice items:", error);
       throw error;
@@ -431,7 +431,7 @@ export class InvoiceService {
     try {
       const items = await this.getInvoiceItems(invoiceId);
 
-      const subtotal = items.reduce((sum, item) => sum + (item.total_price || 0), 0);
+      const subtotal = items.reduce((sum, item) => sum + (item.total_price ?? 0), 0);
       const taxRate = 0.1; // 10% tax rate - you can make this configurable
       const taxAmount = subtotal * taxRate;
       const totalAmount = subtotal + taxAmount;
@@ -466,7 +466,7 @@ export class InvoiceService {
       if (error) {
         throw error;
       }
-      return data || [];
+      return data ?? [];
     } catch (error) {
       console.error("Error fetching invoices by client:", error);
       throw error;
@@ -490,7 +490,7 @@ export class InvoiceService {
       if (error) {
         throw error;
       }
-      return data || [];
+      return data ?? [];
     } catch (error) {
       console.error("Error fetching invoices by project:", error);
       throw error;
@@ -515,7 +515,7 @@ export class InvoiceService {
       if (error) {
         throw error;
       }
-      return data || [];
+      return data ?? [];
     } catch (error) {
       console.error("Error fetching invoices by status:", error);
       throw error;
@@ -542,7 +542,7 @@ export class InvoiceService {
       if (error) {
         throw error;
       }
-      return data || [];
+      return data ?? [];
     } catch (error) {
       console.error("Error fetching overdue invoices:", error);
       throw error;
@@ -570,15 +570,15 @@ export class InvoiceService {
         throw error;
       }
 
-      const total = data?.length || 0;
-      const draft = data?.filter(i => i.status === "draft").length || 0;
-      const sent = data?.filter(i => i.status === "sent").length || 0;
-      const paid = data?.filter(i => i.status === "paid").length || 0;
-      const overdue = data?.filter(i => i.status === "overdue").length || 0;
-      const cancelled = data?.filter(i => i.status === "cancelled").length || 0;
-      const totalAmount = data?.reduce((sum, i) => sum + (i.total_amount || 0), 0) || 0;
+      const total = data?.length ?? 0;
+      const draft = data?.filter(i => i.status === "draft").length ?? 0;
+      const sent = data?.filter(i => i.status === "sent").length ?? 0;
+      const paid = data?.filter(i => i.status === "paid").length ?? 0;
+      const overdue = data?.filter(i => i.status === "overdue").length ?? 0;
+      const cancelled = data?.filter(i => i.status === "cancelled").length ?? 0;
+      const totalAmount = data?.reduce((sum, i) => sum + (i.total_amount ?? 0), 0) ?? 0;
       const paidAmount =
-        data?.filter(i => i.status === "paid").reduce((sum, i) => sum + (i.total_amount || 0), 0) || 0;
+        data?.filter(i => i.status === "paid").reduce((sum, i) => sum + (i.total_amount ?? 0), 0) ?? 0;
       const outstandingAmount = totalAmount - paidAmount;
 
       return {
@@ -616,7 +616,7 @@ export class InvoiceService {
       if (error) {
         throw error;
       }
-      return data || [];
+      return data ?? [];
     } catch (error) {
       console.error("Error searching invoices:", error);
       throw error;
@@ -670,7 +670,7 @@ export class InvoiceService {
       if (error) {
         throw error;
       }
-      return data || [];
+      return data ?? [];
     } catch (error) {
       console.error("Error bulk updating invoices:", error);
       throw error;

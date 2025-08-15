@@ -16,11 +16,24 @@ export interface CreateExpenseData {
   reimbursable?: boolean;
 }
 
-export interface UpdateExpenseData extends Partial<CreateExpenseData> {}
+// Extend this interface for additional expense-specific update data
+export interface UpdateExpenseData extends Partial<CreateExpenseData> {
+  // Add expense-specific update fields here when needed
+}
 
 // Extend this interface for additional expense-specific filters
 export interface ExpenseFilters extends BaseFilters {
-  // Add expense-specific filters here when needed
+  user_id?: string;
+  project_id?: string;
+  client_id?: string;
+  category?: string;
+  status?: string;
+  date_from?: string;
+  date_to?: string;
+  amount_min?: number;
+  amount_max?: number;
+  billable?: boolean;
+  reimbursable?: boolean;
 }
 
 export class ExpenseService {
@@ -100,10 +113,10 @@ export class ExpenseService {
       }
 
       return {
-        data: data || [],
+        data: data ?? [],
         page,
         limit,
-        totalPages: Math.ceil((count || 0) / limit),
+        totalPages: Math.ceil((count ?? 0) / limit),
       };
     } catch (error) {
       console.error("Error fetching expenses:", error);
@@ -353,7 +366,7 @@ export class ExpenseService {
       if (error) {
         throw error;
       }
-      return data || [];
+      return data ?? [];
     } catch (error) {
       console.error("Error fetching expenses by user:", error);
       throw error;
@@ -378,7 +391,7 @@ export class ExpenseService {
       if (error) {
         throw error;
       }
-      return data || [];
+      return data ?? [];
     } catch (error) {
       console.error("Error fetching expenses by project:", error);
       throw error;
@@ -403,7 +416,7 @@ export class ExpenseService {
       if (error) {
         throw error;
       }
-      return data || [];
+      return data ?? [];
     } catch (error) {
       console.error("Error fetching expenses by client:", error);
       throw error;
@@ -429,7 +442,7 @@ export class ExpenseService {
       if (error) {
         throw error;
       }
-      return data || [];
+      return data ?? [];
     } catch (error) {
       console.error("Error fetching expenses by status:", error);
       throw error;
@@ -455,7 +468,7 @@ export class ExpenseService {
       if (error) {
         throw error;
       }
-      return data || [];
+      return data ?? [];
     } catch (error) {
       console.error("Error fetching expenses by category:", error);
       throw error;
@@ -485,32 +498,32 @@ export class ExpenseService {
         throw error;
       }
 
-      const total = data?.length || 0;
-      const pending = data?.filter(e => e.status === "pending").length || 0;
-      const approved = data?.filter(e => e.status === "approved").length || 0;
-      const rejected = data?.filter(e => e.status === "rejected").length || 0;
-      const totalAmount = data?.reduce((sum, e) => sum + (e.amount || 0), 0) || 0;
+      const total = data?.length ?? 0;
+      const pending = data?.filter(e => e.status === "pending").length ?? 0;
+      const approved = data?.filter(e => e.status === "approved").length ?? 0;
+      const rejected = data?.filter(e => e.status === "rejected").length ?? 0;
+      const totalAmount = data?.reduce((sum, e) => sum + (e.amount ?? 0), 0) ?? 0;
       const approvedAmount =
-        data?.filter(e => e.status === "approved").reduce((sum, e) => sum + (e.amount || 0), 0) || 0;
+        data?.filter(e => e.status === "approved").reduce((sum, e) => sum + (e.amount ?? 0), 0) ?? 0;
       const pendingAmount =
-        data?.filter(e => e.status === "pending").reduce((sum, e) => sum + (e.amount || 0), 0) || 0;
+        data?.filter(e => e.status === "pending").reduce((sum, e) => sum + (e.amount ?? 0), 0) ?? 0;
       const billableAmount =
-        data?.filter(e => e.billable).reduce((sum, e) => sum + (e.amount || 0), 0) || 0;
+        data?.filter(e => e.billable).reduce((sum, e) => sum + (e.amount ?? 0), 0) ?? 0;
       const reimbursableAmount =
-        data?.filter(e => e.reimbursable).reduce((sum, e) => sum + (e.amount || 0), 0) || 0;
+        data?.filter(e => e.reimbursable).reduce((sum, e) => sum + (e.amount ?? 0), 0) ?? 0;
 
       // Category breakdown
       const categoryBreakdown: Record<string, number> = {};
       data?.forEach(expense => {
-        const category = expense.category || "Uncategorized";
-        categoryBreakdown[category] = (categoryBreakdown[category] || 0) + (expense.amount || 0);
+        const category = expense.category ?? "Uncategorized";
+        categoryBreakdown[category] = (categoryBreakdown[category] ?? 0) + (expense.amount ?? 0);
       });
 
       // Monthly breakdown
       const monthlyBreakdown: Record<string, number> = {};
       data?.forEach(expense => {
-        const month = expense.date?.substring(0, 7) || "Unknown";
-        monthlyBreakdown[month] = (monthlyBreakdown[month] || 0) + (expense.amount || 0);
+        const month = expense.date?.substring(0, 7) ?? "Unknown";
+        monthlyBreakdown[month] = (monthlyBreakdown[month] ?? 0) + (expense.amount ?? 0);
       });
 
       return {
@@ -551,7 +564,7 @@ export class ExpenseService {
       if (error) {
         throw error;
       }
-      return data || [];
+      return data ?? [];
     } catch (error) {
       console.error("Error searching expenses:", error);
       throw error;
@@ -605,7 +618,7 @@ export class ExpenseService {
       if (error) {
         throw error;
       }
-      return data || [];
+      return data ?? [];
     } catch (error) {
       console.error("Error bulk updating expenses:", error);
       throw error;
@@ -645,7 +658,7 @@ export class ExpenseService {
       if (error) {
         throw error;
       }
-      return data || [];
+      return data ?? [];
     } catch (error) {
       console.error("Error bulk approving expenses:", error);
       throw error;
@@ -673,7 +686,7 @@ export class ExpenseService {
       if (error) {
         throw error;
       }
-      return data || [];
+      return data ?? [];
     } catch (error) {
       console.error("Error bulk rejecting expenses:", error);
       throw error;
@@ -695,7 +708,7 @@ export class ExpenseService {
     try {
       const { data } = await this.getExpenses(filters, 1, 10000); // Get all expenses
 
-      if (!data || data.length === 0) {
+      if (!data ?? data.length === 0) {
         return "No expenses found";
       }
 
@@ -718,18 +731,18 @@ export class ExpenseService {
 
       for (const expense of data) {
         const row = [
-          expense.expense_code || "",
-          expense.date || "",
-          expense.category || "",
-          `"${(expense.description || "").replace(/"/g, '""')}"`,
-          expense.amount || 0,
-          expense.status || "",
+          expense.expense_code ?? "",
+          expense.date ?? "",
+          expense.category ?? "",
+          `"${(expense.description ?? "").replace(/"/g, '""')}"`,
+          expense.amount ?? 0,
+          expense.status ?? "",
           expense.user ? `${expense.user.first_name} ${expense.user.last_name}` : "",
-          expense.project?.name || "",
-          expense.client?.name || "",
+          expense.project?.name ?? "",
+          expense.client?.name ?? "",
           expense.billable ? "Yes" : "No",
           expense.reimbursable ? "Yes" : "No",
-          `"${(expense.notes || "").replace(/"/g, '""')}"`,
+          `"${(expense.notes ?? "").replace(/"/g, '""')}"`,
         ];
         csvRows.push(row.join(","));
       }

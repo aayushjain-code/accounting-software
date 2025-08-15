@@ -5,6 +5,7 @@ import { useAccountingStore } from "@/store";
 import { Invoice } from "@/types";
 import { Card } from "@/components/Card";
 import { formatCurrency } from "@/utils/formatters";
+import { format } from "date-fns";
 
 import {
   CurrencyDollarIcon,
@@ -147,6 +148,41 @@ export default function Home() {
       }, {} as Record<string, number>)
     ).sort(([, a], [, b]) => b - a);
   }, [expenses]);
+
+  // Monthly compliance tracking for all projects
+  const monthlyCompliance = useMemo(() => {
+    const last6Months = Array.from({ length: 6 }, (_, i) => {
+      const date = new Date();
+      date.setMonth(date.getMonth() - i);
+      return format(date, "yyyy-MM");
+    });
+
+    return projects.map((project) => {
+      const monthlyStatus = last6Months.map((month) => {
+        const timesheet = timesheets.find(
+          (t) => t.projectId === project.id && t.month === month
+        );
+
+        if (!timesheet) return { month, status: "missing", timesheet: null };
+
+        return {
+          month,
+          status: timesheet.status,
+          timesheet,
+          needsApproval:
+            timesheet.status === "draft" || timesheet.status === "submitted",
+        };
+      });
+
+      return {
+        project,
+        monthlyStatus,
+        overallCompliance:
+          monthlyStatus.filter((m) => m.status !== "missing").length /
+          last6Months.length,
+      };
+    });
+  }, [projects, timesheets]);
 
   const thisMonthExpenses = useMemo(() => {
     return expenses
@@ -337,6 +373,146 @@ export default function Home() {
         </div>
       </Card>
 
+      {/* Monthly Compliance Dashboard */}
+      <Card className="p-6">
+        <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">
+          Monthly Compliance Dashboard
+        </h3>
+        <p className="text-gray-600 dark:text-gray-400 mb-6">
+          Track timesheet completion and approval status for the last 6 months
+        </p>
+
+        <div className="overflow-x-auto">
+          <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+            <thead className="bg-gray-50 dark:bg-gray-800">
+              <tr>
+                <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                  Project
+                </th>
+                {Array.from({ length: 6 }, (_, i) => {
+                  const date = new Date();
+                  date.setMonth(date.getMonth() - i);
+                  return format(date, "yyyy-MM");
+                }).map((month) => (
+                  <th
+                    key={month}
+                    className="px-3 py-3 text-center text-xs font-semibold text-gray-500 uppercase tracking-wider"
+                  >
+                    {format(new Date(month + "-01"), "MMM yyyy")}
+                  </th>
+                ))}
+                <th className="px-4 py-3 text-center text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                  Compliance
+                </th>
+              </tr>
+            </thead>
+            <tbody className="bg-white dark:bg-gray-900 divide-y divide-gray-200 dark:divide-gray-700">
+              {monthlyCompliance.map(
+                ({ project, monthlyStatus, overallCompliance }) => (
+                  <tr
+                    key={project.id}
+                    className="hover:bg-gray-50 dark:hover:bg-gray-700"
+                  >
+                    <td className="px-4 py-3 whitespace-nowrap">
+                      <div>
+                        <div className="text-sm font-medium text-gray-900 dark:text-white">
+                          {project.name}
+                        </div>
+                        <div className="text-xs text-gray-500 dark:text-gray-400">
+                          {clients.find((c) => c.id === project.clientId)
+                            ?.company || "N/A"}
+                        </div>
+                      </div>
+                    </td>
+                    {monthlyStatus.map(
+                      ({ month, status, timesheet, needsApproval }) => (
+                        <td key={month} className="px-3 py-3 text-center">
+                          {status === "missing" ? (
+                            <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                              Missing
+                            </span>
+                          ) : status === "draft" ? (
+                            <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
+                              Draft
+                            </span>
+                          ) : status === "submitted" ? (
+                            <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                              Pending
+                            </span>
+                          ) : status === "approved" ? (
+                            <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                              Approved
+                            </span>
+                          ) : status === "rejected" ? (
+                            <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                              Rejected
+                            </span>
+                          ) : (
+                            <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
+                              Invoiced
+                            </span>
+                          )}
+                          {needsApproval && timesheet && (
+                            <button
+                              onClick={() => {
+                                // Navigate to timesheet page for review
+                                window.location.href = `/timesheet`;
+                              }}
+                              className="ml-2 text-xs text-blue-600 hover:text-blue-800 underline"
+                            >
+                              Review
+                            </button>
+                          )}
+                        </td>
+                      )
+                    )}
+                    <td className="px-4 py-3 text-center">
+                      <div className="flex items-center justify-center">
+                        <div className="w-16 bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+                          <div
+                            className="bg-green-600 h-2 rounded-full transition-all duration-300"
+                            style={{
+                              width: `${(overallCompliance * 100).toFixed(0)}%`,
+                            }}
+                          ></div>
+                        </div>
+                        <span className="ml-2 text-sm text-gray-600 dark:text-gray-400">
+                          {(overallCompliance * 100).toFixed(0)}%
+                        </span>
+                      </div>
+                    </td>
+                  </tr>
+                )
+              )}
+            </tbody>
+          </table>
+        </div>
+
+        <div className="mt-4 text-sm text-gray-600 dark:text-gray-400">
+          <div className="flex items-center space-x-4">
+            <span className="flex items-center">
+              <span className="w-3 h-3 bg-red-100 rounded-full mr-2"></span>
+              Missing
+            </span>
+            <span className="flex items-center">
+              <span className="w-3 h-3 bg-gray-100 rounded-full mr-2"></span>
+              Draft
+            </span>
+            <span className="flex items-center">
+              <span className="w-3 h-3 bg-blue-100 rounded-full mr-2"></span>
+              Pending Approval
+            </span>
+            <span className="flex items-center">
+              <span className="w-3 h-3 bg-green-100 rounded-full mr-2"></span>
+              Approved
+            </span>
+            <span className="flex items-center">
+              <span className="w-3 h-3 bg-purple-100 rounded-full mr-2"></span>
+              Invoiced
+            </span>
+          </div>
+        </div>
+      </Card>
 
     </div>
   );

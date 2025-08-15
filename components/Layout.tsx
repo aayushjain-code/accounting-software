@@ -33,7 +33,6 @@ const mainNavigation = [
   { name: "Home", href: "/", icon: HomeIcon },
   { name: "Clients", href: "/clients", icon: UsersIcon },
   { name: "Projects", href: "/projects", icon: FolderIcon },
-  { name: "Invoices", href: "/invoices", icon: DocumentTextIcon },
   { name: "Invoice Editor", href: "/invoice-editor", icon: PencilSquareIcon },
   { name: "Expenses", href: "/expenses", icon: ReceiptRefundIcon },
   { name: "Daily Logs", href: "/daily-logs", icon: CalendarIcon },
@@ -51,6 +50,11 @@ const betaArchiveNavigation = [
   {
     name: "Invoice Management",
     href: "/invoice-management",
+    icon: DocumentTextIcon,
+  },
+  {
+    name: "Invoices",
+    href: "/invoices",
     icon: DocumentTextIcon,
   },
 ];

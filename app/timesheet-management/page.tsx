@@ -337,9 +337,27 @@ export default function TimesheetManagementPage() {
 
             {/* Previous Timesheets */}
             <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
-              <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-6">
-                Previous Timesheets
-              </h3>
+              <div className="flex items-center justify-between mb-6">
+                <h3 className="text-xl font-semibold text-gray-900 dark:text-white">
+                  Previous Timesheets
+                </h3>
+                <div className="flex items-center space-x-3">
+                  <span className="text-sm text-gray-500 dark:text-gray-400">
+                    {projectTimesheets.length} timesheet{projectTimesheets.length !== 1 ? 's' : ''} found
+                  </span>
+                  {projectTimesheets.length > 0 && (
+                    <button
+                      onClick={() => {
+                        // Scroll to top of timesheet table
+                        document.querySelector('.timesheet-table')?.scrollIntoView({ behavior: 'smooth' });
+                      }}
+                      className="px-3 py-1 bg-primary-100 dark:bg-primary-900/20 text-primary-700 dark:text-primary-300 rounded-lg text-sm hover:bg-primary-200 dark:hover:bg-primary-800/30 transition-colors"
+                    >
+                      View All
+                    </button>
+                  )}
+                </div>
+              </div>
 
               {projectTimesheets.length === 0 ? (
                 <div className="text-center py-8 text-gray-500 dark:text-gray-400">
@@ -348,7 +366,37 @@ export default function TimesheetManagementPage() {
                   <p className="text-sm">Upload your first timesheet above to get started.</p>
                 </div>
               ) : (
-                <div className="overflow-x-auto">
+                <>
+                  {/* Quick Summary */}
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6 p-4 bg-gray-50 dark:bg-gray-800/50 rounded-lg">
+                    <div className="text-center">
+                      <div className="text-2xl font-bold text-primary-600 dark:text-primary-400">
+                        {projectTimesheets.length}
+                      </div>
+                      <div className="text-sm text-gray-600 dark:text-gray-400">Total</div>
+                    </div>
+                    <div className="text-center">
+                      <div className="text-2xl font-bold text-yellow-600 dark:text-yellow-400">
+                        {projectTimesheets.filter(ts => ts.status === 'pending').length}
+                      </div>
+                      <div className="text-sm text-gray-600 dark:text-gray-400">Pending</div>
+                    </div>
+                    <div className="text-center">
+                      <div className="text-2xl font-bold text-green-600 dark:text-green-400">
+                        {projectTimesheets.filter(ts => ts.status === 'approved').length}
+                      </div>
+                      <div className="text-sm text-gray-600 dark:text-gray-400">Approved</div>
+                    </div>
+                    <div className="text-center">
+                      <div className="text-2xl font-bold text-red-600 dark:text-red-400">
+                        {projectTimesheets.filter(ts => ts.status === 'rejected').length}
+                      </div>
+                      <div className="text-sm text-gray-600 dark:text-gray-400">Rejected</div>
+                    </div>
+                  </div>
+                  
+                  {/* Timesheet Table */}
+                <div className="overflow-x-auto timesheet-table">
                   <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
                     <thead className="bg-gray-50 dark:bg-gray-800">
                       <tr>
@@ -422,6 +470,16 @@ export default function TimesheetManagementPage() {
                                 </>
                               )}
                               <button
+                                onClick={() => {
+                                  // Show timesheet details in a simple alert for now
+                                  alert(`Timesheet Details:\n\nEmployee: ${timesheet.employeeName}\nRole: ${timesheet.employeeRole}\nMonth: ${format(new Date(parseInt(timesheet.year), parseInt(timesheet.month) - 1), "MMMM yyyy")}\nFile: ${timesheet.fileName}\nSize: ${formatFileSize(timesheet.fileSize)}\nStatus: ${timesheet.status}\nUpload Date: ${format(timesheet.uploadDate, "PPP")}`);
+                                }}
+                                className="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300"
+                                title="View Details"
+                              >
+                                <DocumentTextIcon className="h-4 w-4" />
+                              </button>
+                              <button
                                 onClick={() => handleDeleteTimesheet(timesheet.id)}
                                 className="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300"
                                 title="Delete"
@@ -435,6 +493,7 @@ export default function TimesheetManagementPage() {
                     </tbody>
                   </table>
                 </div>
+                </>
               )}
             </div>
           </div>

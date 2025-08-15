@@ -34,7 +34,6 @@ import FileList from "@/components/FileList";
 import { CloudArrowUpIcon } from "@heroicons/react/24/outline";
 import { TimesheetFile } from "@/types";
 import { TimesheetsTable } from "@/components/TimesheetsTable";
-import TimesheetGenerator from "@/components/TimesheetGenerator";
 
 // Enhanced Status Badge Component
 const StatusBadge = React.memo(({ status }: { status: string }) => {
@@ -823,7 +822,7 @@ export default function TimesheetPage() {
     deleteTimesheet,
   } = useAccountingStore();
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [isGeneratorOpen, setIsGeneratorOpen] = useState(false);
+
   const [editingTimesheet, setEditingTimesheet] = useState<Timesheet | null>(
     null
   );
@@ -1002,13 +1001,6 @@ export default function TimesheetPage() {
             </p>
           </div>
           <div className="flex items-center space-x-4">
-            <button
-              onClick={() => setIsGeneratorOpen(true)}
-              className="bg-green-600 text-white px-6 py-3 rounded-xl font-semibold hover:bg-green-700 transition-colors duration-200 flex items-center shadow-lg hover:shadow-xl"
-            >
-              <DocumentTextIcon className="h-5 w-5 mr-2" />
-              Generate Timesheet
-            </button>
             <button
               onClick={() => setIsModalOpen(true)}
               className="bg-primary-600 text-white px-6 py-3 rounded-xl font-semibold hover:bg-primary-700 transition-colors duration-200 flex items-center shadow-lg hover:shadow-xl"
@@ -1332,18 +1324,6 @@ export default function TimesheetPage() {
         </h3>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
           <button
-            onClick={() => setIsGeneratorOpen(true)}
-            className="p-4 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-xl hover:border-green-500 hover:bg-green-50 dark:hover:bg-green-900/20 transition-all duration-200 group"
-          >
-            <div className="text-center">
-              <DocumentTextIcon className="h-8 w-8 text-gray-400 group-hover:text-green-600 mx-auto mb-2" />
-              <p className="text-sm font-medium text-gray-700 dark:text-gray-300 group-hover:text-green-700">
-                Generate Monthly Timesheet
-              </p>
-            </div>
-          </button>
-          
-          <button
             onClick={() => setIsModalOpen(true)}
             className="p-4 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-xl hover:border-primary-500 hover:bg-primary-50 dark:hover:bg-primary-900/20 transition-all duration-200 group"
           >
@@ -1635,12 +1615,6 @@ export default function TimesheetPage() {
         confirmText="Delete"
         cancelText="Cancel"
         variant="danger"
-      />
-
-      {/* Timesheet Generator */}
-      <TimesheetGenerator
-        isOpen={isGeneratorOpen}
-        onClose={() => setIsGeneratorOpen(false)}
       />
     </div>
   );

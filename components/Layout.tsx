@@ -29,7 +29,6 @@ import { LogoutButton } from "./LogoutButton";
 import { AuthOverlay } from "./AuthOverlay";
 import { PerformanceDashboard } from "./PerformanceDashboard";
 
-
 const navigation = [
   { name: "Home", href: "/", icon: HomeIcon },
   { name: "Clients", href: "/clients", icon: UsersIcon },
@@ -39,6 +38,11 @@ const navigation = [
   { name: "Expenses", href: "/expenses", icon: ReceiptRefundIcon },
   { name: "Daily Logs", href: "/daily-logs", icon: CalendarIcon },
   { name: "Timesheets", href: "/timesheet", icon: ClockIcon },
+  {
+    name: "Timesheet Generator",
+    href: "/timesheet-generator",
+    icon: DocumentTextIcon,
+  },
   { name: "Directory", href: "/directory", icon: UserGroupIcon },
 ];
 
@@ -245,9 +249,9 @@ export default function Layout({ children }: { children: React.ReactNode }) {
           <ErrorBoundary>{children}</ErrorBoundary>
         </main>
       </div>
-      
+
       {/* Performance Dashboard - Only show in development */}
-      {process.env.NODE_ENV === 'development' && <PerformanceDashboard />}
+      {process.env.NODE_ENV === "development" && <PerformanceDashboard />}
 
       {/* Click outside to close profile menu */}
       {profileMenuOpen && (

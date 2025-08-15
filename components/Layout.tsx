@@ -43,6 +43,11 @@ const navigation = [
     href: "/timesheet-generator",
     icon: DocumentTextIcon,
   },
+  {
+    name: "Timesheet Management",
+    href: "/timesheet-management",
+    icon: ClockIcon,
+  },
   { name: "Directory", href: "/directory", icon: UserGroupIcon },
 ];
 

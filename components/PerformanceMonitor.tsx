@@ -15,6 +15,13 @@ interface PerformanceMonitorProps {
   showDetails?: boolean;
 }
 
+interface PerformanceMonitorHook {
+  isEnabled: boolean;
+  toggle: () => void;
+  clearStats: () => void;
+  exportReport: () => void;
+}
+
 export const PerformanceMonitor: React.FC<PerformanceMonitorProps> = ({
   className = "",
   showDetails = false,

@@ -6,12 +6,12 @@ import {
   PencilIcon,
   TrashIcon,
   EyeIcon,
-  ArrowUpIcon,
-  ArrowDownIcon,
   CalendarIcon,
   CurrencyRupeeIcon,
+  ChevronUpDownIcon,
+  ChevronUpIcon,
+  ChevronDownIcon,
 } from "@heroicons/react/24/outline";
-import { useAccountingStore } from "@/store";
 import { Project } from "@/types";
 import Modal from "./Modal";
 
@@ -39,7 +39,7 @@ export const ProjectsTable: React.FC<ProjectsTableProps> = ({
   const [viewProject, setViewProject] = useState<Project | null>(null);
 
   // Excel-like sorting
-  const handleSort = (field: keyof Project) => {
+  const handleSort = (field: keyof Project): void => {
     if (sortField === field) {
       setSortDirection(sortDirection === "asc" ? "desc" : "asc");
     } else {
@@ -50,12 +50,14 @@ export const ProjectsTable: React.FC<ProjectsTableProps> = ({
 
   // Removed inline editing functionality - users must use explicit edit button
 
-  const renderSortIcon = (field: keyof Project) => {
-    if (sortField !== field) {return null;}
+  const renderSortIcon = (field: keyof Project): JSX.Element => {
+    if (sortField !== field) {
+      return <ChevronUpDownIcon className="h-4 w-4 text-gray-400" />;
+    }
     return sortDirection === "asc" ? (
-      <ArrowUpIcon className="h-4 w-4 ml-1" />
+      <ChevronUpIcon className="h-4 w-4 text-gray-900" />
     ) : (
-      <ArrowDownIcon className="h-4 w-4 ml-1" />
+      <ChevronDownIcon className="h-4 w-4 text-gray-900" />
     );
   };
 
@@ -67,7 +69,7 @@ export const ProjectsTable: React.FC<ProjectsTableProps> = ({
     return <div className="px-2 py-1">{value?.toString() || "-"}</div>;
   };
 
-  const getStatusColor = (status: string) => {
+  const getStatusColor = (status: string): string => {
     switch (status) {
       case "active":
         return "bg-green-100 text-green-800";
@@ -134,8 +136,12 @@ export const ProjectsTable: React.FC<ProjectsTableProps> = ({
                 }
 
                 if (aValue !== undefined && bValue !== undefined) {
-                  if (aValue < bValue) {return sortDirection === "asc" ? -1 : 1;}
-                  if (aValue > bValue) {return sortDirection === "asc" ? 1 : -1;}
+                  if (aValue < bValue) {
+                    return sortDirection === "asc" ? -1 : 1;
+                  }
+                  if (aValue > bValue) {
+                    return sortDirection === "asc" ? 1 : -1;
+                  }
                 }
                 return 0;
               })

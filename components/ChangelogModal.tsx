@@ -1,5 +1,12 @@
 import React from "react";
 import { ChangelogEntry } from "@/types";
+import {
+  PlusIcon,
+  WrenchScrewdriverIcon,
+  ArrowUpIcon,
+  ExclamationTriangleIcon,
+  InformationCircleIcon,
+} from "@heroicons/react/24/outline";
 
 interface ChangelogModalProps {
   isOpen: boolean;
@@ -12,39 +19,41 @@ export const ChangelogModal: React.FC<ChangelogModalProps> = ({
   onClose,
   changelog,
 }) => {
-  if (!isOpen) {return null;}
+  if (!isOpen) {
+    return null;
+  }
 
-  const getTypeColor = (type: string) => {
-    switch (type) {
+  const getTypeColor = (type: string): string => {
+    switch (type.toLowerCase()) {
       case "feature":
-        return "bg-green-100 text-green-800 border-green-200";
-      case "bugfix":
-        return "bg-red-100 text-red-800 border-red-200";
-      case "improvement":
         return "bg-blue-100 text-blue-800 border-blue-200";
+      case "bugfix":
+        return "bg-green-100 text-green-800 border-green-200";
+      case "improvement":
+        return "bg-purple-100 text-purple-800 border-purple-200";
       case "breaking":
-        return "bg-orange-100 text-orange-800 border-orange-200";
+        return "bg-red-100 text-red-800 border-red-200";
       default:
         return "bg-gray-100 text-gray-800 border-gray-200";
     }
   };
 
-  const getTypeIcon = (type: string) => {
-    switch (type) {
+  const getTypeIcon = (type: string): JSX.Element => {
+    switch (type.toLowerCase()) {
       case "feature":
-        return "✨";
+        return <PlusIcon className="h-4 w-4" />;
       case "bugfix":
-        return "🐛";
+        return <WrenchScrewdriverIcon className="h-4 w-4" />;
       case "improvement":
-        return "⚡";
+        return <ArrowUpIcon className="h-4 w-4" />;
       case "breaking":
-        return "⚠️";
+        return <ExclamationTriangleIcon className="h-4 w-4" />;
       default:
-        return "📝";
+        return <InformationCircleIcon className="h-4 w-4" />;
     }
   };
 
-  const formatDate = (date: Date) => {
+  const formatDate = (date: Date): string => {
     return new Intl.DateTimeFormat("en-US", {
       year: "numeric",
       month: "long",

@@ -46,7 +46,9 @@ const TimesheetGenerator: React.FC<TimesheetGeneratorProps> = ({
 
   // Generate daily entries for the selected month
   const generateDailyEntries = useMemo(() => {
-    if (!selectedMonth) {return [];}
+    if (!selectedMonth) {
+      return [];
+    }
 
     const [year, month] = selectedMonth.split("-").map(Number);
     const startDate = startOfMonth(new Date(year, month - 1));
@@ -148,7 +150,9 @@ const TimesheetGenerator: React.FC<TimesheetGeneratorProps> = ({
     ? clients.find(c => c.id === selectedProjectData.clientId)
     : null;
 
-  if (!isOpen) {return null;}
+  if (!isOpen) {
+    return null;
+  }
 
   return (
     <Modal
@@ -303,7 +307,7 @@ const TimesheetGenerator: React.FC<TimesheetGeneratorProps> = ({
                   Timesheet Preview
                 </h3>
                 <p className="text-gray-600 dark:text-gray-400">
-                  {format(new Date(`${selectedMonth  }-01`), "MMMM yyyy")} -{" "}
+                  {format(new Date(`${selectedMonth}-01`), "MMMM yyyy")} -{" "}
                   {employeeName} ({employeeRole})
                 </p>
               </div>

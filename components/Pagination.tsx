@@ -27,7 +27,7 @@ export const Pagination: React.FC<PaginationProps> = ({
   const { currentPage, totalPages, hasNext, hasPrev, totalItems, pageSize } =
     paginationState;
 
-  const getPageNumbers = () => {
+  const getPageNumbers = (): (number | string)[] => {
     const pages = [];
     const maxVisiblePages = 5;
 

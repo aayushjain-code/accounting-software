@@ -1,29 +1,17 @@
 "use client";
 
-import { useState, useEffect, useMemo } from "react";
+import React, { useState, useMemo } from "react";
 import { useAccountingStore } from "@/store";
 import { Project } from "@/types";
-import {
-  PlusIcon,
-  PencilIcon,
-  TrashIcon,
-  MagnifyingGlassIcon,
-  FunnelIcon,
-  EyeIcon,
-  FolderIcon,
-  ClockIcon,
-  CurrencyDollarIcon,
-  CalendarIcon,
-} from "@heroicons/react/24/outline";
+import { PlusIcon, FolderIcon } from "@heroicons/react/24/outline";
 import { format } from "date-fns";
 import toast from "react-hot-toast";
 import { ActionTooltip } from "@/components/Tooltip";
-import React from "react";
 import Modal from "@/components/Modal";
 import { useSearch } from "@/hooks/useSearch";
 import { ProjectsTable } from "@/components/ProjectsTable";
 
-export default function ProjectsPage() {
+export default function ProjectsPage(): JSX.Element {
   const { projects, clients, addProject, updateProject, deleteProject } =
     useAccountingStore();
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -64,8 +52,8 @@ export default function ProjectsPage() {
       billingRate: formData.billingRate ? parseFloat(formData.billingRate) : 0,
       estimatedHours: formData.estimatedHours
         ? parseFloat(formData.estimatedHours)
-        : undefined,
-      personAssigned: formData.personAssigned || undefined,
+        : 0,
+      personAssigned: formData.personAssigned ?? "",
       gstRate: parseFloat(formData.gstRate),
       gstInclusive: formData.gstInclusive,
       totalCost:
@@ -116,12 +104,12 @@ export default function ProjectsPage() {
         ? format(new Date(project.startDate), "yyyy-MM-dd")
         : "",
       status: project.status,
-      budget: project.budget?.toString() || "",
-      billingTerms: project.billingTerms?.toString() || "",
-      billingRate: project.billingRate?.toString() || "",
-      estimatedHours: project.estimatedHours?.toString() || "",
-      personAssigned: project.personAssigned || "",
-      gstRate: project.gstRate?.toString() || "",
+      budget: project.budget?.toString() ?? "",
+      billingTerms: project.billingTerms?.toString() ?? "",
+      billingRate: project.billingRate?.toString() ?? "",
+      estimatedHours: project.estimatedHours?.toString() ?? "",
+      personAssigned: project.personAssigned ?? "",
+      gstRate: project.gstRate?.toString() ?? "",
       gstInclusive: project.gstInclusive,
     });
     setIsModalOpen(true);
@@ -271,9 +259,9 @@ export default function ProjectsPage() {
             <FolderIcon className="h-16 w-16" />
           </div>
           <p className="text-gray-500 text-lg font-medium mb-4">
-            {searchTerm || statusFilter !== "all"
+            {(searchTerm ?? statusFilter !== "all")
               ? "No projects found matching your criteria."
-              : "No projects found. Add your first project to get started."}
+              : "No projects found. Create your first project to get started."}
           </p>
           {!searchTerm && statusFilter === "all" && (
             <button
@@ -651,16 +639,16 @@ export default function ProjectsPage() {
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                   Budget
                 </label>
-                <p className="text-lg font-semibold text-green-600 dark:text-green-400">
-                  ₹{viewingProject.budget?.toLocaleString() || "0"}
+                <p className="text-2xl font-bold text-gray-900 dark:text-white">
+                  ₹{viewingProject.budget?.toLocaleString() ?? "0"}
                 </p>
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                   Billing Rate
                 </label>
-                <p className="text-gray-900 dark:text-white">
-                  ₹{viewingProject.billingRate?.toLocaleString() || "0"}/hr
+                <p className="text-lg font-semibold text-blue-600 dark:text-blue-400">
+                  ₹{viewingProject.billingRate?.toLocaleString() ?? "0"}/hr
                 </p>
               </div>
               <div>
@@ -668,7 +656,7 @@ export default function ProjectsPage() {
                   Estimated Hours
                 </label>
                 <p className="text-gray-900 dark:text-white">
-                  {viewingProject.estimatedHours || "Not specified"}
+                  {viewingProject.estimatedHours ?? "Not specified"}
                 </p>
               </div>
               <div>

@@ -238,7 +238,7 @@ const ContactForm: React.FC<ContactFormProps> = ({
   onCancel,
 }) => {
   const [formData, setFormData] = useState<Partial<DirectoryContact>>(
-    contact || {
+    contact ?? {
       name: "",
       role: "",
       email: "",

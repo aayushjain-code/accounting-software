@@ -28,7 +28,7 @@ interface TimesheetUpload {
   status: "pending" | "approved" | "rejected";
 }
 
-export default function TimesheetManagementPage() {
+export default function TimesheetManagementPage(): JSX.Element {
   const { projects, clients } = useAccountingStore();
 
   const [selectedProject, setSelectedProject] = useState<string>("");
@@ -43,28 +43,32 @@ export default function TimesheetManagementPage() {
 
   // Filter timesheets for selected project
   const projectTimesheets = useMemo(() => {
-    if (!selectedProject) {return [];}
+    if (!selectedProject) {
+      return [];
+    }
     return timesheetUploads.filter(ts => ts.projectId === selectedProject);
   }, [timesheetUploads, selectedProject]);
 
-  const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileUpload = (
+    event: React.ChangeEvent<HTMLInputElement>
+  ): void => {
     const file = event.target.files?.[0];
     if (file) {
       setUploadedFile(file);
     }
   };
 
-  const handleDragOver = (e: React.DragEvent) => {
+  const handleDragOver = (e: React.DragEvent): void => {
     e.preventDefault();
     setIsDragOver(true);
   };
 
-  const handleDragLeave = (e: React.DragEvent) => {
+  const handleDragLeave = (e: React.DragEvent): void => {
     e.preventDefault();
     setIsDragOver(false);
   };
 
-  const handleDrop = (e: React.DragEvent) => {
+  const handleDrop = (e: React.DragEvent): void => {
     e.preventDefault();
     setIsDragOver(false);
 
@@ -74,7 +78,7 @@ export default function TimesheetManagementPage() {
     }
   };
 
-  const handleSubmitTimesheet = () => {
+  const handleSubmitTimesheet = (): void => {
     if (!selectedProject || !uploadedFile) {
       alert("Please select a project and file");
       return;
@@ -82,6 +86,11 @@ export default function TimesheetManagementPage() {
 
     const currentMonth = format(new Date(), "yyyy-MM");
     const [year, month] = currentMonth.split("-");
+    if (!year || !month) {
+      alert("Invalid date format");
+      return;
+    }
+
     const project = projects.find(p => p.id === selectedProject);
     const client = clients.find(c => c.id === project?.clientId);
 
@@ -116,7 +125,7 @@ export default function TimesheetManagementPage() {
   const handleStatusChange = (
     timesheetId: string,
     newStatus: "approved" | "rejected"
-  ) => {
+  ): void => {
     setTimesheetUploads(prev =>
       prev.map(ts =>
         ts.id === timesheetId ? { ...ts, status: newStatus } : ts
@@ -124,23 +133,23 @@ export default function TimesheetManagementPage() {
     );
   };
 
-  const handleDeleteTimesheet = (timesheetId: string) => {
+  const handleDeleteTimesheet = (timesheetId: string): void => {
     if (confirm("Are you sure you want to delete this timesheet?")) {
       setTimesheetUploads(prev => prev.filter(ts => ts.id !== timesheetId));
     }
   };
 
-  const handleViewTimesheet = (timesheet: TimesheetUpload) => {
+  const handleViewTimesheet = (timesheet: TimesheetUpload): void => {
     setViewingTimesheet(timesheet);
     setIsViewModalOpen(true);
   };
 
-  const closeViewModal = () => {
+  const closeViewModal = (): void => {
     setIsViewModalOpen(false);
     setViewingTimesheet(null);
   };
 
-  const getStatusColor = (status: string) => {
+  const getStatusColor = (status: string): string => {
     switch (status) {
       case "approved":
         return "bg-green-100 text-green-800 dark:bg-green-800 dark:text-green-200";
@@ -151,7 +160,7 @@ export default function TimesheetManagementPage() {
     }
   };
 
-  const getStatusIcon = (status: string) => {
+  const getStatusIcon = (status: string): JSX.Element => {
     switch (status) {
       case "approved":
         return <CheckCircleIcon className="h-4 w-4" />;
@@ -162,12 +171,14 @@ export default function TimesheetManagementPage() {
     }
   };
 
-  const formatFileSize = (bytes: number) => {
-    if (bytes === 0) {return "0 Bytes";}
+  const formatFileSize = (bytes: number): string => {
+    if (bytes === 0) {
+      return "0 Bytes";
+    }
     const k = 1024;
     const sizes = ["Bytes", "KB", "MB", "GB"];
     const i = Math.floor(Math.log(bytes) / Math.log(k));
-    return `${parseFloat((bytes / Math.pow(k, i)).toFixed(2))  } ${  sizes[i]}`;
+    return `${parseFloat((bytes / Math.pow(k, i)).toFixed(2))} ${sizes[i]}`;
   };
 
   return (

@@ -24,7 +24,7 @@ export const PerformanceMonitor: React.FC<PerformanceMonitorProps> = ({
   const [cacheStats, setCacheStats] = useState(cache.getStats());
 
   useEffect(() => {
-    const interval = setInterval(() => {
+    const interval = setInterval((): void => {
       setStats(performanceMonitor.getReport());
       setCacheStats(cache.getStats());
     }, 5000); // Update every 5 seconds
@@ -127,7 +127,7 @@ export const PerformanceMonitor: React.FC<PerformanceMonitorProps> = ({
               </div>
               <div className="text-xs text-gray-500 dark:text-gray-400">
                 {cacheStats.keys.length > 0
-                  ? `${cacheStats.keys.slice(0, 3).join(", ")  }...`
+                  ? `${cacheStats.keys.slice(0, 3).join(", ")}...`
                   : "No cached items"}
               </div>
             </div>
@@ -161,7 +161,7 @@ export const PerformanceMonitor: React.FC<PerformanceMonitorProps> = ({
 };
 
 // Hook for performance monitoring
-export const usePerformanceMonitor = () => {
+export const usePerformanceMonitor = (): PerformanceMonitorHook => {
   const [isEnabled, setIsEnabled] = useState(false);
 
   useEffect(() => {
@@ -171,8 +171,31 @@ export const usePerformanceMonitor = () => {
     }
   }, []);
 
+  const toggleMonitoring = (): void => {
+    setIsEnabled(!isEnabled);
+  };
+
+  const clearStats = (): void => {
+    performanceMonitor.clearStats();
+    setStats(performanceMonitor.getReport());
+  };
+
+  const exportReport = (): void => {
+    const report = performanceMonitor.getReport();
+    const dataStr = JSON.stringify(report, null, 2);
+    const dataBlob = new Blob([dataStr], { type: "application/json" });
+    const url = URL.createObjectURL(dataBlob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = `performance-report-${new Date().toISOString().split("T")[0]}.json`;
+    link.click();
+    URL.revokeObjectURL(url);
+  };
+
   return {
     isEnabled,
-    toggle: () => setIsEnabled(!isEnabled),
+    toggle: toggleMonitoring,
+    clearStats,
+    exportReport,
   };
 };

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useMemo, useCallback } from "react";
+import React, { useMemo } from "react";
 import { useAccountingStore } from "@/store";
 import { Invoice } from "@/types";
 import { Card } from "@/components/Card";
@@ -33,7 +33,7 @@ const StatCard = React.memo(
     change?: string;
     changeType?: "positive" | "negative";
     color?: string;
-  }) => (
+  }): JSX.Element => (
     <Card className="p-6">
       <div className="flex items-center justify-between">
         <div>
@@ -58,7 +58,7 @@ const StatCard = React.memo(
 );
 StatCard.displayName = "StatCard";
 
-const getCategoryColor = (category: string) => {
+const getCategoryColor = (category: string): string => {
   const colors = {
     "Office Supplies": "bg-blue-100 text-blue-800",
     "Software & Tools": "bg-purple-100 text-purple-800",
@@ -71,10 +71,10 @@ const getCategoryColor = (category: string) => {
     Insurance: "bg-teal-100 text-teal-800",
     Other: "bg-gray-100 text-gray-800",
   };
-  return colors[category as keyof typeof colors] || "bg-gray-100 text-gray-800";
+  return colors[category as keyof typeof colors] ?? "bg-gray-100 text-gray-800";
 };
 
-export default function Home() {
+export default function Home(): JSX.Element {
   const { clients, projects, invoices, timesheets, expenses } =
     useAccountingStore();
 
@@ -87,7 +87,7 @@ export default function Home() {
   const totalRevenue = useMemo(
     () =>
       invoices.reduce(
-        (sum: number, invoice: Invoice) => sum + (invoice.total || 0),
+        (sum: number, invoice: Invoice) => sum + (invoice.total ?? 0),
         0
       ),
     [invoices]
@@ -100,7 +100,7 @@ export default function Home() {
   );
 
   const activeProjects = useMemo(
-    () => projects.filter((project: any) => project.status === "active").length,
+    () => projects.filter(project => project.status === "active").length,
     [projects]
   );
 
@@ -153,7 +153,7 @@ export default function Home() {
     return Object.entries(
       expenses.reduce(
         (acc, expense) => {
-          acc[expense.category] = (acc[expense.category] || 0) + expense.amount;
+          acc[expense.category] = (acc[expense.category] ?? 0) + expense.amount;
           return acc;
         },
         {} as Record<string, number>
@@ -175,7 +175,9 @@ export default function Home() {
           t => t.projectId === project.id && t.month === month
         );
 
-        if (!timesheet) {return { month, status: "missing", timesheet: null };}
+        if (!timesheet) {
+          return { month, status: "missing", timesheet: null };
+        }
 
         return {
           month,
@@ -412,7 +414,7 @@ export default function Home() {
                     key={month}
                     className="px-3 py-3 text-center text-xs font-semibold text-gray-500 uppercase tracking-wider"
                   >
-                    {format(new Date(`${month  }-01`), "MMM yyyy")}
+                    {format(new Date(`${month}-01`), "MMM yyyy")}
                   </th>
                 ))}
                 <th className="px-4 py-3 text-center text-xs font-semibold text-gray-500 uppercase tracking-wider">
@@ -434,7 +436,7 @@ export default function Home() {
                         </div>
                         <div className="text-xs text-gray-500 dark:text-gray-400">
                           {clients.find(c => c.id === project.clientId)
-                            ?.company || "N/A"}
+                            ?.company ?? "N/A"}
                         </div>
                       </div>
                     </td>

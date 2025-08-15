@@ -60,12 +60,16 @@ export const InvoiceEditor: React.FC<InvoiceEditorProps> = ({
   const [items, setItems] = useState<InvoiceItem[]>([
     {
       id: "1",
-      invoiceId: invoice?.id || "temp",
+      invoiceId: invoice?.id ?? "temp",
       title: "Web Development",
       description: "IT Design and Development",
       quantity: 1,
       unitPrice: 100000,
       total: 100000,
+      hsnCode: "998314",
+      unit: "Nos",
+      createdAt: new Date(),
+      updatedAt: new Date(),
     },
   ]);
 
@@ -212,14 +216,18 @@ export const InvoiceEditor: React.FC<InvoiceEditorProps> = ({
   );
 
   // Custom print handler that only prints the invoice
-  const handlePrint = () => {
+  const handlePrint = (): void => {
     // Create a new window for printing
     const printWindow = window.open("", "_blank");
-    if (!printWindow) {return;}
+    if (!printWindow) {
+      return;
+    }
 
     // Get the invoice content
     const invoiceContent = invoiceRef.current?.innerHTML;
-    if (!invoiceContent) {return;}
+    if (!invoiceContent) {
+      return;
+    }
 
     // Create the print document with better styling
     const printDocument = `
@@ -264,8 +272,10 @@ export const InvoiceEditor: React.FC<InvoiceEditorProps> = ({
   };
 
   // PDF download handler
-  const handleDownloadPDF = async () => {
-    if (!invoiceRef.current) {return;}
+  const handleDownloadPDF = async (): Promise<void> => {
+    if (!invoiceRef.current) {
+      return;
+    }
 
     setIsGeneratingPDF(true);
 
@@ -346,12 +356,16 @@ export const InvoiceEditor: React.FC<InvoiceEditorProps> = ({
   const addItem = useCallback(() => {
     const newItem: InvoiceItem = {
       id: Date.now().toString(),
-      invoiceId: invoice?.id || "temp",
+      invoiceId: invoice?.id ?? "temp",
       title: "",
       description: "",
       quantity: 1,
       unitPrice: 0,
       total: 0,
+      hsnCode: "998314",
+      unit: "Nos",
+      createdAt: new Date(),
+      updatedAt: new Date(),
     };
     setItems(prev => [...prev, newItem]);
   }, [invoice?.id]);
@@ -479,38 +493,44 @@ export const InvoiceEditor: React.FC<InvoiceEditorProps> = ({
       "Nineteen",
     ];
 
-    if (amount === 0) {return "Zero";}
-    if (amount < 10) {return ones[amount];}
-    if (amount < 20) {return teens[amount - 10];}
+    if (amount === 0) {
+      return "Zero";
+    }
+    if (amount < 10) {
+      return ones[amount];
+    }
+    if (amount < 20) {
+      return teens[amount - 10];
+    }
     if (amount < 100) {
-      if (amount % 10 === 0) {return tens[Math.floor(amount / 10)];}
-      return `${tens[Math.floor(amount / 10)]  } ${  ones[amount % 10]}`;
+      if (amount % 10 === 0) {
+        return tens[Math.floor(amount / 10)];
+      }
+      return `${tens[Math.floor(amount / 10)]} ${ones[amount % 10]}`;
     }
     if (amount < 1000) {
       if (amount % 100 === 0) {
-        return `${ones[Math.floor(amount / 100)]  } Hundred`;
+        return `${ones[Math.floor(amount / 100)]} Hundred`;
       }
-      return (
-        `${ones[Math.floor(amount / 100)] 
-        } Hundred ${ 
-        getAmountInWords(amount % 100)}`
-      );
+      return `${ones[Math.floor(amount / 100)]} Hundred ${getAmountInWords(
+        amount % 100
+      )}`;
     }
     if (amount < 100000) {
       const thousands = Math.floor(amount / 1000);
       const remainder = amount % 1000;
-      let result = `${getAmountInWords(thousands)  } Thousand`;
+      let result = `${getAmountInWords(thousands)} Thousand`;
       if (remainder > 0) {
-        result += ` ${  getAmountInWords(remainder)}`;
+        result += ` ${getAmountInWords(remainder)}`;
       }
       return result;
     }
     if (amount < 10000000) {
       const lakhs = Math.floor(amount / 100000);
       const remainder = amount % 100000;
-      let result = `${getAmountInWords(lakhs)  } Lakh`;
+      let result = `${getAmountInWords(lakhs)} Lakh`;
       if (remainder > 0) {
-        result += ` ${  getAmountInWords(remainder)}`;
+        result += ` ${getAmountInWords(remainder)}`;
       }
       return result;
     }
@@ -544,6 +564,7 @@ export const InvoiceEditor: React.FC<InvoiceEditorProps> = ({
         dispatchedThrough: formData.dispatchedThrough,
         destination: formData.destination,
         termsOfDelivery: formData.termsOfDelivery,
+        items: items,
         notes: `Invoice for ${clientInfo.company}`,
       };
 
@@ -609,13 +630,13 @@ export const InvoiceEditor: React.FC<InvoiceEditorProps> = ({
 
   // Create a mock invoice for preview
   const previewInvoice: Invoice = {
-    id: invoice?.id || "preview",
-    timesheetId: invoice?.timesheetId || "preview",
-    clientId: invoice?.clientId || "preview",
-    projectId: invoice?.projectId || "preview",
+    id: invoice?.id ?? "preview",
+    timesheetId: invoice?.timesheetId ?? "preview",
+    clientId: invoice?.clientId ?? "preview",
+    projectId: invoice?.projectId ?? "preview",
     invoiceNumber: formData.invoiceNumber,
-    issueDate: new Date(formData.issueDate),
-    dueDate: new Date(formData.dueDate),
+    issueDate: new Date(formData.issueDate ?? new Date()),
+    dueDate: new Date(formData.dueDate ?? new Date()),
     status: "draft",
     subtotal: calculateSubtotal,
     taxRate: 18,
@@ -632,6 +653,7 @@ export const InvoiceEditor: React.FC<InvoiceEditorProps> = ({
     dispatchedThrough: formData.dispatchedThrough,
     destination: formData.destination,
     termsOfDelivery: formData.termsOfDelivery,
+    items: items,
     createdAt: new Date(),
     updatedAt: new Date(),
   };

@@ -45,7 +45,7 @@ export const Directory: React.FC<DirectoryProps> = ({
   const [roleFilter, setRoleFilter] = useState<string>("all");
 
   // Excel-like sorting
-  const handleSort = (field: keyof DirectoryContact) => {
+  const handleSort = (field: keyof DirectoryContact): void => {
     if (sortField === field) {
       setSortDirection(sortDirection === "asc" ? "desc" : "asc");
     } else {
@@ -80,16 +80,22 @@ export const Directory: React.FC<DirectoryProps> = ({
       }
 
       if (aValue !== undefined && bValue !== undefined) {
-        if (aValue < bValue) {return sortDirection === "asc" ? -1 : 1;}
-        if (aValue > bValue) {return sortDirection === "asc" ? 1 : -1;}
+        if (aValue < bValue) {
+          return sortDirection === "asc" ? -1 : 1;
+        }
+        if (aValue > bValue) {
+          return sortDirection === "asc" ? 1 : -1;
+        }
       }
       return 0;
     });
 
   // Removed inline editing functionality - users must use explicit edit button
 
-  const renderSortIcon = (field: keyof DirectoryContact) => {
-    if (sortField !== field) {return null;}
+  const renderSortIcon = (field: keyof DirectoryContact): JSX.Element => {
+    if (sortField !== field) {
+      return null;
+    }
     return sortDirection === "asc" ? (
       <ArrowUpIcon className="h-4 w-4 ml-1" />
     ) : (

@@ -45,7 +45,9 @@ export const StatusBadge: React.FC<StatusBadgeProps> = ({
   };
 
   const getStatusIcon = () => {
-    if (!showIcon) {return null;}
+    if (!showIcon) {
+      return null;
+    }
 
     switch (status?.toLowerCase()) {
       case "active":

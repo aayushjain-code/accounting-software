@@ -21,21 +21,26 @@ interface ModalProps {
     | "7xl";
 }
 
-const Modal: React.FC<ModalProps> = ({
+export default function Modal({
   isOpen,
   onClose,
   title,
   children,
   footer,
   size = "md",
-}) => {
+  closeOnOverlayClick = true,
+}: ModalProps): JSX.Element | null {
   const modalRef = useRef<HTMLDivElement>(null);
 
   // Close on ESC
   useEffect(() => {
-    if (!isOpen) {return;}
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "Escape") {onClose();}
+    if (!isOpen) {
+      return;
+    }
+    const handleKeyDown = (e: KeyboardEvent): void => {
+      if (e.key === "Escape") {
+        onClose();
+      }
     };
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
@@ -48,7 +53,9 @@ const Modal: React.FC<ModalProps> = ({
     }
   }, [isOpen]);
 
-  if (!isOpen) {return null;}
+  if (!isOpen) {
+    return null;
+  }
 
   const sizeClasses = {
     sm: "max-w-sm",
@@ -113,6 +120,4 @@ const Modal: React.FC<ModalProps> = ({
       </div>
     </div>
   );
-};
-
-export default Modal;
+}

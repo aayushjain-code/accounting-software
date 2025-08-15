@@ -8,6 +8,8 @@ import {
   ClockIcon,
   ExclamationTriangleIcon,
   CheckCircleIcon,
+  XCircleIcon,
+  QuestionMarkCircleIcon,
 } from "@heroicons/react/24/outline";
 
 interface PerformanceMetrics {
@@ -29,7 +31,7 @@ export function PerformanceDashboard() {
   const [isVisible, setIsVisible] = useState(false);
 
   useEffect(() => {
-    const interval = setInterval(() => {
+    const interval = setInterval((): void => {
       const currentMetrics = performanceMonitor.getMetrics();
       setMetrics(currentMetrics);
     }, 1000);
@@ -37,40 +39,45 @@ export function PerformanceDashboard() {
     return () => clearInterval(interval);
   }, []);
 
-  const getAverageTime = (times: number[]) => {
-    if (times.length === 0) {return 0;}
+  const getAverageTime = (times: number[]): number => {
+    if (times.length === 0) return 0;
     return times.reduce((sum, time) => sum + time, 0) / times.length;
   };
 
-  const getPerformanceStatus = (avgTime: number, threshold: number) => {
-    if (avgTime <= threshold) {return "good";}
-    if (avgTime <= threshold * 2) {return "warning";}
-    return "critical";
+  const getPerformanceStatus = (avgTime: number, threshold: number): string => {
+    if (avgTime < threshold * 0.5) return "excellent";
+    if (avgTime < threshold) return "good";
+    if (avgTime < threshold * 1.5) return "fair";
+    return "poor";
   };
 
-  const getStatusIcon = (status: string) => {
+  const getStatusColor = (status: string): string => {
     switch (status) {
+      case "excellent":
+        return "text-green-600 bg-green-100";
       case "good":
-        return <CheckCircleIcon className="h-5 w-5 text-green-500" />;
-      case "warning":
-        return <ExclamationTriangleIcon className="h-5 w-5 text-yellow-500" />;
-      case "critical":
-        return <ExclamationTriangleIcon className="h-5 w-5 text-red-500" />;
+        return "text-blue-600 bg-blue-100";
+      case "fair":
+        return "text-yellow-600 bg-yellow-100";
+      case "poor":
+        return "text-red-600 bg-red-100";
       default:
-        return null;
+        return "text-gray-600 bg-gray-100";
     }
   };
 
-  const getStatusColor = (status: string) => {
+  const getStatusIcon = (status: string): JSX.Element => {
     switch (status) {
+      case "excellent":
+        return <CheckCircleIcon className="h-5 w-5" />;
       case "good":
-        return "text-green-600";
-      case "warning":
-        return "text-yellow-600";
-      case "critical":
-        return "text-red-600";
+        return <CheckCircleIcon className="h-5 w-5" />;
+      case "fair":
+        return <ExclamationTriangleIcon className="h-5 w-5" />;
+      case "poor":
+        return <XCircleIcon className="h-5 w-5" />;
       default:
-        return "text-gray-600";
+        return <QuestionMarkCircleIcon className="h-5 w-5" />;
     }
   };
 

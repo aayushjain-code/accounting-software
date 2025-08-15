@@ -28,33 +28,33 @@ export const InvoicesTable: React.FC<InvoicesTableProps> = ({
 }) => {
   const [viewInvoice, setViewInvoice] = useState<Invoice | null>(null);
 
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case "paid":
-        return "bg-green-100 text-green-800 border-green-200";
-      case "pending":
-        return "bg-yellow-100 text-yellow-800 border-yellow-200";
-      case "overdue":
-        return "bg-red-100 text-red-800 border-red-200";
+  const getStatusColor = (status: string): string => {
+    switch (status.toLowerCase()) {
       case "draft":
         return "bg-gray-100 text-gray-800 border-gray-200";
+      case "sent":
+        return "bg-blue-100 text-blue-800 border-blue-200";
+      case "paid":
+        return "bg-green-100 text-green-800 border-green-200";
+      case "overdue":
+        return "bg-red-100 text-red-800 border-red-200";
       default:
         return "bg-gray-100 text-gray-800 border-gray-200";
     }
   };
 
-  const formatStatus = (status: string) => {
-    return status.charAt(0).toUpperCase() + status.slice(1);
+  const formatStatus = (status: string): string => {
+    return status.charAt(0).toUpperCase() + status.slice(1).toLowerCase();
   };
 
-  const formatCurrency = (amount: number) => {
+  const formatCurrency = (amount: number): string => {
     return new Intl.NumberFormat("en-IN", {
       style: "currency",
       currency: "INR",
     }).format(amount);
   };
 
-  const getStatusIcon = (status: string) => {
+  const getStatusIcon = (status: string): JSX.Element => {
     switch (status) {
       case "paid":
         return "✓";

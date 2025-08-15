@@ -24,7 +24,7 @@ interface InvoiceUpload {
   file: File;
 }
 
-export default function InvoiceManagementPage() {
+export default function InvoiceManagementPage(): JSX.Element {
   const { projects, clients } = useAccountingStore();
   const [selectedProject, setSelectedProject] = useState<string | null>(null);
   const [uploadedFile, setUploadedFile] = useState<File | null>(null);
@@ -43,24 +43,26 @@ export default function InvoiceManagementPage() {
 
   // Filter invoices by selected project
   const projectInvoices = useMemo(() => {
-    if (!selectedProject) {return [];}
+    if (!selectedProject) {
+      return [];
+    }
     return invoiceUploads.filter(
       invoice => invoice.projectId === selectedProject
     );
   }, [selectedProject, invoiceUploads]);
 
   // Handle file drag and drop
-  const handleDragOver = (e: React.DragEvent) => {
+  const handleDragOver = (e: React.DragEvent): void => {
     e.preventDefault();
     setIsDragOver(true);
   };
 
-  const handleDragLeave = (e: React.DragEvent) => {
+  const handleDragLeave = (e: React.DragEvent): void => {
     e.preventDefault();
     setIsDragOver(false);
   };
 
-  const handleDrop = (e: React.DragEvent) => {
+  const handleDrop = (e: React.DragEvent): void => {
     e.preventDefault();
     setIsDragOver(false);
 
@@ -71,7 +73,7 @@ export default function InvoiceManagementPage() {
   };
 
   // Handle file selection
-  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>): void => {
     const file = e.target.files?.[0];
     if (file) {
       setUploadedFile(file);
@@ -79,8 +81,10 @@ export default function InvoiceManagementPage() {
   };
 
   // Submit invoice upload
-  const handleSubmitInvoice = () => {
-    if (!uploadedFile || !selectedProject) {return;}
+  const handleSubmitInvoice = (): void => {
+    if (!uploadedFile || !selectedProject) {
+      return;
+    }
 
     const project = projects.find(p => p.id === selectedProject);
     const client = clients.find(c => c.id === project?.clientId);
@@ -88,8 +92,8 @@ export default function InvoiceManagementPage() {
     const newInvoice: InvoiceUpload = {
       id: Date.now().toString(),
       projectId: selectedProject,
-      projectName: project?.name || "Unknown Project",
-      clientName: client?.name || "Unknown Client",
+      projectName: project?.name ?? "Unknown Project",
+      clientName: client?.name ?? "Unknown Client",
       month: currentMonth,
       fileName: uploadedFile.name,
       fileSize: uploadedFile.size,
@@ -106,7 +110,7 @@ export default function InvoiceManagementPage() {
   const handleStatusChange = (
     invoiceId: string,
     newStatus: "approved" | "rejected"
-  ) => {
+  ): void => {
     setInvoiceUploads(prev =>
       prev.map(invoice =>
         invoice.id === invoiceId ? { ...invoice, status: newStatus } : invoice
@@ -115,23 +119,23 @@ export default function InvoiceManagementPage() {
   };
 
   // Delete invoice
-  const handleDeleteInvoice = (invoiceId: string) => {
+  const handleDeleteInvoice = (invoiceId: string): void => {
     setInvoiceUploads(prev => prev.filter(invoice => invoice.id !== invoiceId));
   };
 
   // View invoice details
-  const handleViewInvoice = (invoice: InvoiceUpload) => {
+  const handleViewInvoice = (invoice: InvoiceUpload): void => {
     setViewingInvoice(invoice);
     setIsViewModalOpen(true);
   };
 
-  const closeViewModal = () => {
+  const closeViewModal = (): void => {
     setIsViewModalOpen(false);
     setViewingInvoice(null);
   };
 
   // Helper functions
-  const getStatusColor = (status: string) => {
+  const getStatusColor = (status: string): string => {
     switch (status) {
       case "approved":
         return "bg-green-100 text-green-800 border-green-200";
@@ -142,7 +146,7 @@ export default function InvoiceManagementPage() {
     }
   };
 
-  const getStatusIcon = (status: string) => {
+  const getStatusIcon = (status: string): JSX.Element => {
     switch (status) {
       case "approved":
         return <CheckIcon className="h-4 w-4" />;
@@ -153,12 +157,14 @@ export default function InvoiceManagementPage() {
     }
   };
 
-  const formatFileSize = (bytes: number) => {
-    if (bytes === 0) {return "0 Bytes";}
+  const formatFileSize = (bytes: number): string => {
+    if (bytes === 0) {
+      return "0 Bytes";
+    }
     const k = 1024;
     const sizes = ["Bytes", "KB", "MB", "GB"];
     const i = Math.floor(Math.log(bytes) / Math.log(k));
-    return `${parseFloat((bytes / Math.pow(k, i)).toFixed(2))  } ${  sizes[i]}`;
+    return `${parseFloat((bytes / Math.pow(k, i)).toFixed(2))} ${sizes[i]}`;
   };
 
   return (
@@ -206,7 +212,7 @@ export default function InvoiceManagementPage() {
                     </span>
                   </div>
                   <p className="text-sm text-gray-600 dark:text-gray-400">
-                    {client?.name || "Unknown Client"}
+                    {client?.name ?? "Unknown Client"}
                   </p>
                 </div>
               );

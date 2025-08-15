@@ -26,24 +26,20 @@ export const UpdateNotification: React.FC<UpdateNotificationProps> = ({
     }
   }, [changelog]);
 
-  const handleDismiss = () => {
-    setIsVisible(false);
-    if (latestUpdate) {
-      localStorage.setItem(
-        "lastSeenUpdate",
-        latestUpdate.releaseDate.toISOString()
-      );
-    }
-    onDismiss?.();
+  const handleDismiss = (): void => {
+    setLatestUpdate(null);
+    setLastSeen(new Date().toISOString());
   };
 
-  const handleViewUpdate = () => {
+  const handleViewUpdate = (): void => {
     // This would typically open the changelog modal
     // For now, we'll just dismiss the notification
     handleDismiss();
   };
 
-  if (!isVisible || !latestUpdate) {return null;}
+  if (!isVisible || !latestUpdate) {
+    return null;
+  }
 
   return (
     <div className="fixed top-4 right-4 z-50 max-w-sm w-full">

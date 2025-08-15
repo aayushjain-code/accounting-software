@@ -1,7 +1,7 @@
 import React from "react";
 import { StorageManager } from "@/components/StorageManager";
 
-export default function StoragePage() {
+export default function StoragePage(): JSX.Element {
   return (
     <div className="space-y-6">
       {/* Header */}

@@ -11,6 +11,11 @@ import {
   CompanyProfile,
   UserProfile,
   ChangelogEntry,
+  InvoiceItem,
+  InvoiceFile,
+  TimesheetEntry,
+  TimesheetFile,
+  ExpenseFile,
 } from "@/types";
 import { DashboardStats } from "@/types/dashboard";
 import { CodeGenerator } from "@/utils/codeGenerator";

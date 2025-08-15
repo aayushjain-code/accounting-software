@@ -10,7 +10,7 @@ export const LogoutButton: React.FC<LogoutButtonProps> = ({
   className = "",
   onLogout,
 }) => {
-  const handleLogout = async () => {
+  const handleLogout = async (): Promise<void> => {
     try {
       // For web-based app, just call the onLogout callback if provided
       if (onLogout) {

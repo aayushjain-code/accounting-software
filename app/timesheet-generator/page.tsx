@@ -26,7 +26,7 @@ interface DailyEntry {
   isWeekend: boolean;
 }
 
-export default function TimesheetGeneratorPage() {
+export default function TimesheetGeneratorPage(): JSX.Element {
   const { projects, clients } = useAccountingStore();
 
   const [selectedMonth, setSelectedMonth] = useState(
@@ -41,9 +41,15 @@ export default function TimesheetGeneratorPage() {
 
   // Generate daily entries for the selected month
   const generateDailyEntries = useMemo(() => {
-    if (!selectedMonth) {return [];}
+    if (!selectedMonth) {
+      return [];
+    }
 
     const [year, month] = selectedMonth.split("-").map(Number);
+    if (!year || !month) {
+      return [];
+    }
+
     const startDate = startOfMonth(new Date(year, month - 1));
     const endDate = endOfMonth(new Date(year, month - 1));
 
@@ -70,7 +76,7 @@ export default function TimesheetGeneratorPage() {
     date: string,
     field: keyof DailyEntry,
     value: string | number
-  ) => {
+  ): void => {
     setDailyEntries(prev =>
       prev.map(entry =>
         entry.date === date ? { ...entry, [field]: value } : entry
@@ -78,7 +84,7 @@ export default function TimesheetGeneratorPage() {
     );
   };
 
-  const handleGenerateTimesheet = () => {
+  const handleGenerateTimesheet = (): void => {
     if (!selectedProject || !employeeName || !employeeRole) {
       alert("Please fill in all required fields");
       return;
@@ -86,7 +92,7 @@ export default function TimesheetGeneratorPage() {
     setIsPreviewMode(true);
   };
 
-  const handleDownloadPDF = () => {
+  const handleDownloadPDF = (): void => {
     // Implementation for PDF download
     const printWindow = window.open("", "_blank");
     if (printWindow) {
@@ -138,31 +144,28 @@ export default function TimesheetGeneratorPage() {
     }
   };
 
-  const handleDownloadBlankFormat = () => {
+  const handleDownloadBlankFormat = (): void => {
     const csvContent = [
-      ["Date", "Task Name", "Description", "Hours"],
-      ...dailyEntries.map(entry => [
-        entry.date,
-        entry.taskName,
-        entry.description,
-        entry.hours,
-      ]),
-    ]
-      .map(row => row.map(cell => `"${cell}"`).join(","))
-      .join("\n");
+      "Date,Task Name,Description,Hours",
+      ...dailyEntries.map(entry =>
+        [entry.date, entry.taskName, entry.description, entry.hours].join(",")
+      ),
+    ].join("\n");
 
     const blob = new Blob([csvContent], { type: "text/csv" });
     const url = window.URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = `Timesheet_${employeeName}_${employeeRole}_${selectedMonth}_blank.csv`;
+    a.download = `timesheet_${selectedMonth}_${employeeName}.csv`;
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
     window.URL.revokeObjectURL(url);
   };
 
-  const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileUpload = (
+    event: React.ChangeEvent<HTMLInputElement>
+  ): void => {
     const file = event.target.files?.[0];
     if (file && file.type === "text/csv") {
       setUploadedFile(file);
@@ -172,15 +175,16 @@ export default function TimesheetGeneratorPage() {
         const lines = text.split("\n");
         const newEntries = dailyEntries.map((entry, index) => {
           if (index < lines.length - 1 && lines[index + 1]) {
-            const values = lines[index + 1]
-              .split(",")
-              .map(v => v.replace(/"/g, "").trim());
+            const values =
+              lines[index + 1]
+                ?.split(",")
+                .map(v => v.replace(/"/g, "").trim()) ?? [];
             if (values.length >= 4) {
               return {
                 ...entry,
-                taskName: values[1] || entry.taskName,
-                description: values[2] || entry.description,
-                hours: parseInt(values[3]) || entry.hours,
+                taskName: values[1] ?? entry.taskName,
+                description: values[2] ?? entry.description,
+                hours: parseInt(values[3] ?? "0") || entry.hours,
               };
             }
           }
@@ -456,7 +460,7 @@ export default function TimesheetGeneratorPage() {
                     Timesheet Preview
                   </h2>
                   <p className="text-gray-600 dark:text-gray-400 mt-2">
-                    {format(new Date(`${selectedMonth  }-01`), "MMMM yyyy")} -{" "}
+                    {format(new Date(`${selectedMonth}-01`), "MMMM yyyy")} -{" "}
                     {employeeName} ({employeeRole})
                   </p>
                 </div>

@@ -27,8 +27,10 @@ export const Tooltip: React.FC<TooltipProps> = ({
   const tooltipRef = useRef<HTMLDivElement>(null);
   const timeoutRef = useRef<NodeJS.Timeout>();
 
-  const showTooltip = () => {
-    if (disabled) {return;}
+  const showTooltip = (): void => {
+    if (disabled) {
+      return;
+    }
 
     timeoutRef.current = setTimeout(() => {
       setIsVisible(true);
@@ -36,15 +38,17 @@ export const Tooltip: React.FC<TooltipProps> = ({
     }, delay);
   };
 
-  const hideTooltip = () => {
+  const hideTooltip = (): void => {
     if (timeoutRef.current) {
       clearTimeout(timeoutRef.current);
     }
     setIsVisible(false);
   };
 
-  const updatePosition = useCallback(() => {
-    if (!triggerRef.current || !tooltipRef.current) {return;}
+  const updatePosition = useCallback((): void => {
+    if (!triggerRef.current || !tooltipRef.current) {
+      return;
+    }
 
     const triggerRect = triggerRef.current.getBoundingClientRect();
     const tooltipRect = tooltipRef.current.getBoundingClientRect();
@@ -162,8 +166,8 @@ export const Tooltip: React.FC<TooltipProps> = ({
     };
   }, []);
 
-  const getArrowClasses = () => {
-    switch (finalPosition) {
+  const getArrowClasses = (): string => {
+    switch (position) {
       case "top":
         return "top-full left-1/2 transform -translate-x-1/2 border-t-gray-900";
       case "bottom":

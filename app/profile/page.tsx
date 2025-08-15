@@ -1,19 +1,12 @@
 "use client";
 
-import { useState, useEffect, useMemo } from "react";
+import { useState, useMemo } from "react";
 import { useAccountingStore } from "@/store";
 import { UserProfile } from "@/types";
 import {
   UserIcon,
-  EnvelopeIcon,
-  PhoneIcon,
   BuildingOfficeIcon,
   MapPinIcon,
-  GlobeAltIcon,
-  PencilIcon,
-  CameraIcon,
-  CheckIcon,
-  XMarkIcon,
   BanknotesIcon,
   LinkIcon,
   ChartBarIcon,
@@ -22,19 +15,17 @@ import {
   CalendarIcon,
   UsersIcon,
   CurrencyDollarIcon,
-} from "@heroicons/react/24/outline";
-import toast from "react-hot-toast";
-import { Card } from "@/components/Card";
-import {
   LockClosedIcon,
   EyeIcon,
   EyeSlashIcon,
 } from "@heroicons/react/24/outline";
+import toast from "react-hot-toast";
+import { Card } from "@/components/Card";
 import { ProfileUpdateModal } from "@/components/ProfileUpdateModal";
 import { ChangelogModal } from "@/components/ChangelogModal";
 import { ChangelogEntry } from "@/types";
 
-export default function ProfilePage() {
+export default function ProfilePage(): JSX.Element {
   const { companyProfile, updateCompanyProfile } = useAccountingStore();
   const [isEditing, setIsEditing] = useState(false);
   const [showPinChange, setShowPinChange] = useState(false);
@@ -158,8 +149,8 @@ export default function ProfilePage() {
     foundedYear: companyProfile.foundedYear,
     industry: companyProfile.industry,
     companySize: companyProfile.companySize,
-    annualRevenue: companyProfile.annualRevenue?.toString() || "",
-    employeeCount: companyProfile.employeeCount?.toString() || "",
+    annualRevenue: companyProfile.annualRevenue?.toString() ?? "",
+    employeeCount: companyProfile.employeeCount?.toString() ?? "",
     bankDetails: {
       accountNumber: companyProfile.bankDetails.accountNumber,
       ifscCode: companyProfile.bankDetails.ifscCode,
@@ -173,10 +164,10 @@ export default function ProfilePage() {
       designation: companyProfile.contactPerson.designation,
     },
     socialMedia: {
-      linkedin: companyProfile.socialMedia.linkedin || "",
-      twitter: companyProfile.socialMedia.twitter || "",
-      facebook: companyProfile.socialMedia.facebook || "",
-      instagram: companyProfile.socialMedia.instagram || "",
+      linkedin: companyProfile.socialMedia.linkedin ?? "",
+      twitter: companyProfile.socialMedia.twitter ?? "",
+      facebook: companyProfile.socialMedia.facebook ?? "",
+      instagram: companyProfile.socialMedia.instagram ?? "",
     },
   });
 
@@ -202,115 +193,106 @@ export default function ProfilePage() {
     }
   };
 
-  const handleSubmit = useMemo(
-    () => {
-      return (e: React.FormEvent) => {
-        e.preventDefault();
+  const handleSubmit = useMemo(() => {
+    return (e: React.FormEvent) => {
+      e.preventDefault();
 
-        const profileData = {
-          ...formData,
-          annualRevenue: formData.annualRevenue
-            ? parseInt(formData.annualRevenue)
-            : undefined,
-          employeeCount: formData.employeeCount
-            ? parseInt(formData.employeeCount)
-            : undefined,
-        };
-
-        updateCompanyProfile(profileData);
-        setIsEditing(false);
-        toast.success("Company profile updated successfully");
+      const profileData = {
+        ...formData,
+        annualRevenue: formData.annualRevenue
+          ? parseInt(formData.annualRevenue)
+          : undefined,
+        employeeCount: formData.employeeCount
+          ? parseInt(formData.employeeCount)
+          : undefined,
       };
-    },
-    [formData, updateCompanyProfile]
-  );
 
-  const handlePinChange = useMemo(
-    () => {
-      return (e: React.FormEvent) => {
-        e.preventDefault();
+      updateCompanyProfile(profileData);
+      setIsEditing(false);
+      toast.success("Company profile updated successfully");
+    };
+  }, [formData, updateCompanyProfile]);
 
-        if (pinData.newPin !== pinData.confirmPin) {
-          toast.error("New PIN and confirm PIN do not match");
+  const handlePinChange = useMemo(() => {
+    return (e: React.FormEvent) => {
+      e.preventDefault();
+
+      if (pinData.newPin !== pinData.confirmPin) {
+        toast.error("New PIN and confirm PIN do not match");
+        return;
+      }
+
+      if (pinData.newPin.length !== 4) {
+        toast.error("PIN must be exactly 4 digits");
+        return;
+      }
+
+      try {
+        // For web-based app, validate the current PIN and update
+        const currentStoredPin = "1234"; // In production, this would be stored securely
+
+        if (pinData.currentPin !== currentStoredPin) {
+          toast.error("Current PIN is incorrect");
           return;
         }
 
-        if (pinData.newPin.length !== 4) {
-          toast.error("PIN must be exactly 4 digits");
-          return;
-        }
+        // In a real web app, you would send this to your backend
+        // For now, we'll just show a success message
+        toast.success("PIN changed successfully (demo mode)");
+        setPinData({ currentPin: "", newPin: "", confirmPin: "" });
+        setShowPinChange(false);
+      } catch (error) {
+        toast.error("Failed to change PIN");
+        console.error("PIN change error:", error);
+      }
+    };
+  }, [pinData]);
 
-        try {
-          // For web-based app, validate the current PIN and update
-          const currentStoredPin = "1234"; // In production, this would be stored securely
-
-          if (pinData.currentPin !== currentStoredPin) {
-            toast.error("Current PIN is incorrect");
-            return;
-          }
-
-          // In a real web app, you would send this to your backend
-          // For now, we'll just show a success message
-          toast.success("PIN changed successfully (demo mode)");
-          setPinData({ currentPin: "", newPin: "", confirmPin: "" });
-          setShowPinChange(false);
-        } catch (error) {
-          toast.error("Failed to change PIN");
-          console.error("PIN change error:", error);
-        }
-      };
-    },
-    [pinData]
-  );
-
-  const handleCancel = useMemo(
-    () => {
-      return () => {
-        setFormData({
-          name: companyProfile.name,
-          legalName: companyProfile.legalName,
-          email: companyProfile.email,
-          phone: companyProfile.phone,
-          website: companyProfile.website,
-          address: companyProfile.address,
-          city: companyProfile.city,
-          state: companyProfile.state,
-          pincode: companyProfile.pincode,
-          country: companyProfile.country,
-          gstNumber: companyProfile.gstNumber,
-          panNumber: companyProfile.panNumber,
-          cinNumber: companyProfile.cinNumber,
-          logo: companyProfile.logo,
-          description: companyProfile.description,
-          foundedYear: companyProfile.foundedYear,
-          industry: companyProfile.industry,
-          companySize: companyProfile.companySize,
-          annualRevenue: companyProfile.annualRevenue?.toString() || "",
-          employeeCount: companyProfile.employeeCount?.toString() || "",
-          bankDetails: {
-            accountNumber: companyProfile.bankDetails.accountNumber,
-            ifscCode: companyProfile.bankDetails.ifscCode,
-            bankName: companyProfile.bankDetails.bankName,
-            branch: companyProfile.bankDetails.branch,
-          },
-          contactPerson: {
-            name: companyProfile.contactPerson.name,
-            email: companyProfile.contactPerson.email,
-            phone: companyProfile.contactPerson.phone,
-            designation: companyProfile.contactPerson.designation,
-          },
-          socialMedia: {
-            linkedin: companyProfile.socialMedia.linkedin || "",
-            twitter: companyProfile.socialMedia.twitter || "",
-            facebook: companyProfile.socialMedia.facebook || "",
-            instagram: companyProfile.socialMedia.instagram || "",
-          },
-        });
-        setIsEditing(false);
-      };
-    },
-    [companyProfile]
-  );
+  const handleCancel = useMemo(() => {
+    return () => {
+      setFormData({
+        name: companyProfile.name,
+        legalName: companyProfile.legalName,
+        email: companyProfile.email,
+        phone: companyProfile.phone,
+        website: companyProfile.website,
+        address: companyProfile.address,
+        city: companyProfile.city,
+        state: companyProfile.state,
+        pincode: companyProfile.pincode,
+        country: companyProfile.country,
+        gstNumber: companyProfile.gstNumber,
+        panNumber: companyProfile.panNumber,
+        cinNumber: companyProfile.cinNumber,
+        logo: companyProfile.logo,
+        description: companyProfile.description,
+        foundedYear: companyProfile.foundedYear,
+        industry: companyProfile.industry,
+        companySize: companyProfile.companySize,
+        annualRevenue: companyProfile.annualRevenue?.toString() ?? "",
+        employeeCount: companyProfile.employeeCount?.toString() ?? "",
+        bankDetails: {
+          accountNumber: companyProfile.bankDetails.accountNumber,
+          ifscCode: companyProfile.bankDetails.ifscCode,
+          bankName: companyProfile.bankDetails.bankName,
+          branch: companyProfile.bankDetails.branch,
+        },
+        contactPerson: {
+          name: companyProfile.contactPerson.name,
+          email: companyProfile.contactPerson.email,
+          phone: companyProfile.contactPerson.phone,
+          designation: companyProfile.contactPerson.designation,
+        },
+        socialMedia: {
+          linkedin: companyProfile.socialMedia.linkedin ?? "",
+          twitter: companyProfile.socialMedia.twitter ?? "",
+          facebook: companyProfile.socialMedia.facebook ?? "",
+          instagram: companyProfile.socialMedia.instagram ?? "",
+        },
+      });
+      setIsEditing(false);
+    };
+  }, [companyProfile]);
 
   return (
     <div className="space-y-6">

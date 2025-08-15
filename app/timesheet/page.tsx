@@ -1,19 +1,20 @@
 "use client";
 
-import { useState, useEffect, useMemo } from "react";
+import React, { useState, useMemo } from "react";
 import { useAccountingStore } from "@/store";
-import { Timesheet, Client, Project } from "@/types";
+import { Timesheet, Project } from "@/types";
 import {
   PlusIcon,
   PencilIcon,
   TrashIcon,
   MagnifyingGlassIcon,
-  FunnelIcon,
-  EyeIcon,
   DocumentTextIcon,
   ClockIcon,
-  CalendarIcon,
-  UserIcon,
+  CheckIcon,
+  XMarkIcon,
+  CurrencyRupeeIcon,
+  CalculatorIcon,
+  InformationCircleIcon,
 } from "@heroicons/react/24/outline";
 import {
   format,
@@ -183,7 +184,7 @@ const TimesheetRow = React.memo(
               {project?.name || "Unknown Project"}
             </div>
             <div className="text-sm text-gray-500 dark:text-gray-400">
-              {format(new Date(`${timesheet.month  }-01`), "MMMM yyyy")}
+              {format(new Date(`${timesheet.month}-01`), "MMMM yyyy")}
             </div>
           </div>
         </td>
@@ -340,7 +341,7 @@ const TimesheetModal = React.memo(
       }
     }, [formData.projectId, projects]);
 
-    const validateForm = React.useCallback(() => {
+    const validateForm = React.useCallback((): boolean => {
       const newErrors: Record<string, string> = {};
 
       if (!formData.projectId) {
@@ -353,22 +354,26 @@ const TimesheetModal = React.memo(
         }
       }
 
-      if (!formData.month) {newErrors.month = "Month is required";}
-      if (!formData.daysWorked || parseInt(formData.daysWorked) <= 0)
-        {newErrors.daysWorked = "Valid days worked is required";}
+      if (!formData.month) {
+        newErrors.month = "Month is required";
+      }
+      if (!formData.daysWorked || parseInt(formData.daysWorked) <= 0) {
+        newErrors.daysWorked = "Valid days worked is required";
+      }
 
       const totalWorkingDays = parseInt(formData.totalWorkingDays || "0");
       const daysWorked = parseInt(formData.daysWorked);
 
-      if (daysWorked > totalWorkingDays)
-        {newErrors.daysWorked = `Days worked cannot exceed ${totalWorkingDays} working days`;}
+      if (daysWorked > totalWorkingDays) {
+        newErrors.daysWorked = `Days worked cannot exceed ${totalWorkingDays} working days`;
+      }
 
       setErrors(newErrors);
       return Object.keys(newErrors).length === 0;
     }, [formData, projects]);
 
     const handleSubmit = React.useCallback(
-      (e: React.FormEvent) => {
+      (e: React.FormEvent): void => {
         e.preventDefault();
         if (validateForm()) {
           const totalWorkingDays = parseInt(formData.totalWorkingDays || "0");
@@ -396,7 +401,9 @@ const TimesheetModal = React.memo(
     );
 
     const handleFileUpload = async () => {
-      if (uploadedFiles.length === 0) {return;}
+      if (uploadedFiles.length === 0) {
+        return;
+      }
       setIsUploading(true);
       try {
         for (const file of uploadedFiles) {
@@ -431,7 +438,9 @@ const TimesheetModal = React.memo(
       }
     };
 
-    if (!isOpen) {return null;}
+    if (!isOpen) {
+      return null;
+    }
 
     return (
       <form id={formId} onSubmit={handleSubmit}>
@@ -895,8 +904,9 @@ export default function TimesheetPage() {
   }, [projects, timesheets]);
 
   const handleSubmit = React.useCallback(
-    async (formData: Record<string, unknown>) => {
-      const timesheetData = {
+    async (e: React.FormEvent): Promise<void> => {
+      e.preventDefault();
+      const formData = {
         projectId: formData.projectId as string,
         month: formData.month as string,
         year: new Date(formData.month as string).getFullYear(),
@@ -923,17 +933,17 @@ export default function TimesheetPage() {
     [editingTimesheet, addTimesheet, updateTimesheet]
   );
 
-  const handleEdit = React.useCallback((timesheet: Timesheet) => {
+  const handleEdit = React.useCallback((timesheet: Timesheet): void => {
     setEditingTimesheet(timesheet);
     setIsModalOpen(true);
   }, []);
 
-  const handleDelete = React.useCallback((id: string) => {
+  const handleDelete = React.useCallback((id: string): void => {
     setTimesheetToDelete(id);
     setShowDeleteDialog(true);
   }, []);
 
-  const confirmDelete = React.useCallback(() => {
+  const confirmDelete = React.useCallback((): void => {
     if (timesheetToDelete) {
       deleteTimesheet(timesheetToDelete);
       toast.success("Timesheet deleted successfully");
@@ -1253,7 +1263,7 @@ export default function TimesheetPage() {
                 <option value="all">All Months</option>
                 {uniqueMonths.map(month => (
                   <option key={month} value={month}>
-                    {format(new Date(`${month  }-01`), "MMMM yyyy")}
+                    {format(new Date(`${month}-01`), "MMMM yyyy")}
                   </option>
                 ))}
               </select>
@@ -1305,7 +1315,7 @@ export default function TimesheetPage() {
               {selectedMonthFilter !== "all" && (
                 <span className="ml-2 inline-block bg-blue-100 dark:bg-blue-800 text-blue-800 dark:text-blue-200 px-2 py-1 rounded text-xs">
                   Month:{" "}
-                  {format(new Date(`${selectedMonthFilter  }-01`), "MMMM yyyy")}
+                  {format(new Date(`${selectedMonthFilter}-01`), "MMMM yyyy")}
                 </span>
               )}
               <span className="ml-2 text-blue-600 dark:text-blue-300">

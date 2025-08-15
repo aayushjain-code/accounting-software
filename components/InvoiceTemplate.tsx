@@ -52,18 +52,18 @@ export const InvoiceTemplate: React.FC<InvoiceTemplateProps> = props => {
     taxType = "igst",
   } = props;
 
-  const formatCurrency = (amount: number) => {
+  const formatCurrency = (amount: number): string => {
     return new Intl.NumberFormat("en-IN", {
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2,
+      style: "currency",
+      currency: "INR",
     }).format(amount);
   };
 
-  const calculateSubtotal = () => {
+  const calculateSubtotal = (): number => {
     return items.reduce((sum, item) => sum + item.total, 0);
   };
 
-  const calculateTax = () => {
+  const calculateTax = (): number => {
     const subtotal = calculateSubtotal();
     if (taxType === "no-gst") {
       return 0; // No tax for non-GST invoices
@@ -76,7 +76,7 @@ export const InvoiceTemplate: React.FC<InvoiceTemplateProps> = props => {
     }
   };
 
-  const calculateSGST = () => {
+  const calculateSGST = (): number => {
     const subtotal = calculateSubtotal();
     if (taxType === "sgst-cgst") {
       return (subtotal * 9) / 100; // 9% SGST
@@ -84,7 +84,7 @@ export const InvoiceTemplate: React.FC<InvoiceTemplateProps> = props => {
     return 0; // No SGST for IGST or no-GST
   };
 
-  const calculateCGST = () => {
+  const calculateCGST = (): number => {
     const subtotal = calculateSubtotal();
     if (taxType === "sgst-cgst") {
       return (subtotal * 9) / 100; // 9% CGST
@@ -92,7 +92,7 @@ export const InvoiceTemplate: React.FC<InvoiceTemplateProps> = props => {
     return 0; // No CGST for IGST or no-GST
   };
 
-  const calculateIGST = () => {
+  const calculateIGST = (): number => {
     const subtotal = calculateSubtotal();
     if (taxType === "igst") {
       return (subtotal * 18) / 100; // 18% IGST
@@ -100,11 +100,11 @@ export const InvoiceTemplate: React.FC<InvoiceTemplateProps> = props => {
     return 0; // No IGST for SGST+CGST or no-GST
   };
 
-  const calculateTotal = () => {
+  const calculateTotal = (): number => {
     return calculateSubtotal() + calculateTax();
   };
 
-  const getTaxType = () => {
+  const getTaxType = (): string => {
     if (taxType === "no-gst") {
       return "No GST";
     } else if (taxType === "sgst-cgst") {
@@ -113,7 +113,7 @@ export const InvoiceTemplate: React.FC<InvoiceTemplateProps> = props => {
     return "IGST";
   };
 
-  const getTaxRate = () => {
+  const getTaxRate = (): string => {
     if (taxType === "no-gst") {
       return "0%";
     } else if (taxType === "sgst-cgst") {
@@ -161,72 +161,86 @@ export const InvoiceTemplate: React.FC<InvoiceTemplateProps> = props => {
     ];
 
     const convertLessThanOneThousand = (num: number): string => {
-      if (num === 0) {return "";}
+      if (num === 0) {
+        return "";
+      }
 
-      if (num < 10) {return ones[num];}
-      if (num < 20) {return teens[num - 10];}
+      if (num < 10) {
+        return ones[num];
+      }
+      if (num < 20) {
+        return teens[num - 10];
+      }
       if (num < 100) {
-        if (num % 10 === 0) {return tens[Math.floor(num / 10)];}
-        return `${tens[Math.floor(num / 10)]  } ${  ones[num % 10]}`;
+        if (num % 10 === 0) {
+          return tens[Math.floor(num / 10)];
+        }
+        return `${tens[Math.floor(num / 10)]} ${ones[num % 10]}`;
       }
       if (num < 1000) {
         if (num % 100 === 0) {
-          return `${ones[Math.floor(num / 100)]  } Hundred`;
+          return `${ones[Math.floor(num / 100)]} Hundred`;
         }
-        return (
-          `${ones[Math.floor(num / 100)] 
-          } Hundred ${ 
-          num % 100 !== 0 ? convertLessThanOneThousand(num % 100) : ""}`
-        );
+        return `${ones[Math.floor(num / 100)]} Hundred ${
+          num % 100 !== 0 ? convertLessThanOneThousand(num % 100) : ""
+        }`;
       }
       return "";
     };
 
     const convert = (num: number): string => {
-      if (num === 0) {return "Zero";}
-      if (num < 1000) {return convertLessThanOneThousand(num);}
+      if (num === 0) {
+        return "Zero";
+      }
+      if (num < 1000) {
+        return convertLessThanOneThousand(num);
+      }
       if (num < 100000) {
         const thousands = Math.floor(num / 1000);
         const remainder = num % 1000;
-        let result = `${convertLessThanOneThousand(thousands)  } Thousand`;
+        let result = `${convertLessThanOneThousand(thousands)} Thousand`;
         if (remainder > 0) {
-          result += ` ${  convertLessThanOneThousand(remainder)}`;
+          result += ` ${convertLessThanOneThousand(remainder)}`;
         }
         return result;
       }
       if (num < 10000000) {
         const lakhs = Math.floor(num / 100000);
         const remainder = num % 100000;
-        let result = `${convertLessThanOneThousand(lakhs)  } Lakh`;
+        let result = `${convertLessThanOneThousand(lakhs)} Lakh`;
         if (remainder > 0) {
-          result += ` ${  convert(remainder)}`;
+          result += ` ${convert(remainder)}`;
         }
         return result;
       }
       if (num < 1000000000) {
         const crores = Math.floor(num / 10000000);
         const remainder = num % 10000000;
-        let result = `${convertLessThanOneThousand(crores)  } Crore`;
+        let result = `${convertLessThanOneThousand(crores)} Crore`;
         if (remainder > 0) {
-          result += ` ${  convert(remainder)}`;
+          result += ` ${convert(remainder)}`;
         }
         return result;
       }
       return "Number too large";
     };
 
-    return `INR ${  convert(Math.floor(amount))  } Only`;
+    return `INR ${convert(Math.floor(amount))} Only`;
   };
 
   const getTaxAmountInWords = (amount: number): string => {
-    return `INR ${  getAmountInWords(amount).replace("INR ", "")}`;
+    return `INR ${getAmountInWords(amount).replace("INR ", "")}`;
   };
 
   // Function to convert line breaks in text to React elements
-  const renderTextWithLineBreaks = (text: string) => {
-    if (!text) {return "";}
+  const renderTextWithLineBreaks = (text: string): JSX.Element => {
+    if (!text) {
+      return "";
+    }
     const lines = text.split("\n");
-    if (lines.length === 1) {return text;}
+    if (lines.length === 1) {
+      return text;
+    }
 
     return lines
       .map((line, index) => [
@@ -324,11 +338,11 @@ export const InvoiceTemplate: React.FC<InvoiceTemplateProps> = props => {
                   React.createElement("br"),
                   companyState,
                   React.createElement("br"),
-                  `GSTIN/UIN: ${  companyGstin}`,
+                  `GSTIN/UIN: ${companyGstin}`,
                   React.createElement("br"),
-                  `State Name & Code: ${  companyStateCode}`,
+                  `State Name & Code: ${companyStateCode}`,
                   React.createElement("br"),
-                  `E-Mail: ${  companyEmail}`,
+                  `E-Mail: ${companyEmail}`,
                   React.createElement("br"),
                   companyWebsite,
                   React.createElement("hr", {
@@ -346,9 +360,9 @@ export const InvoiceTemplate: React.FC<InvoiceTemplateProps> = props => {
                   React.createElement("br"),
                   clientState,
                   React.createElement("br"),
-                  `GSTIN/UIN: ${  clientGstin}`,
+                  `GSTIN/UIN: ${clientGstin}`,
                   React.createElement("br"),
-                  `State Name & Code: ${  clientStateCode}`,
+                  `State Name & Code: ${clientStateCode}`,
                 ]
               ),
 
@@ -782,7 +796,7 @@ export const InvoiceTemplate: React.FC<InvoiceTemplateProps> = props => {
                           textAlign: "center",
                         },
                       },
-                      `${item.quantity  } ${  unit}`
+                      `${item.quantity} ${unit}`
                     ),
                     React.createElement(
                       "td",
@@ -913,7 +927,7 @@ export const InvoiceTemplate: React.FC<InvoiceTemplateProps> = props => {
                     textAlign: "center",
                   },
                 },
-                `${items.reduce((sum, item) => sum + item.quantity, 0)  } ${  unit}`
+                `${items.reduce((sum, item) => sum + item.quantity, 0)} ${unit}`
               ),
               React.createElement(
                 "div",
@@ -925,7 +939,7 @@ export const InvoiceTemplate: React.FC<InvoiceTemplateProps> = props => {
                     fontWeight: "bold",
                   },
                 },
-                `₹ ${  formatCurrency(total)}`
+                `₹ ${formatCurrency(total)}`
               ),
             ]
           ),
@@ -942,7 +956,7 @@ export const InvoiceTemplate: React.FC<InvoiceTemplateProps> = props => {
                 fontWeight: "bold",
               },
             },
-            `Amount Chargeable (in words): ${  getAmountInWords(total)}`
+            `Amount Chargeable (in words): ${getAmountInWords(total)}`
           ),
 
           // Tax Breakdown Table
@@ -1040,9 +1054,9 @@ export const InvoiceTemplate: React.FC<InvoiceTemplateProps> = props => {
                     taxType === "no-gst"
                       ? "N/A"
                       : [
-                          `${getTaxType()  } ${  getTaxRate()}`,
+                          `${getTaxType()} ${getTaxRate()}`,
                           React.createElement("br"),
-                          `Amount: ${  formatCurrency(taxAmount)}`,
+                          `Amount: ${formatCurrency(taxAmount)}`,
                         ]
                   ),
                   React.createElement(
@@ -1115,7 +1129,7 @@ export const InvoiceTemplate: React.FC<InvoiceTemplateProps> = props => {
                     React.createElement(
                       "strong",
                       {},
-                      `${getTaxType()  } Amount (in words): `
+                      `${getTaxType()} Amount (in words): `
                     ),
                     getTaxAmountInWords(taxAmount),
                   ]
@@ -1222,7 +1236,7 @@ export const InvoiceTemplate: React.FC<InvoiceTemplateProps> = props => {
                       },
                     },
                     [
-                      `For ${  companyName}`,
+                      `For ${companyName}`,
                       React.createElement("br"),
                       "Authorised Signatory",
                     ]

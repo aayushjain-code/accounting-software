@@ -13,8 +13,9 @@ import {
 import { useAccountingStore } from "@/store";
 import { Card } from "@/components/Card";
 import { Button } from "@/components/Button";
+import { InvoiceFile } from "@/types/invoice";
 
-export default function InvoiceUploadPage() {
+export default function InvoiceUploadPage(): JSX.Element {
   const [selectedMonth, setSelectedMonth] = useState(
     format(new Date(), "yyyy-MM")
   );
@@ -23,24 +24,30 @@ export default function InvoiceUploadPage() {
   const { invoices, invoiceFiles, addInvoiceFile, deleteInvoiceFile } =
     useAccountingStore();
 
-  const formatCurrency = (amount: number) => {
+  const formatCurrency = (amount: number): string => {
     return new Intl.NumberFormat("en-IN", {
       style: "currency",
       currency: "INR",
     }).format(amount);
   };
 
-  const formatFileSize = (bytes: number) => {
-    if (bytes === 0) {return "0 Bytes";}
+  const formatFileSize = (bytes: number): string => {
+    if (bytes === 0) {
+      return "0 Bytes";
+    }
     const k = 1024;
     const sizes = ["Bytes", "KB", "MB", "GB"];
     const i = Math.floor(Math.log(bytes) / Math.log(k));
-    return `${(bytes / Math.pow(k, i)).toFixed(2)  } ${  sizes[i]}`;
+    return `${(bytes / Math.pow(k, i)).toFixed(2)} ${sizes[i]}`;
   };
 
-  const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const {files} = event.target;
-    if (!files) {return;}
+  const handleFileUpload = (
+    event: React.ChangeEvent<HTMLInputElement>
+  ): void => {
+    const { files } = event.target;
+    if (!files) {
+      return;
+    }
 
     setUploading(true);
 
@@ -68,13 +75,13 @@ export default function InvoiceUploadPage() {
     }, 1000);
   };
 
-  const getMonthFiles = () => {
+  const getMonthFiles = (): InvoiceFile[] => {
     // For now, return all files since we removed the month field
     // In a real implementation, you might want to add month metadata or use a different approach
     return invoiceFiles;
   };
 
-  const handleDeleteFile = (fileId: string) => {
+  const handleDeleteFile = (fileId: string): void => {
     deleteInvoiceFile(fileId);
   };
 
@@ -178,7 +185,7 @@ export default function InvoiceUploadPage() {
           <div className="flex items-center space-x-2">
             <FolderIcon className="h-6 w-6 text-primary-600" />
             <h3 className="text-lg font-medium text-gray-900">
-              Files for {format(new Date(`${selectedMonth  }-01`), "MMMM yyyy")}
+              Files for {format(new Date(`${selectedMonth}-01`), "MMMM yyyy")}
             </h3>
           </div>
           <span className="text-sm text-gray-500">
@@ -282,7 +289,7 @@ export default function InvoiceUploadPage() {
       <Card>
         <h3 className="text-lg font-medium text-gray-900 mb-4">
           Recent Invoices for{" "}
-          {format(new Date(`${selectedMonth  }-01`), "MMMM yyyy")}
+          {format(new Date(`${selectedMonth}-01`), "MMMM yyyy")}
         </h3>
         <div className="space-y-3">
           {invoices

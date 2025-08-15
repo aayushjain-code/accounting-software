@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import React, { useState, useMemo } from "react";
 import { useAccountingStore } from "@/store";
 import { DailyLog, DailyLogFile } from "@/types";
 import { format } from "date-fns";
@@ -18,6 +18,7 @@ import { IconTooltip } from "@/components/Tooltip";
 import Modal from "@/components/Modal";
 import toast from "react-hot-toast";
 import FileList from "@/components/FileList";
+import { DailyLogsTable } from "@/components/DailyLogsTable";
 
 // Helper functions for colors
 const getCategoryColor = (category: string): string => {
@@ -103,7 +104,7 @@ const LogModal = React.memo(
       }
     }, [isOpen, editingLog]);
 
-    const handleSubmit = (e: React.FormEvent) => {
+    const handleSubmit = (e: React.FormEvent): void => {
       e.preventDefault();
       const newErrors: Record<string, string> = {};
 
@@ -133,11 +134,11 @@ const LogModal = React.memo(
         for (const file of uploadedFiles) {
           const fileData: DailyLogFile = {
             id: `file_${Date.now()}_${Math.random()}`,
-            dailyLogId: editingLog?.id || "new",
-            fileName: `dailylog_${editingLog?.id || "new"}_${file.name}`,
+            dailyLogId: editingLog?.id ?? "new",
+            fileName: `dailylog_${editingLog?.id ?? "new"}_${file.name}`,
             originalName: file.name,
             fileSize: file.size,
-            fileType: file.type || `.${file.name.split(".").pop()}`,
+            fileType: file.type ?? `.${file.name.split(".").pop()}`,
             uploadDate: new Date(),
             uploadedBy: "Admin User",
             filePath: `/uploads/dailylogs/${file.name}`,
@@ -156,6 +157,7 @@ const LogModal = React.memo(
         priority: formData.priority,
         tags,
         files,
+        status: "pending",
       });
 
       onClose();
@@ -396,7 +398,7 @@ const LogModal = React.memo(
 
 LogModal.displayName = "LogModal";
 
-export default function DailyLogsPage() {
+export default function DailyLogsPage(): JSX.Element {
   const [isClient, setIsClient] = useState(false);
 
   React.useEffect(() => {
@@ -454,7 +456,7 @@ export default function DailyLogsPage() {
 
   const handleSubmit = async (
     data: Omit<DailyLog, "id" | "createdAt" | "updatedAt">
-  ) => {
+  ): Promise<void> => {
     if (editingLog) {
       await updateDailyLog(editingLog.id, data);
       toast.success("Log updated successfully");
@@ -466,12 +468,12 @@ export default function DailyLogsPage() {
     setEditingLog(null);
   };
 
-  const handleEdit = (log: DailyLog) => {
+  const handleEdit = (log: DailyLog): void => {
     setEditingLog(log);
     setIsModalOpen(true);
   };
 
-  const handleDelete = async (id: string) => {
+  const handleDelete = async (id: string): Promise<void> => {
     try {
       await deleteDailyLog(id);
       toast.success("Daily log deleted successfully");
@@ -480,7 +482,7 @@ export default function DailyLogsPage() {
     }
   };
 
-  const handleView = (log: DailyLog) => {
+  const handleView = (log: DailyLog): void => {
     setViewLog(log);
   };
 
@@ -785,7 +787,7 @@ export default function DailyLogsPage() {
                   Related Project
                 </label>
                 <p className="text-gray-900 dark:text-white">
-                  {projects.find(p => p.id === viewLog.projectId)?.name ||
+                  {projects.find(p => p.id === viewLog.projectId)?.name ??
                     "Unknown Project"}
                 </p>
               </div>

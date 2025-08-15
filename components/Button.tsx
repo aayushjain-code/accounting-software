@@ -19,7 +19,7 @@ export function Button({
   onClick,
   disabled = false,
   type = "button",
-}: ButtonProps) {
+}: ButtonProps): JSX.Element {
   const baseClasses =
     "inline-flex items-center justify-center font-medium rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 transition-colors";
 

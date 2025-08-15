@@ -63,7 +63,11 @@ const betaArchiveNavigation = [
   },
 ];
 
-export default function Layout({ children }: { children: React.ReactNode }) {
+export default function Layout({
+  children,
+}: {
+  children: React.ReactNode;
+}): JSX.Element {
   const [sidebarOpen, setSidebarOpen] = React.useState(false);
   const [profileMenuOpen, setProfileMenuOpen] = React.useState(false);
   const [betaArchiveExpanded, setBetaArchiveExpanded] = React.useState(false);

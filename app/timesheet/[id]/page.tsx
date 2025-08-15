@@ -436,7 +436,9 @@ export default function TimesheetDetailPage({
   }, [projects, timesheet]);
 
   const handleFileUpload = async () => {
-    if (!timesheet) {return;}
+    if (!timesheet) {
+      return;
+    }
 
     try {
       const input = document.createElement("input");
@@ -445,7 +447,7 @@ export default function TimesheetDetailPage({
       input.accept = ".pdf,.doc,.docx,.xls,.xlsx,.jpg,.jpeg,.png";
 
       input.onchange = async e => {
-        const {files} = (e.target as HTMLInputElement);
+        const { files } = e.target as HTMLInputElement;
         if (files) {
           for (let i = 0; i < files.length; i++) {
             const file = files[i];
@@ -577,7 +579,7 @@ export default function TimesheetDetailPage({
               </h1>
               <p className="text-gray-600 mt-2">
                 {project?.name} -{" "}
-                {format(new Date(`${timesheet.month  }-01`), "MMMM yyyy")}
+                {format(new Date(`${timesheet.month}-01`), "MMMM yyyy")}
               </p>
             </div>
           </div>

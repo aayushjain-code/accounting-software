@@ -2,29 +2,25 @@
 
 import { useState, useMemo } from "react";
 import { useAccountingStore } from "@/store";
-import { Expense } from "@/types";
+import { Expense, ExpenseFile } from "@/types";
 import { EXPENSE_CATEGORIES } from "@/constants";
 import {
   PlusIcon,
-  TrashIcon,
   MagnifyingGlassIcon,
   FunnelIcon,
-  EyeIcon,
-  ReceiptIcon,
-  CalendarIcon,
-  CurrencyDollarIcon,
-  TagIcon,
+  CloudArrowUpIcon,
+  ChevronUpIcon,
+  ChevronDownIcon,
+  CurrencyRupeeIcon,
 } from "@heroicons/react/24/outline";
 import { format } from "date-fns";
 import toast from "react-hot-toast";
 import Modal from "@/components/Modal";
 import FileUpload from "@/components/FileUpload";
 import FileList from "@/components/FileList";
-import { CloudArrowUpIcon } from "@heroicons/react/24/outline";
 import { ExpensesTable } from "@/components/ExpensesTable";
-import { ExpenseFile } from "@/types";
 
-export default function ExpensesPage() {
+export default function ExpensesPage(): JSX.Element {
   const [uploadedFiles, setUploadedFiles] = useState<File[]>([]);
   const [isUploading, setIsUploading] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
@@ -55,7 +51,7 @@ export default function ExpensesPage() {
 
   const expenseCategories = EXPENSE_CATEGORIES.map(cat => cat.label);
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent): Promise<void> => {
     e.preventDefault();
 
     const expenseData = {
@@ -63,7 +59,7 @@ export default function ExpensesPage() {
       description: formData.description,
       amount: parseFloat(formData.amount),
       date: new Date(formData.date),
-      projectId: formData.projectId || undefined,
+      projectId: formData.projectId ?? undefined,
       status: formData.status,
     };
 
@@ -87,27 +83,27 @@ export default function ExpensesPage() {
     });
   };
 
-  const handleEdit = (expense: Expense) => {
+  const handleEdit = (expense: Expense): void => {
     setEditingExpense(expense);
     setFormData({
       category: expense.category,
       description: expense.description,
       amount: expense.amount.toString(),
       date: format(new Date(expense.date), "yyyy-MM-dd"),
-      projectId: expense.projectId || "",
+      projectId: expense.projectId ?? "",
       status: expense.status,
     });
     setIsModalOpen(true);
   };
 
-  const handleDelete = (id: string) => {
+  const handleDelete = (id: string): void => {
     if (confirm("Are you sure you want to delete this expense?")) {
       deleteExpense(id);
       toast.success("Expense deleted successfully");
     }
   };
 
-  const handleFileUpload = async () => {
+  const handleFileUpload = async (): Promise<void> => {
     if (uploadedFiles.length === 0) {
       toast.error("Please select files to upload");
       return;
@@ -118,11 +114,11 @@ export default function ExpensesPage() {
       for (const file of uploadedFiles) {
         const fileData: ExpenseFile = {
           id: `file_${Date.now()}_${Math.random()}`,
-          expenseId: editingExpense?.id || "temp",
-          fileName: `expense_${editingExpense?.id || "temp"}_${file.name}`,
+          expenseId: editingExpense?.id ?? "temp",
+          fileName: `expense_${editingExpense?.id ?? "temp"}_${file.name}`,
           originalName: file.name,
           fileSize: file.size,
-          fileType: file.type || `.${file.name.split(".").pop()}`,
+          fileType: file.type ?? `.${file.name.split(".").pop()}`,
           uploadDate: new Date(),
           uploadedBy: "Admin User",
           filePath: `/uploads/expenses/${file.name}`,
@@ -130,7 +126,7 @@ export default function ExpensesPage() {
           updatedAt: new Date(),
         };
 
-        addExpenseFile(editingExpense?.id || "temp", fileData);
+        addExpenseFile(editingExpense?.id ?? "temp", fileData);
       }
 
       toast.success("Files uploaded successfully");
@@ -142,14 +138,14 @@ export default function ExpensesPage() {
     }
   };
 
-  const handleFileDelete = (fileId: string) => {
+  const handleFileDelete = (fileId: string): void => {
     if (editingExpense) {
       removeExpenseFile(editingExpense.id, fileId);
       toast.success("File deleted successfully");
     }
   };
 
-  const handleModalClose = () => {
+  const handleModalClose = (): void => {
     setIsModalOpen(false);
     setEditingExpense(null);
     setFormData({
@@ -163,7 +159,7 @@ export default function ExpensesPage() {
     setUploadedFiles([]);
   };
 
-  const formatCurrency = (amount: number) => {
+  const formatCurrency = (amount: number): string => {
     return new Intl.NumberFormat("en-IN", {
       style: "currency",
       currency: "INR",
@@ -177,10 +173,11 @@ export default function ExpensesPage() {
         expense.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
         expense.category.toLowerCase().includes(searchTerm.toLowerCase()) ||
         (expense.projectId &&
-          projects
+          (projects
             .find(p => p.id === expense.projectId)
-            ?.name.toLowerCase()
-            .includes(searchTerm.toLowerCase()));
+            ?.name?.toLowerCase()
+            .includes(searchTerm.toLowerCase()) ??
+            false));
 
       const matchesCategory =
         selectedCategory === "all" || expense.category === selectedCategory;

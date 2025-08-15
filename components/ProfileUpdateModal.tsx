@@ -31,7 +31,7 @@ export const ProfileUpdateModal: React.FC<ProfileUpdateModalProps> = ({
   const [isLoading, setIsLoading] = useState(false);
   const [message, setMessage] = useState("");
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent): Promise<void> => {
     e.preventDefault();
     setIsLoading(true);
     setMessage("");
@@ -107,7 +107,9 @@ export const ProfileUpdateModal: React.FC<ProfileUpdateModalProps> = ({
     }
   };
 
-  if (!isOpen) {return null;}
+  if (!isOpen) {
+    return null;
+  }
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">

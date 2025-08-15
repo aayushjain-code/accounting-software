@@ -4,7 +4,7 @@ import React from "react";
 import { InvoiceTemplate } from "@/components/InvoiceTemplate";
 import { Invoice, InvoiceItem, Client } from "@/types";
 
-export default function InvoiceDemoPage() {
+export default function InvoiceDemoPage(): JSX.Element {
   // Sample data to demonstrate the invoice template
   const sampleClient: Client = {
     id: "client1",
@@ -69,6 +69,8 @@ export default function InvoiceDemoPage() {
     taxRate: 18,
     taxAmount: 18000,
     total: 118000,
+    paymentTerms: "Net 30",
+    items: sampleItems,
     notes: "IT Design and Development Services",
     createdAt: new Date(),
     updatedAt: new Date(),
@@ -78,10 +80,15 @@ export default function InvoiceDemoPage() {
     {
       id: "item1",
       invoiceId: "invoice1",
+      title: "IT Design and Development",
       description: "IT Design and Development",
       quantity: 1,
       unitPrice: 100000,
       total: 100000,
+      hsnCode: "998314",
+      unit: "Nos",
+      createdAt: new Date(),
+      updatedAt: new Date(),
     },
   ];
 

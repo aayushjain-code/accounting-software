@@ -23,7 +23,9 @@ export const ClientViewModal: React.FC<ClientViewModalProps> = ({
   onClose,
   client,
 }) => {
-  if (!client) {return null;}
+  if (!client) {
+    return null;
+  }
 
   const getStatusColor = (status: string | undefined) => {
     const safeStatus = status || "active";
@@ -70,7 +72,9 @@ export const ClientViewModal: React.FC<ClientViewModalProps> = ({
   };
 
   const formatUrl = (url: string) => {
-    if (!url) {return "";}
+    if (!url) {
+      return "";
+    }
     if (!url.startsWith("http://") && !url.startsWith("https://")) {
       return `https://${url}`;
     }

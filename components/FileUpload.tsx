@@ -46,7 +46,7 @@ const FileUpload: React.FC<FileUploadProps> = ({
       }
 
       // Check file type
-      const fileExtension = `.${  file.name.split(".").pop()?.toLowerCase()}`;
+      const fileExtension = `.${file.name.split(".").pop()?.toLowerCase()}`;
       if (!acceptedTypes.includes(fileExtension)) {
         return `File type not supported. Accepted types: ${acceptedTypes.join(
           ", "
@@ -74,7 +74,9 @@ const FileUpload: React.FC<FileUploadProps> = ({
         validFiles.push(file);
       }
 
-      if (hasError) {return;}
+      if (hasError) {
+        return;
+      }
 
       if (files.length + validFiles.length > maxFiles) {
         setError(`Maximum ${maxFiles} files allowed`);
@@ -86,12 +88,12 @@ const FileUpload: React.FC<FileUploadProps> = ({
     [files, onFilesChange, maxFiles, validateFile]
   );
 
-  const handleDragOver = useCallback((e: React.DragEvent) => {
+  const handleDragOver = useCallback((e: React.DragEvent): void => {
     e.preventDefault();
     setIsDragOver(true);
   }, []);
 
-  const handleDragLeave = useCallback((e: React.DragEvent) => {
+  const handleDragLeave = useCallback((e: React.DragEvent): void => {
     e.preventDefault();
     setIsDragOver(false);
   }, []);
@@ -123,11 +125,13 @@ const FileUpload: React.FC<FileUploadProps> = ({
   );
 
   const formatFileSize = (bytes: number): string => {
-    if (bytes === 0) {return "0 Bytes";}
+    if (bytes === 0) {
+      return "0 Bytes";
+    }
     const k = 1024;
     const sizes = ["Bytes", "KB", "MB", "GB"];
     const i = Math.floor(Math.log(bytes) / Math.log(k));
-    return `${(bytes / Math.pow(k, i)).toFixed(2)  } ${  sizes[i]}`;
+    return `${(bytes / Math.pow(k, i)).toFixed(2)} ${sizes[i]}`;
   };
 
   return (

@@ -1,20 +1,9 @@
 "use client";
 
-import { useState, useEffect, useMemo } from "react";
+import { useState, useMemo } from "react";
 import { useAccountingStore } from "@/store";
 import { Invoice } from "@/types";
-import {
-  PlusIcon,
-  PencilIcon,
-  TrashIcon,
-  MagnifyingGlassIcon,
-  FunnelIcon,
-  EyeIcon,
-  DocumentTextIcon,
-  ClockIcon,
-  CurrencyDollarIcon,
-  CalendarIcon,
-} from "@heroicons/react/24/outline";
+import { PlusIcon, DocumentTextIcon } from "@heroicons/react/24/outline";
 import { format } from "date-fns";
 import toast from "react-hot-toast";
 import { ActionTooltip } from "@/components/Tooltip";
@@ -23,7 +12,7 @@ import Modal from "@/components/Modal";
 import { useSearch } from "@/hooks/useSearch";
 import { InvoicesTable } from "@/components/InvoicesTable";
 
-export default function InvoicesPage() {
+export default function InvoicesPage(): JSX.Element {
   const {
     invoices,
     clients,
@@ -69,7 +58,7 @@ export default function InvoicesPage() {
     return filtered;
   }, [searchFilteredInvoices, statusFilter]);
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent): Promise<void> => {
     e.preventDefault();
 
     const invoiceData = {
@@ -85,6 +74,8 @@ export default function InvoicesPage() {
       taxRate: 0,
       taxAmount: 0,
       total: parseFloat(formData.amount),
+      paymentTerms: "Net 30",
+      items: [],
     };
 
     if (editingInvoice) {
@@ -111,7 +102,7 @@ export default function InvoicesPage() {
     });
   };
 
-  const handleEdit = (invoice: Invoice) => {
+  const handleEdit = (invoice: Invoice): void => {
     setEditingInvoice(invoice);
     setFormData({
       invoiceNumber: invoice.invoiceNumber,
@@ -125,12 +116,12 @@ export default function InvoicesPage() {
     setIsModalOpen(true);
   };
 
-  const handleDelete = (id: string) => {
+  const handleDelete = (id: string): void => {
     setInvoiceToDelete(id);
     setShowDeleteDialog(true);
   };
 
-  const confirmDelete = () => {
+  const confirmDelete = (): void => {
     if (invoiceToDelete) {
       deleteInvoice(invoiceToDelete);
       toast.success("Invoice deleted successfully");
@@ -231,7 +222,7 @@ export default function InvoicesPage() {
             <DocumentTextIcon className="h-16 w-16" />
           </div>
           <p className="text-gray-500 text-lg font-medium mb-4">
-            {searchTerm || statusFilter !== "all"
+            {(searchTerm ?? statusFilter !== "all")
               ? "No invoices found matching your criteria."
               : "No invoices found. Create your first invoice to get started."}
           </p>
@@ -432,7 +423,7 @@ export default function InvoicesPage() {
         onConfirm={confirmDelete}
         title="Confirm Deletion"
         message={`Are you sure you want to delete invoice "${
-          editingInvoice?.invoiceNumber || invoiceToDelete
+          editingInvoice?.invoiceNumber ?? invoiceToDelete
         }"? This action cannot be undone.`}
         confirmText="Delete"
         cancelText="Cancel"

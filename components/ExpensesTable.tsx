@@ -32,35 +32,35 @@ export const ExpensesTable: React.FC<ExpensesTableProps> = ({
   sortOrder = "desc",
   onSort,
 }) => {
-  const getCategoryColor = (category: string) => {
+  const getCategoryColor = (category: string): string => {
     switch (category.toLowerCase()) {
       case "travel":
         return "bg-blue-100 text-blue-800 border-blue-200";
-      case "office":
+      case "meals":
         return "bg-green-100 text-green-800 border-green-200";
-      case "marketing":
+      case "office":
         return "bg-purple-100 text-purple-800 border-purple-200";
-      case "utilities":
+      case "marketing":
         return "bg-yellow-100 text-yellow-800 border-yellow-200";
-      case "equipment":
-        return "bg-orange-100 text-orange-800 border-orange-200";
+      case "utilities":
+        return "bg-red-100 text-red-800 border-red-200";
       default:
         return "bg-gray-100 text-gray-800 border-gray-200";
     }
   };
 
-  const formatCategory = (category: string) => {
-    return category.charAt(0).toUpperCase() + category.slice(1);
+  const formatCategory = (category: string): string => {
+    return category.charAt(0).toUpperCase() + category.slice(1).toLowerCase();
   };
 
-  const formatCurrency = (amount: number) => {
+  const formatCurrency = (amount: number): string => {
     return new Intl.NumberFormat("en-IN", {
       style: "currency",
       currency: "INR",
     }).format(amount);
   };
 
-  const getCategoryIcon = (category: string) => {
+  const getCategoryIcon = (category: string): JSX.Element => {
     switch (category.toLowerCase()) {
       case "travel":
         return "✈";

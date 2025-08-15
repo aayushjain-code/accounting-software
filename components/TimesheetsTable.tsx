@@ -99,8 +99,8 @@ export const TimesheetsTable: React.FC<TimesheetsTableProps> = ({
             {timesheets
               .sort(
                 (a, b) =>
-                  new Date(`${b.month  }-01`).getTime() -
-                  new Date(`${a.month  }-01`).getTime()
+                  new Date(`${b.month}-01`).getTime() -
+                  new Date(`${a.month}-01`).getTime()
               )
               .map(timesheet => {
                 const project = timesheet.projectId
@@ -120,7 +120,7 @@ export const TimesheetsTable: React.FC<TimesheetsTableProps> = ({
                         <div>
                           <div className="text-sm font-medium text-gray-900 dark:text-white">
                             {format(
-                              new Date(`${timesheet.month  }-01`),
+                              new Date(`${timesheet.month}-01`),
                               "MMM yyyy"
                             )}
                           </div>

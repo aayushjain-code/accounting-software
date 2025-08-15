@@ -61,7 +61,9 @@ export const StorageManager: React.FC = () => {
 
   const importData = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
-    if (!file) {return;}
+    if (!file) {
+      return;
+    }
 
     if (file.type !== "application/json" && !file.name.endsWith(".json")) {
       toast.error("Please select a valid JSON file");

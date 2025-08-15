@@ -1170,6 +1170,12 @@ export const InvoiceEditor: React.FC<InvoiceEditorProps> = ({
                           poNumber:
                             selectedClient.poNumber || "PO/GSPL/202526/000496",
                         }));
+
+                        // Update the form's Purchase Order Number
+                        setFormData((prev) => ({
+                          ...prev,
+                          purchaseOrderNo: selectedClient.poNumber || "PO/GSPL/202526/000496",
+                        }));
                       }
                     }}
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"

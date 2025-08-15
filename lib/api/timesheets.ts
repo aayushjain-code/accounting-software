@@ -25,13 +25,14 @@ export interface CreateTimesheetEntryData {
 
 export interface UpdateTimesheetEntryData extends Partial<CreateTimesheetEntryData> {}
 
-export interface TimesheetFilters {
-  user_id?: string;
-  project_id?: string;
-  status?: string;
-  week_start_date_from?: string;
-  week_start_date_to?: string;
-  approved_by?: string;
+// Extend this interface for additional timesheet-specific filters
+export interface TimesheetFilters extends BaseFilters {
+  // Add timesheet-specific filters here when needed
+}
+
+// Extend this interface for additional timesheet entry-specific filters
+export interface TimesheetEntryFilters extends BaseFilters {
+  // Add timesheet entry-specific filters here when needed
 }
 
 export class TimesheetService {

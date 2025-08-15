@@ -195,13 +195,27 @@ export class DataMigrationService {
   private static countTotalItems(localData: any): number {
     let count = 0;
     
-    if (localData["accounting-company-profile"]) count++;
-    if (localData["accounting-users"]) count++;
-    if (localData["accounting-clients"]) count++;
-    if (localData["accounting-projects"]) count++;
-    if (localData["accounting-timesheets"]) count++;
-    if (localData["accounting-invoices"]) count++;
-    if (localData["accounting-expenses"]) count++;
+    if (localData["accounting-company-profile"]) {
+      count++;
+    }
+    if (localData["accounting-users"]) {
+      count++;
+    }
+    if (localData["accounting-clients"]) {
+      count++;
+    }
+    if (localData["accounting-projects"]) {
+      count++;
+    }
+    if (localData["accounting-timesheets"]) {
+      count++;
+    }
+    if (localData["accounting-invoices"]) {
+      count++;
+    }
+    if (localData["accounting-expenses"]) {
+      count++;
+    }
     
     return count;
   }

@@ -18,18 +18,9 @@ export interface CreateExpenseData {
 
 export interface UpdateExpenseData extends Partial<CreateExpenseData> {}
 
-export interface ExpenseFilters {
-  user_id?: string;
-  project_id?: string;
-  client_id?: string;
-  category?: string;
-  status?: string;
-  date_from?: string;
-  date_to?: string;
-  amount_min?: number;
-  amount_max?: number;
-  billable?: boolean;
-  reimbursable?: boolean;
+// Extend this interface for additional expense-specific filters
+export interface ExpenseFilters extends BaseFilters {
+  // Add expense-specific filters here when needed
 }
 
 export class ExpenseService {
@@ -636,7 +627,10 @@ export class ExpenseService {
   }
 
   // Bulk approve expenses
-  static async bulkApproveExpenses(ids: string[], approvedBy: string) {
+  static async bulkApproveExpenses(
+    ids: string[],
+    approvedBy: string
+  ): Promise<any[]> {
     try {
       const { data, error } = await supabase
         .from("expenses")
@@ -648,7 +642,9 @@ export class ExpenseService {
         .in("id", ids)
         .select();
 
-      if (error) throw error;
+      if (error) {
+        throw error;
+      }
       return data || [];
     } catch (error) {
       console.error("Error bulk approving expenses:", error);
@@ -661,7 +657,7 @@ export class ExpenseService {
     ids: string[],
     approvedBy: string,
     rejectionReason: string
-  ) {
+  ): Promise<any[]> {
     try {
       const { data, error } = await supabase
         .from("expenses")
@@ -674,7 +670,9 @@ export class ExpenseService {
         .in("id", ids)
         .select();
 
-      if (error) throw error;
+      if (error) {
+        throw error;
+      }
       return data || [];
     } catch (error) {
       console.error("Error bulk rejecting expenses:", error);

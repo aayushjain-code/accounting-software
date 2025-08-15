@@ -16,14 +16,9 @@ export interface CreateProjectData {
 
 export interface UpdateProjectData extends Partial<CreateProjectData> {}
 
-export interface ProjectFilters {
-  search?: string;
-  status?: string;
-  client_id?: string;
-  project_manager_id?: string;
-  start_date_from?: string;
-  start_date_to?: string;
-  tags?: string[];
+// Extend this interface for additional project-specific filters
+export interface ProjectFilters extends BaseFilters {
+  // Add project-specific filters here when needed
 }
 
 export class ProjectService {

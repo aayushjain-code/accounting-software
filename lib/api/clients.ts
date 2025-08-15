@@ -28,12 +28,9 @@ export interface CreateClientData {
 
 export interface UpdateClientData extends Partial<CreateClientData> {}
 
-export interface ClientFilters {
-  search?: string;
-  status?: string;
-  city?: string;
-  state?: string;
-  tags?: string[];
+// Extend this interface for additional client-specific filters
+export interface ClientFilters extends BaseFilters {
+  // Add client-specific filters here when needed
 }
 
 export class ClientService {

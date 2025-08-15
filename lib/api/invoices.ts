@@ -30,16 +30,14 @@ export interface CreateInvoiceItemData {
 
 export interface UpdateInvoiceItemData extends Partial<CreateInvoiceItemData> {}
 
-export interface InvoiceFilters {
-  client_id?: string;
-  project_id?: string;
-  status?: string;
-  issue_date_from?: string;
-  issue_date_to?: string;
-  due_date_from?: string;
-  due_date_to?: string;
-  amount_min?: number;
-  amount_max?: number;
+// Extend this interface for additional invoice-specific filters
+export interface InvoiceFilters extends BaseFilters {
+  // Add invoice-specific filters here when needed
+}
+
+// Extend this interface for additional invoice item-specific filters
+export interface InvoiceItemFilters extends BaseFilters {
+  // Add invoice item-specific filters here when needed
 }
 
 export class InvoiceService {

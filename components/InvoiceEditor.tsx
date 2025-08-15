@@ -502,10 +502,15 @@ export const InvoiceEditor: React.FC<InvoiceEditorProps> = ({
       items.forEach(item => {
         addInvoiceItem({
           invoiceId: "temp", // This will be updated when we get the actual invoice ID
+          title: item.title,
           description: item.description,
           quantity: item.quantity,
           unitPrice: item.unitPrice,
           total: item.total,
+          hsnCode: item.hsnCode,
+          unit: item.unit,
+          createdAt: new Date(),
+          updatedAt: new Date(),
         });
       });
 
@@ -1301,10 +1306,22 @@ export const InvoiceEditor: React.FC<InvoiceEditorProps> = ({
                           value={item.title || ""}
                           onChange={e => {
                             const updatedItems = [...items];
-                            updatedItems[index] = {
-                              ...updatedItems[index],
-                              title: e.target.value,
-                            };
+                            const currentItem = updatedItems[index];
+                            if (currentItem) {
+                              updatedItems[index] = {
+                                ...currentItem,
+                                title: e.target.value,
+                                invoiceId: currentItem.invoiceId || "temp",
+                                description: currentItem.description || "",
+                                quantity: currentItem.quantity || 0,
+                                unitPrice: currentItem.unitPrice || 0,
+                                total: currentItem.total || 0,
+                                hsnCode: currentItem.hsnCode || "",
+                                unit: currentItem.unit || "",
+                                createdAt: currentItem.createdAt || new Date(),
+                                updatedAt: new Date(),
+                              } as InvoiceItem;
+                            }
                             setItems(updatedItems);
                           }}
                           className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -1322,10 +1339,22 @@ export const InvoiceEditor: React.FC<InvoiceEditorProps> = ({
                           value={item.description || ""}
                           onChange={e => {
                             const updatedItems = [...items];
-                            updatedItems[index] = {
-                              ...updatedItems[index],
-                              description: e.target.value,
-                            };
+                            const currentItem = updatedItems[index];
+                            if (currentItem) {
+                              updatedItems[index] = {
+                                ...currentItem,
+                                description: e.target.value,
+                                invoiceId: currentItem.invoiceId || "temp",
+                                title: currentItem.title || "",
+                                quantity: currentItem.quantity || 0,
+                                unitPrice: currentItem.unitPrice || 0,
+                                total: currentItem.total || 0,
+                                hsnCode: currentItem.hsnCode || "",
+                                unit: currentItem.unit || "",
+                                createdAt: currentItem.createdAt || new Date(),
+                                updatedAt: new Date(),
+                              } as InvoiceItem;
+                            }
                             setItems(updatedItems);
                           }}
                           className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"

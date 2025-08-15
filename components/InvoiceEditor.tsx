@@ -107,8 +107,8 @@ export const InvoiceEditor: React.FC<InvoiceEditorProps> = ({
     company: "BRANDSMASHERS TECH",
   });
 
-  // Mock clients data since API doesn't exist
-  const [clients] = useState<Client[]>([
+  // Mock clients data since API doesn't exist - moved outside component to prevent re-renders
+  const clients = useMemo<Client[]>(() => [
     {
       id: "clt-001",
       clientCode: "CLT-2025-0001",
@@ -192,7 +192,7 @@ export const InvoiceEditor: React.FC<InvoiceEditorProps> = ({
       createdAt: new Date("2025-01-25"),
       updatedAt: new Date("2025-01-25"),
     },
-  ]);
+  ], []);
 
   const [selectedClientId, setSelectedClientId] = useState<string | "">("");
   const [saveMessage, setSaveMessage] = useState<string>("");
@@ -202,6 +202,11 @@ export const InvoiceEditor: React.FC<InvoiceEditorProps> = ({
 
   // Ref for printing
   const invoiceRef = useRef<HTMLDivElement>(null);
+
+  // Optimized form data update handler to prevent unnecessary re-renders
+  const handleFormDataChange = useCallback((field: keyof typeof formData, value: string) => {
+    setFormData(prev => ({ ...prev, [field]: value }));
+  }, []);
 
   // Custom print handler that only prints the invoice
   const handlePrint = () => {
@@ -868,7 +873,7 @@ export const InvoiceEditor: React.FC<InvoiceEditorProps> = ({
                       type="date"
                       value={formData.dueDate}
                       onChange={(e) =>
-                        setFormData({ ...formData, dueDate: e.target.value })
+                        handleFormDataChange('dueDate', e.target.value)
                       }
                       className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                     />
@@ -900,10 +905,7 @@ export const InvoiceEditor: React.FC<InvoiceEditorProps> = ({
                       type="text"
                       value={formData.paymentTerms}
                       onChange={(e) =>
-                        setFormData({
-                          ...formData,
-                          paymentTerms: e.target.value,
-                        })
+                        handleFormDataChange('paymentTerms', e.target.value)
                       }
                       className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                       placeholder="e.g., Net 30"
@@ -917,10 +919,7 @@ export const InvoiceEditor: React.FC<InvoiceEditorProps> = ({
                       type="text"
                       value={formData.deliveryNote}
                       onChange={(e) =>
-                        setFormData({
-                          ...formData,
-                          deliveryNote: e.target.value,
-                        })
+                        handleFormDataChange('deliveryNote', e.target.value)
                       }
                       className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                       placeholder="e.g., DN-001"

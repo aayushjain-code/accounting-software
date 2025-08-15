@@ -54,11 +54,48 @@ export const InvoiceTemplate: React.FC<InvoiceTemplateProps> = (props) => {
 
   const calculateTax = () => {
     const subtotal = calculateSubtotal();
-    return (subtotal * 18) / 100; // 18% IGST
+    // Check if client is in same state (intra-state) or different state (inter-state)
+    const isIntraState = companyInfo?.state === clientInfo?.state;
+    
+    if (isIntraState) {
+      // Intra-state: SGST (9%) + CGST (9%) = 18%
+      return (subtotal * 18) / 100;
+    } else {
+      // Inter-state: IGST (18%)
+      return (subtotal * 18) / 100;
+    }
+  };
+
+  const calculateSGST = () => {
+    const subtotal = calculateSubtotal();
+    const isIntraState = companyInfo?.state === clientInfo?.state;
+    return isIntraState ? (subtotal * 9) / 100 : 0; // 9% SGST for intra-state
+  };
+
+  const calculateCGST = () => {
+    const subtotal = calculateSubtotal();
+    const isIntraState = companyInfo?.state === clientInfo?.state;
+    return isIntraState ? (subtotal * 9) / 100 : 0; // 9% CGST for intra-state
+  };
+
+  const calculateIGST = () => {
+    const subtotal = calculateSubtotal();
+    const isIntraState = companyInfo?.state === clientInfo?.state;
+    return isIntraState ? 0 : (subtotal * 18) / 100; // 18% IGST for inter-state
   };
 
   const calculateTotal = () => {
     return calculateSubtotal() + calculateTax();
+  };
+
+  const getTaxType = () => {
+    const isIntraState = companyInfo?.state === clientInfo?.state;
+    return isIntraState ? "SGST + CGST" : "IGST";
+  };
+
+  const getTaxRate = () => {
+    const isIntraState = companyInfo?.state === clientInfo?.state;
+    return isIntraState ? "9% + 9%" : "18%";
   };
 
   const getAmountInWords = (amount: number): string => {
@@ -923,7 +960,7 @@ export const InvoiceTemplate: React.FC<InvoiceTemplateProps> = (props) => {
                       },
                     },
                     [
-                      "Rate: 18%",
+                      getTaxType() + " " + getTaxRate(),
                       React.createElement("br"),
                       "Amount: " + formatCurrency(taxAmount),
                     ]
@@ -993,7 +1030,7 @@ export const InvoiceTemplate: React.FC<InvoiceTemplateProps> = (props) => {
               },
             },
             [
-              React.createElement("strong", {}, "Tax Amount (in words): "),
+              React.createElement("strong", {}, getTaxType() + " Amount (in words): "),
               getTaxAmountInWords(taxAmount),
             ]
           ),

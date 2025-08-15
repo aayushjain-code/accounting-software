@@ -263,6 +263,24 @@ export const InvoiceTemplate: React.FC<InvoiceTemplateProps> = (props) => {
             "TAX INVOICE"
           ),
 
+          // PO Number Display
+          React.createElement(
+            "div",
+            {
+              style: {
+                textAlign: "center",
+                fontSize: "11px",
+                margin: "0 0 8px 0",
+                fontWeight: "bold",
+                color: "#333",
+              },
+            },
+            [
+              React.createElement("span", {}, "Purchase Order: "),
+              React.createElement("span", { style: { color: "#0066cc" } }, poNumber),
+            ]
+          ),
+
           // Header: Left (Company & Buyer) | Right (Invoice Meta)
           React.createElement(
             "div",

@@ -34,6 +34,7 @@ const mainNavigation = [
   { name: "Clients", href: "/clients", icon: UsersIcon },
   { name: "Projects", href: "/projects", icon: FolderIcon },
   { name: "Invoice Editor", href: "/invoice-editor", icon: PencilSquareIcon },
+  { name: "Invoice Management", href: "/invoice-management", icon: DocumentTextIcon },
   { name: "Expenses", href: "/expenses", icon: ReceiptRefundIcon },
   { name: "Daily Logs", href: "/daily-logs", icon: CalendarIcon },
   { name: "Directory", href: "/directory", icon: UserGroupIcon },
@@ -45,11 +46,6 @@ const betaArchiveNavigation = [
   {
     name: "Timesheet Generator",
     href: "/timesheet-generator",
-    icon: DocumentTextIcon,
-  },
-  {
-    name: "Invoice Management",
-    href: "/invoice-management",
     icon: DocumentTextIcon,
   },
   {

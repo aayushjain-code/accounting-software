@@ -1,4 +1,5 @@
 import { supabase } from "@/lib/supabase";
+import { BaseFilters } from "@/types";
 
 export interface CreateInvoiceData {
   client_id: string;
@@ -32,12 +33,22 @@ export interface UpdateInvoiceItemData extends Partial<CreateInvoiceItemData> {}
 
 // Extend this interface for additional invoice-specific filters
 export interface InvoiceFilters extends BaseFilters {
-  // Add invoice-specific filters here when needed
+  client_id?: string;
+  project_id?: string;
+  status?: string;
+  issue_date_from?: string;
+  issue_date_to?: string;
+  due_date_from?: string;
+  due_date_to?: string;
+  amount_min?: number;
+  amount_max?: number;
 }
 
 // Extend this interface for additional invoice item-specific filters
 export interface InvoiceItemFilters extends BaseFilters {
-  // Add invoice item-specific filters here when needed
+  invoice_id?: string;
+  item_type?: string;
+  timesheet_id?: string;
 }
 
 export class InvoiceService {
@@ -196,7 +207,10 @@ export class InvoiceService {
   }
 
   // Update existing invoice
-  static async updateInvoice(id: string, invoiceData: UpdateInvoiceData): Promise<any> {
+  static async updateInvoice(
+    id: string,
+    invoiceData: UpdateInvoiceData
+  ): Promise<any> {
     try {
       const { data, error } = await supabase
         .from("invoices")
@@ -231,7 +245,10 @@ export class InvoiceService {
   }
 
   // Mark invoice as paid
-  static async markInvoiceAsPaid(id: string, paymentDate?: string): Promise<any> {
+  static async markInvoiceAsPaid(
+    id: string,
+    paymentDate?: string
+  ): Promise<any> {
     try {
       const { data, error } = await supabase
         .from("invoices")
@@ -282,7 +299,8 @@ export class InvoiceService {
       }
 
       // Calculate totals
-      const subtotal = entries?.reduce((sum, entry) => sum + (entry.total_price ?? 0), 0) ?? 0;
+      const subtotal =
+        entries?.reduce((sum, entry) => sum + (entry.total_price ?? 0), 0) ?? 0;
       const taxRate = 0.1; // 10% tax rate - you can make this configurable
       const taxAmount = subtotal * taxRate;
       const totalAmount = subtotal + taxAmount;
@@ -292,7 +310,10 @@ export class InvoiceService {
         client_id: clientId,
         project_id: projectId ?? null,
         issue_date: new Date().toISOString().split("T")[0] ?? "",
-        due_date: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split("T")[0] ?? "", // 30 days from now
+        due_date:
+          new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
+            .toISOString()
+            .split("T")[0] ?? "", // 30 days from now
         status: "draft",
         subtotal,
         tax_rate: taxRate,
@@ -355,7 +376,10 @@ export class InvoiceService {
   }
 
   // Update invoice item
-  static async updateInvoiceItem(id: string, itemData: UpdateInvoiceItemData): Promise<any> {
+  static async updateInvoiceItem(
+    id: string,
+    itemData: UpdateInvoiceItemData
+  ): Promise<any> {
     try {
       const { data, error } = await supabase
         .from("invoice_items")
@@ -389,7 +413,10 @@ export class InvoiceService {
         .eq("id", id)
         .single();
 
-      const { error } = await supabase.from("invoice_items").delete().eq("id", id);
+      const { error } = await supabase
+        .from("invoice_items")
+        .delete()
+        .eq("id", id);
 
       if (error) {
         throw error;
@@ -431,7 +458,10 @@ export class InvoiceService {
     try {
       const items = await this.getInvoiceItems(invoiceId);
 
-      const subtotal = items.reduce((sum, item) => sum + (item.total_price ?? 0), 0);
+      const subtotal = items.reduce(
+        (sum, item) => sum + (item.total_price ?? 0),
+        0
+      );
       const taxRate = 0.1; // 10% tax rate - you can make this configurable
       const taxAmount = subtotal * taxRate;
       const totalAmount = subtotal + taxAmount;
@@ -576,9 +606,12 @@ export class InvoiceService {
       const paid = data?.filter(i => i.status === "paid").length ?? 0;
       const overdue = data?.filter(i => i.status === "overdue").length ?? 0;
       const cancelled = data?.filter(i => i.status === "cancelled").length ?? 0;
-      const totalAmount = data?.reduce((sum, i) => sum + (i.total_amount ?? 0), 0) ?? 0;
+      const totalAmount =
+        data?.reduce((sum, i) => sum + (i.total_amount ?? 0), 0) ?? 0;
       const paidAmount =
-        data?.filter(i => i.status === "paid").reduce((sum, i) => sum + (i.total_amount ?? 0), 0) ?? 0;
+        data
+          ?.filter(i => i.status === "paid")
+          .reduce((sum, i) => sum + (i.total_amount ?? 0), 0) ?? 0;
       const outstandingAmount = totalAmount - paidAmount;
 
       return {

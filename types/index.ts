@@ -6,6 +6,14 @@ export * from "./invoice";
 export * from "./timesheet";
 // Note: dashboard types are already exported by individual modules
 
+// Base interface for all filters
+export interface BaseFilters {
+  page?: number;
+  limit?: number;
+  sortBy?: string;
+  sortOrder?: "asc" | "desc";
+}
+
 // Legacy types that need to be migrated
 export interface Expense {
   id: string;

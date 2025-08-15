@@ -1,4 +1,5 @@
 import { supabase } from "@/lib/supabase";
+import { BaseFilters } from "@/types";
 
 export interface CreateExpenseData {
   user_id: string;
@@ -199,7 +200,10 @@ export class ExpenseService {
   }
 
   // Update existing expense
-  static async updateExpense(id: string, expenseData: UpdateExpenseData): Promise<any> {
+  static async updateExpense(
+    id: string,
+    expenseData: UpdateExpenseData
+  ): Promise<any> {
     try {
       const { data, error } = await supabase
         .from("expenses")
@@ -234,7 +238,11 @@ export class ExpenseService {
   }
 
   // Approve expense
-  static async approveExpense(id: string, approverId: string, approvalNotes?: string): Promise<any> {
+  static async approveExpense(
+    id: string,
+    approverId: string,
+    approvalNotes?: string
+  ): Promise<any> {
     try {
       const { data, error } = await supabase
         .from("expenses")
@@ -259,7 +267,11 @@ export class ExpenseService {
   }
 
   // Reject expense
-  static async rejectExpense(id: string, approverId: string, rejectionReason: string): Promise<any> {
+  static async rejectExpense(
+    id: string,
+    approverId: string,
+    rejectionReason: string
+  ): Promise<any> {
     try {
       const { data, error } = await supabase
         .from("expenses")
@@ -502,28 +514,39 @@ export class ExpenseService {
       const pending = data?.filter(e => e.status === "pending").length ?? 0;
       const approved = data?.filter(e => e.status === "approved").length ?? 0;
       const rejected = data?.filter(e => e.status === "rejected").length ?? 0;
-      const totalAmount = data?.reduce((sum, e) => sum + (e.amount ?? 0), 0) ?? 0;
+      const totalAmount =
+        data?.reduce((sum, e) => sum + (e.amount ?? 0), 0) ?? 0;
       const approvedAmount =
-        data?.filter(e => e.status === "approved").reduce((sum, e) => sum + (e.amount ?? 0), 0) ?? 0;
+        data
+          ?.filter(e => e.status === "approved")
+          .reduce((sum, e) => sum + (e.amount ?? 0), 0) ?? 0;
       const pendingAmount =
-        data?.filter(e => e.status === "pending").reduce((sum, e) => sum + (e.amount ?? 0), 0) ?? 0;
+        data
+          ?.filter(e => e.status === "pending")
+          .reduce((sum, e) => sum + (e.amount ?? 0), 0) ?? 0;
       const billableAmount =
-        data?.filter(e => e.billable).reduce((sum, e) => sum + (e.amount ?? 0), 0) ?? 0;
+        data
+          ?.filter(e => e.billable)
+          .reduce((sum, e) => sum + (e.amount ?? 0), 0) ?? 0;
       const reimbursableAmount =
-        data?.filter(e => e.reimbursable).reduce((sum, e) => sum + (e.amount ?? 0), 0) ?? 0;
+        data
+          ?.filter(e => e.reimbursable)
+          .reduce((sum, e) => sum + (e.amount ?? 0), 0) ?? 0;
 
       // Category breakdown
       const categoryBreakdown: Record<string, number> = {};
       data?.forEach(expense => {
         const category = expense.category ?? "Uncategorized";
-        categoryBreakdown[category] = (categoryBreakdown[category] ?? 0) + (expense.amount ?? 0);
+        categoryBreakdown[category] =
+          (categoryBreakdown[category] ?? 0) + (expense.amount ?? 0);
       });
 
       // Monthly breakdown
       const monthlyBreakdown: Record<string, number> = {};
       data?.forEach(expense => {
         const month = expense.date?.substring(0, 7) ?? "Unknown";
-        monthlyBreakdown[month] = (monthlyBreakdown[month] ?? 0) + (expense.amount ?? 0);
+        monthlyBreakdown[month] =
+          (monthlyBreakdown[month] ?? 0) + (expense.amount ?? 0);
       });
 
       return {
@@ -699,16 +722,20 @@ export class ExpenseService {
       return null;
     }
 
-    const { data } = supabase.storage.from("receipts").getPublicUrl(receiptPath);
+    const { data } = supabase.storage
+      .from("receipts")
+      .getPublicUrl(receiptPath);
     return data.publicUrl;
   }
 
   // Export expenses to CSV
-  static async exportExpensesToCSV(filters: ExpenseFilters = {}): Promise<string> {
+  static async exportExpensesToCSV(
+    filters: ExpenseFilters = {}
+  ): Promise<string> {
     try {
       const { data } = await this.getExpenses(filters, 1, 10000); // Get all expenses
 
-      if (!data ?? data.length === 0) {
+      if (!data || data.length === 0) {
         return "No expenses found";
       }
 
@@ -737,7 +764,9 @@ export class ExpenseService {
           `"${(expense.description ?? "").replace(/"/g, '""')}"`,
           expense.amount ?? 0,
           expense.status ?? "",
-          expense.user ? `${expense.user.first_name} ${expense.user.last_name}` : "",
+          expense.user
+            ? `${expense.user.first_name} ${expense.user.last_name}`
+            : "",
           expense.project?.name ?? "",
           expense.client?.name ?? "",
           expense.billable ? "Yes" : "No",

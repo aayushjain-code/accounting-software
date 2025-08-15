@@ -1,4 +1,5 @@
 import { supabase } from "@/lib/supabase";
+import { BaseFilters } from "@/types";
 
 export interface CreateProjectData {
   name: string;
@@ -18,7 +19,13 @@ export interface UpdateProjectData extends Partial<CreateProjectData> {}
 
 // Extend this interface for additional project-specific filters
 export interface ProjectFilters extends BaseFilters {
-  // Add project-specific filters here when needed
+  search?: string;
+  status?: string;
+  client_id?: string;
+  project_manager_id?: string;
+  start_date_from?: string;
+  start_date_to?: string;
+  tags?: string[];
 }
 
 export class ProjectService {
@@ -168,7 +175,10 @@ export class ProjectService {
   }
 
   // Update existing project
-  static async updateProject(id: string, projectData: UpdateProjectData): Promise<any> {
+  static async updateProject(
+    id: string,
+    projectData: UpdateProjectData
+  ): Promise<any> {
     try {
       const { data, error } = await supabase
         .from("projects")
@@ -308,7 +318,9 @@ export class ProjectService {
     totalBudget: number;
   }> {
     try {
-      const { data, error } = await supabase.from("projects").select("status, budget");
+      const { data, error } = await supabase
+        .from("projects")
+        .select("status, budget");
 
       if (error) {
         throw error;
@@ -391,7 +403,10 @@ export class ProjectService {
   }
 
   // Remove team member from project
-  static async removeTeamMember(projectId: string, userId: string): Promise<any> {
+  static async removeTeamMember(
+    projectId: string,
+    userId: string
+  ): Promise<any> {
     try {
       const project = await this.getProjectById(projectId);
       if (!project) {
@@ -399,7 +414,9 @@ export class ProjectService {
       }
 
       const currentMembers = project.team_members ?? [];
-      const updatedMembers = currentMembers.filter((id: string) => id !== userId);
+      const updatedMembers = currentMembers.filter(
+        (id: string) => id !== userId
+      );
 
       const { data, error } = await supabase
         .from("projects")

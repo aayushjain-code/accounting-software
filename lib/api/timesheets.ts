@@ -1,4 +1,5 @@
 import { supabase } from "@/lib/supabase";
+import { BaseFilters } from "@/types";
 
 export interface CreateTimesheetData {
   user_id: string;
@@ -23,16 +24,26 @@ export interface CreateTimesheetEntryData {
   hourly_rate?: number;
 }
 
-export interface UpdateTimesheetEntryData extends Partial<CreateTimesheetEntryData> {}
+export interface UpdateTimesheetEntryData
+  extends Partial<CreateTimesheetEntryData> {}
 
 // Extend this interface for additional timesheet-specific filters
 export interface TimesheetFilters extends BaseFilters {
-  // Add timesheet-specific filters here when needed
+  user_id?: string;
+  project_id?: string;
+  status?: string;
+  week_start_date_from?: string;
+  week_start_date_to?: string;
+  approved_by?: string;
 }
 
 // Extend this interface for additional timesheet entry-specific filters
 export interface TimesheetEntryFilters extends BaseFilters {
-  // Add timesheet entry-specific filters here when needed
+  timesheet_id?: string;
+  date_from?: string;
+  date_to?: string;
+  task_type?: string;
+  billable?: boolean;
 }
 
 export class TimesheetService {
@@ -159,7 +170,9 @@ export class TimesheetService {
   }
 
   // Create new timesheet
-  static async createTimesheet(timesheetData: CreateTimesheetData): Promise<any> {
+  static async createTimesheet(
+    timesheetData: CreateTimesheetData
+  ): Promise<any> {
     try {
       // Generate timesheet code
       const timesheetCode = await this.generateTimesheetCode();
@@ -181,7 +194,10 @@ export class TimesheetService {
   }
 
   // Update existing timesheet
-  static async updateTimesheet(id: string, timesheetData: UpdateTimesheetData): Promise<any> {
+  static async updateTimesheet(
+    id: string,
+    timesheetData: UpdateTimesheetData
+  ): Promise<any> {
     try {
       const { data, error } = await supabase
         .from("timesheets")
@@ -317,7 +333,9 @@ export class TimesheetService {
   }
 
   // Add timesheet entry
-  static async addTimesheetEntry(entryData: CreateTimesheetEntryData): Promise<any> {
+  static async addTimesheetEntry(
+    entryData: CreateTimesheetEntryData
+  ): Promise<any> {
     try {
       const { data, error } = await supabase
         .from("timesheet_entries")
@@ -340,7 +358,10 @@ export class TimesheetService {
   }
 
   // Update timesheet entry
-  static async updateTimesheetEntry(id: string, entryData: UpdateTimesheetEntryData): Promise<any> {
+  static async updateTimesheetEntry(
+    id: string,
+    entryData: UpdateTimesheetEntryData
+  ): Promise<any> {
     try {
       const { data, error } = await supabase
         .from("timesheet_entries")
@@ -374,7 +395,10 @@ export class TimesheetService {
         .eq("id", id)
         .single();
 
-      const { error } = await supabase.from("timesheet_entries").delete().eq("id", id);
+      const { error } = await supabase
+        .from("timesheet_entries")
+        .delete()
+        .eq("id", id);
 
       if (error) {
         throw error;
@@ -412,13 +436,18 @@ export class TimesheetService {
   }
 
   // Update timesheet totals
-  private static async updateTimesheetTotals(timesheetId: string): Promise<void> {
+  private static async updateTimesheetTotals(
+    timesheetId: string
+  ): Promise<void> {
     try {
       const entries = await this.getTimesheetEntries(timesheetId);
 
-      const totalHours = entries.reduce((sum, entry) => sum + (entry.hours ?? 0), 0);
+      const totalHours = entries.reduce(
+        (sum, entry) => sum + (entry.hours ?? 0),
+        0
+      );
       const totalAmount = entries.reduce(
-        (sum, entry) => sum + ((entry.hours ?? 0) * (entry.hourly_rate ?? 0)),
+        (sum, entry) => sum + (entry.hours ?? 0) * (entry.hourly_rate ?? 0),
         0
       );
 
@@ -535,8 +564,10 @@ export class TimesheetService {
       const approved = data?.filter(t => t.status === "approved").length ?? 0;
       const rejected = data?.filter(t => t.status === "rejected").length ?? 0;
       const invoiced = data?.filter(t => t.status === "invoiced").length ?? 0;
-      const totalHours = data?.reduce((sum, t) => sum + (t.total_hours ?? 0), 0) ?? 0;
-      const totalAmount = data?.reduce((sum, t) => sum + (t.total_amount ?? 0), 0) ?? 0;
+      const totalHours =
+        data?.reduce((sum, t) => sum + (t.total_hours ?? 0), 0) ?? 0;
+      const totalAmount =
+        data?.reduce((sum, t) => sum + (t.total_amount ?? 0), 0) ?? 0;
 
       return {
         total,
@@ -636,7 +667,10 @@ export class TimesheetService {
 
   static async bulkDeleteTimesheets(ids: string[]): Promise<boolean> {
     try {
-      const { error } = await supabase.from("timesheets").delete().in("id", ids);
+      const { error } = await supabase
+        .from("timesheets")
+        .delete()
+        .in("id", ids);
 
       if (error) {
         throw error;

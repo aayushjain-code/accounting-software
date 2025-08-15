@@ -1,4 +1,5 @@
 import { supabase } from "@/lib/supabase";
+import { BaseFilters, Client } from "@/types";
 
 export interface CreateClientData {
   name: string;
@@ -45,7 +46,12 @@ export class ClientService {
     filters: ClientFilters = {},
     page = 1,
     limit = 20
-  ): Promise<{ data: Client[]; totalPages: number; page: number; limit: number }> {
+  ): Promise<{
+    data: Client[];
+    totalPages: number;
+    page: number;
+    limit: number;
+  }> {
     try {
       let query = supabase
         .from("clients")
@@ -137,7 +143,9 @@ export class ClientService {
   }
 
   // Create new client
-  static async createClient(clientData: CreateClientData): Promise<Client | null> {
+  static async createClient(
+    clientData: CreateClientData
+  ): Promise<Client | null> {
     try {
       // Generate client code
       const clientCode = await this.generateClientCode();
@@ -159,7 +167,10 @@ export class ClientService {
   }
 
   // Update existing client
-  static async updateClient(id: string, clientData: UpdateClientData): Promise<Client | null> {
+  static async updateClient(
+    id: string,
+    clientData: UpdateClientData
+  ): Promise<Client | null> {
     try {
       const { data, error } = await supabase
         .from("clients")
@@ -194,7 +205,11 @@ export class ClientService {
   }
 
   // Get client statistics
-  static async getClientStats(): Promise<{ total: number; active: number; inactive: number }> {
+  static async getClientStats(): Promise<{
+    total: number;
+    active: number;
+    inactive: number;
+  }> {
     try {
       const { data, error } = await supabase.from("clients").select("status");
 
@@ -233,7 +248,10 @@ export class ClientService {
   }
 
   // Get clients by location
-  static async getClientsByLocation(city?: string, state?: string): Promise<Client[]> {
+  static async getClientsByLocation(
+    city?: string,
+    state?: string
+  ): Promise<Client[]> {
     try {
       let query = supabase
         .from("clients")

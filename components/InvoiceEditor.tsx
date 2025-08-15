@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import { Invoice, InvoiceItem, Client, Project } from "@/types";
 import { InvoiceTemplate } from "./InvoiceTemplate";
 import { useAccountingStore } from "@/store";
@@ -319,7 +319,7 @@ export const InvoiceEditor: React.FC<InvoiceEditorProps> = ({
     }
   }, [client]);
 
-  const handleItemChange = (
+  const handleItemChange = useCallback((
     index: number,
     field: keyof InvoiceItem,
     value: string | number
@@ -334,9 +334,9 @@ export const InvoiceEditor: React.FC<InvoiceEditorProps> = ({
     }
 
     setItems(newItems);
-  };
+  }, [items]);
 
-  const addItem = () => {
+  const addItem = useCallback(() => {
     const newItem: InvoiceItem = {
       id: Date.now().toString(),
       invoiceId: invoice?.id || "temp",
@@ -346,59 +346,55 @@ export const InvoiceEditor: React.FC<InvoiceEditorProps> = ({
       unitPrice: 0,
       total: 0,
     };
-    setItems([...items, newItem]);
-  };
+    setItems(prev => [...prev, newItem]);
+  }, [invoice?.id]);
 
-  const removeItem = (index: number) => {
+  const removeItem = useCallback((index: number) => {
     if (items.length > 1) {
-      setItems(items.filter((_, i) => i !== index));
+      setItems(prev => prev.filter((_, i) => i !== index));
     }
-  };
+  }, [items.length]);
 
-  const calculateSubtotal = () => {
+  const calculateSubtotal = useMemo(() => {
     return items.reduce((sum, item) => sum + item.total, 0);
-  };
+  }, [items]);
 
-  const calculateTax = () => {
-    const subtotal = calculateSubtotal();
+  const calculateTax = useMemo(() => {
     if (taxType === "no-gst") {
       return 0; // No tax for non-GST invoices
     } else if (taxType === "sgst-cgst") {
       // SGST (9%) + CGST (9%) = 18%
-      return (subtotal * 18) / 100;
+      return (calculateSubtotal * 18) / 100;
     } else {
       // IGST (18%)
-      return (subtotal * 18) / 100;
+      return (calculateSubtotal * 18) / 100;
     }
-  };
+  }, [calculateSubtotal, taxType]);
 
-  const calculateSGST = () => {
-    const subtotal = calculateSubtotal();
+  const calculateSGST = useMemo(() => {
     if (taxType === "sgst-cgst") {
-      return (subtotal * 9) / 100; // 9% SGST
+      return (calculateSubtotal * 9) / 100; // 9% SGST
     }
     return 0; // No SGST for IGST or no-GST
-  };
+  }, [calculateSubtotal, taxType]);
 
-  const calculateCGST = () => {
-    const subtotal = calculateSubtotal();
+  const calculateCGST = useMemo(() => {
     if (taxType === "sgst-cgst") {
-      return (subtotal * 9) / 100; // 9% CGST
+      return (calculateSubtotal * 9) / 100; // 9% CGST
     }
     return 0; // No CGST for IGST or no-GST
-  };
+  }, [calculateSubtotal, taxType]);
 
-  const calculateIGST = () => {
-    const subtotal = calculateSubtotal();
+  const calculateIGST = useMemo(() => {
     if (taxType === "igst") {
-      return (subtotal * 18) / 100; // 18% IGST
+      return (calculateSubtotal * 18) / 100; // 18% IGST
     }
     return 0; // No IGST for SGST+CGST or no-GST
-  };
+  }, [calculateSubtotal, taxType]);
 
-  const calculateTotal = () => {
-    return calculateSubtotal() + calculateTax();
-  };
+  const calculateTotal = useMemo(() => {
+    return calculateSubtotal + calculateTax;
+  }, [calculateSubtotal, calculateTax]);
 
   const getTaxType = () => {
     if (taxType === "no-gst") {
@@ -534,10 +530,10 @@ export const InvoiceEditor: React.FC<InvoiceEditorProps> = ({
         issueDate: new Date(formData.issueDate),
         dueDate: new Date(formData.dueDate),
         status: "draft" as const,
-        subtotal: calculateSubtotal(),
+        subtotal: calculateSubtotal,
         taxRate: 18,
-        taxAmount: calculateTax(),
-        total: calculateTotal(),
+        taxAmount: calculateTax,
+        total: calculateTotal,
         poNumber: clientInfo.poNumber,
         deliveryNote: formData.deliveryNote,
         paymentTerms: formData.paymentTerms,
@@ -573,9 +569,9 @@ export const InvoiceEditor: React.FC<InvoiceEditorProps> = ({
           invoiceNumber: formData.invoiceNumber,
           issueDate: new Date(formData.issueDate),
           dueDate: new Date(formData.dueDate),
-          subtotal: calculateSubtotal(),
-          taxAmount: calculateTax(),
-          total: calculateTotal(),
+          subtotal: calculateSubtotal,
+          taxAmount: calculateTax,
+          total: calculateTotal,
           poNumber: clientInfo.poNumber,
           deliveryNote: formData.deliveryNote,
           paymentTerms: formData.paymentTerms,
@@ -622,10 +618,10 @@ export const InvoiceEditor: React.FC<InvoiceEditorProps> = ({
     issueDate: new Date(formData.issueDate),
     dueDate: new Date(formData.dueDate),
     status: "draft",
-    subtotal: calculateSubtotal(),
+    subtotal: calculateSubtotal,
     taxRate: 18,
-    taxAmount: calculateTax(),
-    total: calculateTotal(),
+    taxAmount: calculateTax,
+    total: calculateTotal,
     poNumber: clientInfo.poNumber,
     deliveryNote: formData.deliveryNote,
     paymentTerms: formData.paymentTerms,
@@ -1483,7 +1479,7 @@ export const InvoiceEditor: React.FC<InvoiceEditorProps> = ({
                       <div className="font-semibold mb-2">Current Tax Configuration:</div>
                       <div>Tax Type: <span className="font-medium">{getTaxType()}</span></div>
                       <div>Tax Rate: <span className="font-medium">{getTaxRate()}</span></div>
-                      <div>Tax Amount: <span className="font-medium">₹{formatCurrency(calculateTax())}</span></div>
+                      <div>Tax Amount: <span className="font-medium">₹{formatCurrency(calculateTax)}</span></div>
                     </div>
                   </div>
                 </div>

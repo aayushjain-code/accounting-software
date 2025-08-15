@@ -4,10 +4,10 @@ import React, { Suspense, ComponentType, ReactNode } from "react";
 import { ErrorBoundary } from "./ErrorBoundary";
 
 interface LazyLoaderProps {
-  component: ComponentType<any>;
+  component: ComponentType<Record<string, unknown>>;
   fallback?: ReactNode;
   errorFallback?: ReactNode;
-  props?: any;
+  props?: Record<string, unknown>;
 }
 
 export function LazyLoader({

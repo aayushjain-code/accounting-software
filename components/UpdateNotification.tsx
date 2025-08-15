@@ -16,7 +16,7 @@ export const UpdateNotification: React.FC<UpdateNotificationProps> = ({
 
   useEffect(() => {
     if (changelog.length > 0) {
-      const latest = changelog[0];
+      const [latest] = changelog;
       const lastSeen = localStorage.getItem("lastSeenUpdate");
 
       if (!lastSeen || new Date(latest.releaseDate) > new Date(lastSeen)) {

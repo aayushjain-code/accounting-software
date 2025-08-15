@@ -76,29 +76,30 @@ export const InvoiceTemplate: React.FC<InvoiceTemplateProps> = props => {
     }
   };
 
-  const calculateSGST = (): number => {
-    const subtotal = calculateSubtotal();
-    if (taxType === "sgst-cgst") {
-      return (subtotal * 9) / 100; // 9% SGST
-    }
-    return 0; // No SGST for IGST or no-GST
-  };
+  // GST calculation functions (commented out as they're not currently used)
+  // const calculateSGST = (): number => {
+  //   const subtotal = calculateSubtotal();
+  //   if (taxType === "sgst-cgst") {
+  //     return (subtotal * 9) / 100; // 9% SGST
+  //   }
+  //   return 0; // No SGST for IGST or no-GST
+  // };
 
-  const calculateCGST = (): number => {
-    const subtotal = calculateSubtotal();
-    if (taxType === "sgst-cgst") {
-      return (subtotal * 9) / 100; // 9% CGST
-    }
-    return 0; // No CGST for IGST or no-GST
-  };
+  // const calculateCGST = (): number => {
+  //   const subtotal = calculateSubtotal();
+  //   if (taxType === "sgst-cgst") {
+  //     return (subtotal * 9) / 100; // 9% CGST
+  //   }
+  //   return 0; // No CGST for IGST or no-GST
+  // };
 
-  const calculateIGST = (): number => {
-    const subtotal = calculateSubtotal();
-    if (taxType === "igst") {
-      return (subtotal * 18) / 100; // 18% IGST
-    }
-    return 0; // No IGST for SGST+CGST or no-GST
-  };
+  // const calculateIGST = (): number => {
+  //   const subtotal = calculateSubtotal();
+  //   if (taxType === "igst") {
+  //     return (subtotal * 18) / 100; // 18% IGST
+  //   }
+  //   return 0; // No IGST for SGST+CGST or no-GST
+  // };
 
   const calculateTotal = (): number => {
     return calculateSubtotal() + calculateTax();

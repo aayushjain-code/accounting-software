@@ -40,14 +40,22 @@ export function PerformanceDashboard() {
   }, []);
 
   const getAverageTime = (times: number[]): number => {
-    if (times.length === 0) {return 0;}
+    if (times.length === 0) {
+      return 0;
+    }
     return times.reduce((sum, time) => sum + time, 0) / times.length;
   };
 
   const getPerformanceStatus = (avgTime: number, threshold: number): string => {
-    if (avgTime < threshold * 0.5) {return "excellent";}
-    if (avgTime < threshold) {return "good";}
-    if (avgTime < threshold * 1.5) {return "fair";}
+    if (avgTime < threshold * 0.5) {
+      return "excellent";
+    }
+    if (avgTime < threshold) {
+      return "good";
+    }
+    if (avgTime < threshold * 1.5) {
+      return "fair";
+    }
     return "poor";
   };
 

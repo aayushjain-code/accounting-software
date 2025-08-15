@@ -200,7 +200,7 @@ export const InvoiceEditor: React.FC<InvoiceEditorProps> = ({
 
   const [selectedClientId, setSelectedClientId] = useState<string | "">("");
   const [saveMessage, setSaveMessage] = useState<string>("");
-  const [validationMessage, setValidationMessage] = useState<string>("");
+  const [validationMessage] = useState<string>("");
   const [isSaving, setIsSaving] = useState<boolean>(false);
   const [isGeneratingPDF, setIsGeneratingPDF] = useState<boolean>(false);
 
@@ -395,26 +395,27 @@ export const InvoiceEditor: React.FC<InvoiceEditorProps> = ({
     }
   }, [calculateSubtotal, taxType]);
 
-  const calculateSGST = useMemo(() => {
-    if (taxType === "sgst-cgst") {
-      return (calculateSubtotal * 9) / 100; // 9% SGST
-    }
-    return 0; // No SGST for IGST or no-GST
-  }, [calculateSubtotal, taxType]);
+  // GST calculation functions (commented out as they're not currently used)
+  // const calculateSGST = useMemo(() => {
+  //   if (taxType === "sgst-cgst") {
+  //     return (calculateSubtotal * 9) / 100; // 9% SGST
+  //   }
+  //   return 0; // No SGST for IGST or no-GST
+  // }, [calculateSubtotal, taxType]);
 
-  const calculateCGST = useMemo(() => {
-    if (taxType === "sgst-cgst") {
-      return (calculateSubtotal * 9) / 100; // 9% CGST
-    }
-    return 0; // No CGST for IGST or no-GST
-  }, [calculateSubtotal, taxType]);
+  // const calculateCGST = useMemo(() => {
+  //   if (taxType === "sgst-cgst") {
+  //     return (calculateSubtotal * 9) / 100; // 9% CGST
+  //   }
+  //   return 0; // No CGST for IGST or no-GST
+  // }, [calculateSubtotal, taxType]);
 
-  const calculateIGST = useMemo(() => {
-    if (taxType === "igst") {
-      return (calculateSubtotal * 18) / 100; // 18% IGST
-    }
-    return 0; // No IGST for SGST+CGST or no-GST
-  }, [calculateSubtotal, taxType]);
+  // const calculateIGST = useMemo(() => {
+  //   if (taxType === "igst") {
+  //     return (calculateSubtotal * 18) / 100; // 18% IGST
+  //   }
+  //   return 0; // No IGST for SGST+CGST or no-GST
+  // }, [calculateSubtotal, taxType]);
 
   const calculateTotal = useMemo(() => {
     return calculateSubtotal + calculateTax;
@@ -455,87 +456,10 @@ export const InvoiceEditor: React.FC<InvoiceEditorProps> = ({
     return `BST/${currentYear}-${monthStr}/A${randomNum}`;
   };
 
-  const getAmountInWords = (amount: number): string => {
-    const ones = [
-      "",
-      "One",
-      "Two",
-      "Three",
-      "Four",
-      "Five",
-      "Six",
-      "Seven",
-      "Eight",
-      "Nine",
-    ];
-    const tens = [
-      "",
-      "",
-      "Twenty",
-      "Thirty",
-      "Forty",
-      "Fifty",
-      "Sixty",
-      "Seventy",
-      "Eighty",
-      "Ninety",
-    ];
-    const teens = [
-      "Ten",
-      "Eleven",
-      "Twelve",
-      "Thirteen",
-      "Fourteen",
-      "Fifteen",
-      "Sixteen",
-      "Seventeen",
-      "Eighteen",
-      "Nineteen",
-    ];
-
-    if (amount === 0) {
-      return "Zero";
-    }
-    if (amount < 10) {
-      return ones[amount];
-    }
-    if (amount < 20) {
-      return teens[amount - 10];
-    }
-    if (amount < 100) {
-      if (amount % 10 === 0) {
-        return tens[Math.floor(amount / 10)];
-      }
-      return `${tens[Math.floor(amount / 10)]} ${ones[amount % 10]}`;
-    }
-    if (amount < 1000) {
-      if (amount % 100 === 0) {
-        return `${ones[Math.floor(amount / 100)]} Hundred`;
-      }
-      return `${ones[Math.floor(amount / 100)]} Hundred ${getAmountInWords(
-        amount % 100
-      )}`;
-    }
-    if (amount < 100000) {
-      const thousands = Math.floor(amount / 1000);
-      const remainder = amount % 1000;
-      let result = `${getAmountInWords(thousands)} Thousand`;
-      if (remainder > 0) {
-        result += ` ${getAmountInWords(remainder)}`;
-      }
-      return result;
-    }
-    if (amount < 10000000) {
-      const lakhs = Math.floor(amount / 100000);
-      const remainder = amount % 100000;
-      let result = `${getAmountInWords(lakhs)} Lakh`;
-      if (remainder > 0) {
-        result += ` ${getAmountInWords(remainder)}`;
-      }
-      return result;
-    }
-    return "Amount too large";
-  };
+  // Amount in words function (commented out as it's not currently used)
+  // const getAmountInWords = (amount: number): string => {
+  //   // ... function implementation commented out
+  // };
 
   const handleSave = async () => {
     setIsSaving(true);

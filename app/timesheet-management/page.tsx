@@ -35,6 +35,8 @@ export default function TimesheetManagementPage() {
   const [uploadedFile, setUploadedFile] = useState<File | null>(null);
   const [timesheetUploads, setTimesheetUploads] = useState<TimesheetUpload[]>([]);
   const [isDragOver, setIsDragOver] = useState(false);
+  const [viewingTimesheet, setViewingTimesheet] = useState<TimesheetUpload | null>(null);
+  const [isViewModalOpen, setIsViewModalOpen] = useState(false);
 
 
 
@@ -122,6 +124,16 @@ export default function TimesheetManagementPage() {
     if (confirm("Are you sure you want to delete this timesheet?")) {
       setTimesheetUploads(prev => prev.filter(ts => ts.id !== timesheetId));
     }
+  };
+
+  const handleViewTimesheet = (timesheet: TimesheetUpload) => {
+    setViewingTimesheet(timesheet);
+    setIsViewModalOpen(true);
+  };
+
+  const closeViewModal = () => {
+    setIsViewModalOpen(false);
+    setViewingTimesheet(null);
   };
 
   const getStatusColor = (status: string) => {
@@ -401,9 +413,6 @@ export default function TimesheetManagementPage() {
                     <thead className="bg-gray-50 dark:bg-gray-800">
                       <tr>
                         <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
-                          Employee
-                        </th>
-                        <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
                           Month
                         </th>
                         <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
@@ -420,16 +429,6 @@ export default function TimesheetManagementPage() {
                     <tbody className="bg-white dark:bg-gray-900 divide-y divide-gray-200 dark:divide-gray-700">
                       {projectTimesheets.map((timesheet) => (
                         <tr key={timesheet.id} className="hover:bg-gray-50 dark:hover:bg-gray-800">
-                          <td className="px-4 py-4 whitespace-nowrap">
-                            <div>
-                              <div className="text-sm font-medium text-gray-900 dark:text-white">
-                                {timesheet.employeeName}
-                              </div>
-                              <div className="text-sm text-gray-500 dark:text-gray-400">
-                                {timesheet.employeeRole}
-                              </div>
-                            </div>
-                          </td>
                           <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
                             {format(new Date(parseInt(timesheet.year), parseInt(timesheet.month) - 1), "MMM yyyy")}
                           </td>
@@ -470,12 +469,9 @@ export default function TimesheetManagementPage() {
                                 </>
                               )}
                               <button
-                                onClick={() => {
-                                  // Show timesheet details in a simple alert for now
-                                  alert(`Timesheet Details:\n\nEmployee: ${timesheet.employeeName}\nRole: ${timesheet.employeeRole}\nMonth: ${format(new Date(parseInt(timesheet.year), parseInt(timesheet.month) - 1), "MMMM yyyy")}\nFile: ${timesheet.fileName}\nSize: ${formatFileSize(timesheet.fileSize)}\nStatus: ${timesheet.status}\nUpload Date: ${format(timesheet.uploadDate, "PPP")}`);
-                                }}
+                                onClick={() => handleViewTimesheet(timesheet)}
                                 className="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300"
-                                title="View Details"
+                                title="View Timesheet"
                               >
                                 <DocumentTextIcon className="h-4 w-4" />
                               </button>
@@ -509,6 +505,143 @@ export default function TimesheetManagementPage() {
             <p className="text-gray-500 dark:text-gray-400">
               Click on a project above to upload timesheets and view previous submissions.
             </p>
+          </div>
+        )}
+
+        {/* Timesheet View Modal */}
+        {isViewModalOpen && viewingTimesheet && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+            <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl max-w-4xl w-full max-h-[90vh] overflow-hidden">
+              {/* Modal Header */}
+              <div className="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-700">
+                <div>
+                  <h3 className="text-xl font-semibold text-gray-900 dark:text-white">
+                    View Timesheet
+                  </h3>
+                  <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+                    {viewingTimesheet.projectName} - {format(new Date(parseInt(viewingTimesheet.year), parseInt(viewingTimesheet.month) - 1), "MMMM yyyy")}
+                  </p>
+                </div>
+                <button
+                  onClick={closeViewModal}
+                  className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
+                >
+                  <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
+
+              {/* Modal Content */}
+              <div className="p-6 overflow-y-auto max-h-[calc(90vh-120px)]">
+                {/* File Information */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                  <div className="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-4">
+                    <h4 className="font-medium text-gray-900 dark:text-white mb-3">File Details</h4>
+                    <div className="space-y-2 text-sm">
+                      <div className="flex justify-between">
+                        <span className="text-gray-600 dark:text-gray-400">File Name:</span>
+                        <span className="font-medium text-gray-900 dark:text-white">{viewingTimesheet.fileName}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-gray-600 dark:text-gray-400">File Size:</span>
+                        <span className="font-medium text-gray-900 dark:text-white">{formatFileSize(viewingTimesheet.fileSize)}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-gray-600 dark:text-gray-400">Upload Date:</span>
+                        <span className="font-medium text-gray-900 dark:text-white">{format(viewingTimesheet.uploadDate, "PPP")}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-gray-600 dark:text-gray-400">Status:</span>
+                        <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(viewingTimesheet.status)}`}>
+                          {getStatusIcon(viewingTimesheet.status)}
+                          <span className="ml-1 capitalize">{viewingTimesheet.status}</span>
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-4">
+                    <h4 className="font-medium text-gray-900 dark:text-white mb-3">Project Information</h4>
+                    <div className="space-y-2 text-sm">
+                      <div className="flex justify-between">
+                        <span className="text-gray-600 dark:text-gray-400">Project:</span>
+                        <span className="font-medium text-gray-900 dark:text-white">{viewingTimesheet.projectName}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-gray-600 dark:text-gray-400">Client:</span>
+                        <span className="font-medium text-gray-900 dark:text-white">{viewingTimesheet.clientName}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-gray-600 dark:text-gray-400">Month:</span>
+                        <span className="font-medium text-gray-900 dark:text-white">{format(new Date(parseInt(viewingTimesheet.year), parseInt(viewingTimesheet.month) - 1), "MMMM yyyy")}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-gray-600 dark:text-gray-400">Employee:</span>
+                        <span className="font-medium text-gray-900 dark:text-white">{viewingTimesheet.employeeName}</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* File Preview */}
+                <div className="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-4">
+                  <h4 className="font-medium text-gray-900 dark:text-white mb-3">File Preview</h4>
+                  <div className="text-center py-8">
+                    <DocumentTextIcon className="h-16 w-16 mx-auto mb-4 text-gray-400 dark:text-gray-500" />
+                    <p className="text-gray-600 dark:text-gray-400 mb-2">
+                      {viewingTimesheet.fileName}
+                    </p>
+                    <p className="text-sm text-gray-500 dark:text-gray-400">
+                      File size: {formatFileSize(viewingTimesheet.fileSize)}
+                    </p>
+                    <div className="mt-4">
+                      <button
+                        onClick={() => {
+                          // In a real app, this would download or open the file
+                          alert(`Opening file: ${viewingTimesheet.fileName}\n\nNote: In a production app, this would open the actual file content.`);
+                        }}
+                        className="px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors"
+                      >
+                        Open File
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Modal Footer */}
+              <div className="flex items-center justify-end space-x-3 p-6 border-t border-gray-200 dark:border-gray-700">
+                <button
+                  onClick={closeViewModal}
+                  className="px-4 py-2 text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white transition-colors"
+                >
+                  Close
+                </button>
+                {viewingTimesheet.status === 'pending' && (
+                  <>
+                    <button
+                      onClick={() => {
+                        handleStatusChange(viewingTimesheet.id, 'approved');
+                        closeViewModal();
+                      }}
+                      className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
+                    >
+                      Approve
+                    </button>
+                    <button
+                      onClick={() => {
+                        handleStatusChange(viewingTimesheet.id, 'rejected');
+                        closeViewModal();
+                      }}
+                      className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
+                    >
+                      Reject
+                    </button>
+                  </>
+                )}
+              </div>
+            </div>
           </div>
         )}
       </div>

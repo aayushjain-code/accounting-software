@@ -82,6 +82,14 @@ export const ProjectCard: React.FC<ProjectCardProps> = ({
             {client?.name || "Unknown Client"}
           </span>
         </div>
+        {project.personAssigned && (
+          <div className="flex items-center space-x-2 text-sm text-gray-600 dark:text-gray-400 mt-2">
+            <span className="font-medium">Assigned To:</span>
+            <span className="text-gray-900 dark:text-white">
+              {project.personAssigned}
+            </span>
+          </div>
+        )}
       </div>
 
       {/* Project Details */}

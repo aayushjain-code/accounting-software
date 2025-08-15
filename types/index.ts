@@ -38,6 +38,7 @@ export interface Project {
   billingTerms: number; // Days
   billingRate: number; // Per hour rate
   estimatedHours?: number; // Made optional
+  personAssigned?: string; // Optional - Person assigned to the project
   gstRate: number;
   gstInclusive: boolean;
   totalCost: number;

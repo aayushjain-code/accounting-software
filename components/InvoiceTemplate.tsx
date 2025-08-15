@@ -28,9 +28,8 @@ interface InvoiceTemplateProps {
     company: string;
   };
   itemDetails?: {
-  
-          hsnCode: string;
-      unit: string;
+    hsnCode: string;
+    unit: string;
   };
   formData?: {
     buyerOrderNo: string;
@@ -167,18 +166,17 @@ export const InvoiceTemplate: React.FC<InvoiceTemplateProps> = (props) => {
       if (num < 10) return ones[num];
       if (num < 20) return teens[num - 10];
       if (num < 100) {
-        return (
-          tens[Math.floor(num / 10)] +
-          (num % 10 !== 0 ? " " + ones[num % 10] : "")
-        );
+        if (num % 10 === 0) return tens[Math.floor(num / 10)];
+        return tens[Math.floor(num / 10)] + " " + ones[num % 10];
       }
       if (num < 1000) {
+        if (num % 100 === 0) {
+          return ones[Math.floor(num / 100)] + " Hundred";
+        }
         return (
           ones[Math.floor(num / 100)] +
-          " Hundred" +
-          (num % 100 !== 0
-            ? " and " + convertLessThanOneThousand(num % 100)
-            : "")
+          " Hundred " +
+          (num % 100 !== 0 ? convertLessThanOneThousand(num % 100) : "")
         );
       }
       return "";
@@ -188,29 +186,31 @@ export const InvoiceTemplate: React.FC<InvoiceTemplateProps> = (props) => {
       if (num === 0) return "Zero";
       if (num < 1000) return convertLessThanOneThousand(num);
       if (num < 100000) {
-        return (
-          convertLessThanOneThousand(Math.floor(num / 1000)) +
-          " Thousand" +
-          (num % 1000 !== 0 ? " " + convertLessThanOneThousand(num % 1000) : "")
-        );
+        const thousands = Math.floor(num / 1000);
+        const remainder = num % 1000;
+        let result = convertLessThanOneThousand(thousands) + " Thousand";
+        if (remainder > 0) {
+          result += " " + convertLessThanOneThousand(remainder);
+        }
+        return result;
       }
       if (num < 10000000) {
-        return (
-          convertLessThanOneThousand(Math.floor(num / 100000)) +
-          " Lakh" +
-          (num % 100000 !== 0
-            ? " " + convertLessThanOneThousand(num % 100000)
-            : "")
-        );
+        const lakhs = Math.floor(num / 100000);
+        const remainder = num % 100000;
+        let result = convertLessThanOneThousand(lakhs) + " Lakh";
+        if (remainder > 0) {
+          result += " " + convert(remainder);
+        }
+        return result;
       }
       if (num < 1000000000) {
-        return (
-          convertLessThanOneThousand(Math.floor(num / 10000000)) +
-          " Crore" +
-          (num % 10000000 !== 0
-            ? " " + convertLessThanOneThousand(num % 10000000)
-            : "")
-        );
+        const crores = Math.floor(num / 10000000);
+        const remainder = num % 10000000;
+        let result = convertLessThanOneThousand(crores) + " Crore";
+        if (remainder > 0) {
+          result += " " + convert(remainder);
+        }
+        return result;
       }
       return "Number too large";
     };
@@ -220,6 +220,22 @@ export const InvoiceTemplate: React.FC<InvoiceTemplateProps> = (props) => {
 
   const getTaxAmountInWords = (amount: number): string => {
     return "INR " + getAmountInWords(amount).replace("INR ", "");
+  };
+
+  // Function to convert line breaks in text to React elements
+  const renderTextWithLineBreaks = (text: string) => {
+    if (!text) return "";
+    const lines = text.split("\n");
+    if (lines.length === 1) return text;
+
+    return lines
+      .map((line, index) => [
+        line,
+        index < lines.length - 1
+          ? React.createElement("br", { key: `br-${index}` })
+          : null,
+      ])
+      .filter(Boolean);
   };
 
   // Default values
@@ -713,8 +729,10 @@ export const InvoiceTemplate: React.FC<InvoiceTemplateProps> = (props) => {
                   ),
                 ]),
               ]),
-              React.createElement("tbody", {}, 
-                items.map((item, index) => 
+              React.createElement(
+                "tbody",
+                {},
+                items.map((item, index) =>
                   React.createElement("tr", { key: item.id }, [
                     React.createElement(
                       "td",
@@ -729,7 +747,9 @@ export const InvoiceTemplate: React.FC<InvoiceTemplateProps> = (props) => {
                     ),
                     React.createElement(
                       "td",
-                      { style: { border: "1px solid #000", padding: "4px 6px" } },
+                      {
+                        style: { border: "1px solid #000", padding: "4px 6px" },
+                      },
                       [
                         React.createElement(
                           "strong",
@@ -737,7 +757,9 @@ export const InvoiceTemplate: React.FC<InvoiceTemplateProps> = (props) => {
                           item.title || "Item Title"
                         ),
                         React.createElement("br"),
-                        item.description || "IT Design and Development"
+                        renderTextWithLineBreaks(
+                          item.description || "IT Design and Development"
+                        ),
                       ]
                     ),
                     React.createElement(
@@ -802,57 +824,59 @@ export const InvoiceTemplate: React.FC<InvoiceTemplateProps> = (props) => {
           ),
 
           // Tax Row (only show if GST is applicable)
-          ...(taxType !== "no-gst" ? [
-            React.createElement(
-              "div",
-              {
-                style: {
-                  display: "flex",
-                  border: "1px solid #000",
-                  borderTop: "none",
-                  marginTop: "-1px",
-                },
-              },
-              [
+          ...(taxType !== "no-gst"
+            ? [
                 React.createElement(
                   "div",
                   {
                     style: {
-                      flex: 5,
-                      borderRight: "1px solid #000",
-                      padding: "4px 6px",
-                      textAlign: "right",
-                      fontWeight: "bold",
+                      display: "flex",
+                      border: "1px solid #000",
+                      borderTop: "none",
+                      marginTop: "-1px",
                     },
                   },
-                  getTaxType()
-                ),
-                React.createElement(
-                  "div",
-                  {
-                    style: {
-                      flex: 1,
-                      borderRight: "1px solid #000",
-                      padding: "4px 6px",
-                      textAlign: "center",
-                    },
-                  },
-                  getTaxRate()
-                ),
-                React.createElement(
-                  "div",
-                  {
-                    style: {
-                      flex: 1,
-                      padding: "4px 6px",
-                      textAlign: "right",
-                    },
-                  },
-                  formatCurrency(taxAmount)
+                  [
+                    React.createElement(
+                      "div",
+                      {
+                        style: {
+                          flex: 5,
+                          borderRight: "1px solid #000",
+                          padding: "4px 6px",
+                          textAlign: "right",
+                          fontWeight: "bold",
+                        },
+                      },
+                      getTaxType()
+                    ),
+                    React.createElement(
+                      "div",
+                      {
+                        style: {
+                          flex: 1,
+                          borderRight: "1px solid #000",
+                          padding: "4px 6px",
+                          textAlign: "center",
+                        },
+                      },
+                      getTaxRate()
+                    ),
+                    React.createElement(
+                      "div",
+                      {
+                        style: {
+                          flex: 1,
+                          padding: "4px 6px",
+                          textAlign: "right",
+                        },
+                      },
+                      formatCurrency(taxAmount)
+                    ),
+                  ]
                 ),
               ]
-            )
-          ] : []),
+            : []),
 
           // Total Row
           React.createElement(
@@ -1013,11 +1037,13 @@ export const InvoiceTemplate: React.FC<InvoiceTemplateProps> = (props) => {
                         textAlign: "center",
                       },
                     },
-                    taxType === "no-gst" ? "N/A" : [
-                      getTaxType() + " " + getTaxRate(),
-                      React.createElement("br"),
-                      "Amount: " + formatCurrency(taxAmount),
-                    ]
+                    taxType === "no-gst"
+                      ? "N/A"
+                      : [
+                          getTaxType() + " " + getTaxRate(),
+                          React.createElement("br"),
+                          "Amount: " + formatCurrency(taxAmount),
+                        ]
                   ),
                   React.createElement(
                     "td",
@@ -1075,25 +1101,27 @@ export const InvoiceTemplate: React.FC<InvoiceTemplateProps> = (props) => {
           ),
 
           // Tax Amount in Words (only show if GST is applicable)
-          ...(taxType !== "no-gst" ? [
-            React.createElement(
-              "div",
-              {
-                style: {
-                  marginTop: "6px",
-                  fontSize: "11px",
-                },
-              },
-              [
+          ...(taxType !== "no-gst"
+            ? [
                 React.createElement(
-                  "strong",
-                  {},
-                  getTaxType() + " Amount (in words): "
+                  "div",
+                  {
+                    style: {
+                      marginTop: "6px",
+                      fontSize: "11px",
+                    },
+                  },
+                  [
+                    React.createElement(
+                      "strong",
+                      {},
+                      getTaxType() + " Amount (in words): "
+                    ),
+                    getTaxAmountInWords(taxAmount),
+                  ]
                 ),
-                getTaxAmountInWords(taxAmount),
               ]
-            )
-          ] : []),
+            : []),
 
           // Declaration
           React.createElement(

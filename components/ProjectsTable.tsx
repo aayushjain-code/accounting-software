@@ -87,6 +87,7 @@ export const ProjectsTable: React.FC<ProjectsTableProps> = ({
     { key: "name", label: "Name", sortable: true },
     { key: "description", label: "Description", sortable: true },
     { key: "status", label: "Status", sortable: true },
+    { key: "personAssigned", label: "Assigned To", sortable: true },
     { key: "budget", label: "Budget", sortable: true },
     { key: "startDate", label: "Start Date", sortable: true },
     { key: "actions", label: "Actions", sortable: false },
@@ -175,6 +176,11 @@ export const ProjectsTable: React.FC<ProjectsTableProps> = ({
                     >
                       {project.status}
                     </span>
+                  </td>
+                  <td className="px-3 py-2 whitespace-nowrap">
+                    <div className="text-sm text-gray-900 dark:text-white">
+                      {project.personAssigned || "-"}
+                    </div>
                   </td>
                   <td className="px-3 py-2 whitespace-nowrap">
                     <div className="flex items-center">
@@ -275,6 +281,17 @@ export const ProjectsTable: React.FC<ProjectsTableProps> = ({
                 </label>
                 <p className="text-gray-900 dark:text-white whitespace-pre-wrap">
                   {viewProject.description}
+                </p>
+              </div>
+            )}
+
+            {viewProject.personAssigned && (
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  Person Assigned
+                </label>
+                <p className="text-gray-900 dark:text-white">
+                  {viewProject.personAssigned}
                 </p>
               </div>
             )}

@@ -4,9 +4,7 @@ import { useState, useMemo } from "react";
 import { useAccountingStore } from "@/store";
 import { Project } from "@/types";
 import { BuildingOfficeIcon } from "@heroicons/react/24/outline";
-import {
-  PlusIcon,
-} from "@heroicons/react/24/outline";
+import { PlusIcon } from "@heroicons/react/24/outline";
 import { format } from "date-fns";
 import toast from "react-hot-toast";
 import { ActionTooltip } from "@/components/Tooltip";
@@ -23,7 +21,6 @@ export default function ProjectsPage() {
   const [statusFilter, setStatusFilter] = useState<string>("all");
 
   const [formData, setFormData] = useState({
-    projectCode: "",
     name: "",
     clientId: "",
     description: "",
@@ -38,6 +35,7 @@ export default function ProjectsPage() {
     billingTerms: "",
     billingRate: "",
     estimatedHours: "", // Made optional
+    personAssigned: "", // Optional - Person assigned to project
     gstRate: "18",
     gstInclusive: false,
   });
@@ -46,7 +44,6 @@ export default function ProjectsPage() {
     e.preventDefault();
 
     const projectData = {
-      projectCode: formData.projectCode,
       name: formData.name,
       clientId: formData.clientId,
       description: formData.description,
@@ -58,6 +55,7 @@ export default function ProjectsPage() {
       estimatedHours: formData.estimatedHours
         ? parseFloat(formData.estimatedHours)
         : undefined,
+      personAssigned: formData.personAssigned || undefined,
       gstRate: parseFloat(formData.gstRate),
       gstInclusive: formData.gstInclusive,
       totalCost:
@@ -83,7 +81,6 @@ export default function ProjectsPage() {
     setIsModalOpen(false);
     setEditingProject(null);
     setFormData({
-      projectCode: "",
       name: "",
       clientId: "",
       description: "",
@@ -93,6 +90,7 @@ export default function ProjectsPage() {
       billingTerms: "30",
       billingRate: "",
       estimatedHours: "",
+      personAssigned: "",
       gstRate: "18",
       gstInclusive: true,
     });
@@ -101,7 +99,6 @@ export default function ProjectsPage() {
   const handleEdit = (project: Project) => {
     setEditingProject(project);
     setFormData({
-      projectCode: project.projectCode,
       name: project.name,
       description: project.description,
       clientId: project.clientId,
@@ -113,6 +110,7 @@ export default function ProjectsPage() {
       billingTerms: project.billingTerms?.toString() || "",
       billingRate: project.billingRate?.toString() || "",
       estimatedHours: project.estimatedHours?.toString() || "",
+      personAssigned: project.personAssigned || "",
       gstRate: project.gstRate?.toString() || "",
       gstInclusive: project.gstInclusive,
     });
@@ -125,8 +123,6 @@ export default function ProjectsPage() {
       toast.success("Project deleted successfully");
     }
   };
-
-
 
   const [viewingProject, setViewingProject] = useState<Project | null>(null);
 
@@ -150,7 +146,7 @@ export default function ProjectsPage() {
   };
 
   const getClientName = (clientId: string) => {
-    const client = clients.find(c => c.id === clientId);
+    const client = clients.find((c) => c.id === clientId);
     return client ? `${client.name} - ${client.company}` : "Client not found";
   };
 
@@ -220,7 +216,7 @@ export default function ProjectsPage() {
           <div className="flex-1 relative">
             <input
               type="text"
-              placeholder="Search projects by name, code, or description..."
+              placeholder="Search projects by name or description..."
               value={searchTerm}
               onChange={(e) => handleSearchChange(e.target.value)}
               className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400"
@@ -308,24 +304,6 @@ export default function ProjectsPage() {
       >
         <form id="project-form" onSubmit={handleSubmit} className="space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Project Code *
-              </label>
-              <input
-                type="text"
-                required
-                value={formData.projectCode}
-                onChange={(e) =>
-                  setFormData({
-                    ...formData,
-                    projectCode: e.target.value,
-                  })
-                }
-                className="input"
-                placeholder="e.g., BST-01, BST-02"
-              />
-            </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Project Name
@@ -465,6 +443,23 @@ export default function ProjectsPage() {
                 }
                 className="input"
                 placeholder="e.g., 400"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Person Assigned (Optional)
+              </label>
+              <input
+                type="text"
+                value={formData.personAssigned}
+                onChange={(e) =>
+                  setFormData({
+                    ...formData,
+                    personAssigned: e.target.value,
+                  })
+                }
+                className="input"
+                placeholder="e.g., John Doe"
               />
             </div>
             <div>
@@ -630,6 +625,17 @@ export default function ProjectsPage() {
               </div>
             )}
 
+            {viewingProject.personAssigned && (
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  Person Assigned
+                </label>
+                <p className="text-gray-900 dark:text-white">
+                  {viewingProject.personAssigned}
+                </p>
+              </div>
+            )}
+
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
@@ -704,16 +710,29 @@ export default function ProjectsPage() {
                 </h4>
                 <div className="space-y-2">
                   <div className="flex justify-between">
-                    <span className="text-gray-600 dark:text-gray-400">Subtotal:</span>
-                    <span className="font-medium">₹{viewingProject.costBreakdown.subtotal?.toLocaleString()}</span>
+                    <span className="text-gray-600 dark:text-gray-400">
+                      Subtotal:
+                    </span>
+                    <span className="font-medium">
+                      ₹{viewingProject.costBreakdown.subtotal?.toLocaleString()}
+                    </span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-gray-600 dark:text-gray-400">GST Amount:</span>
-                    <span className="font-medium">₹{viewingProject.costBreakdown.gstAmount?.toLocaleString()}</span>
+                    <span className="text-gray-600 dark:text-gray-400">
+                      GST Amount:
+                    </span>
+                    <span className="font-medium">
+                      ₹
+                      {viewingProject.costBreakdown.gstAmount?.toLocaleString()}
+                    </span>
                   </div>
                   <div className="flex justify-between text-lg font-semibold border-t pt-2">
-                    <span className="text-gray-900 dark:text-white">Total:</span>
-                    <span className="text-green-600 dark:text-green-400">₹{viewingProject.costBreakdown.total?.toLocaleString()}</span>
+                    <span className="text-gray-900 dark:text-white">
+                      Total:
+                    </span>
+                    <span className="text-green-600 dark:text-green-400">
+                      ₹{viewingProject.costBreakdown.total?.toLocaleString()}
+                    </span>
                   </div>
                 </div>
               </div>

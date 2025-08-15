@@ -1,6 +1,12 @@
 "use client";
 
-import React, { useState, useEffect, useRef, useCallback, useMemo } from "react";
+import React, {
+  useState,
+  useEffect,
+  useRef,
+  useCallback,
+  useMemo,
+} from "react";
 import { Invoice, InvoiceItem, Client, Project } from "@/types";
 import { InvoiceTemplate } from "./InvoiceTemplate";
 import { useAccountingStore } from "@/store";
@@ -68,7 +74,9 @@ export const InvoiceEditor: React.FC<InvoiceEditorProps> = ({
     unit: "Nos",
   });
 
-  const [taxType, setTaxType] = useState<"igst" | "sgst-cgst" | "no-gst">("igst");
+  const [taxType, setTaxType] = useState<"igst" | "sgst-cgst" | "no-gst">(
+    "igst"
+  );
 
   const [companyInfo, setCompanyInfo] = useState({
     name: "Brandsmashers Tech",
@@ -97,91 +105,94 @@ export const InvoiceEditor: React.FC<InvoiceEditorProps> = ({
   });
 
   // Mock clients data since API doesn't exist - moved outside component to prevent re-renders
-  const clients = useMemo<Client[]>(() => [
-    {
-      id: "clt-001",
-      clientCode: "CLT-2025-0001",
-      name: "John Smith",
-      email: "john.smith@techcorp.com",
-      phone: "+91-98765-43210",
-      company: "TechCorp Solutions",
-      address: "123 Tech Street, Bangalore, Karnataka",
-      gstId: "29AABCT1234Z1Z5",
-      companyAddress:
-        "456 Innovation Drive, Electronic City, Bangalore, Karnataka 560100",
-      companyWebsite: "https://techcorp-solutions.com",
-      companyLinkedin: "https://linkedin.com/company/techcorp-solutions",
-      companyOwner: "Sarah Johnson",
-      pocName: "John Smith",
-      pocEmail: "john.smith@techcorp.com",
-      pocContact: "+91-98765-43210",
-      companyLogo:
-        "https://via.placeholder.com/150x50/3B82F6/FFFFFF?text=TechCorp",
-      poNumber: "PO/TCS/2025/001",
-      industry: "Technology",
-      companySize: "medium",
-      status: "active",
-      source: "Referral",
-      notes: "High-value client with ongoing projects",
-      createdAt: new Date("2025-01-15"),
-      updatedAt: new Date("2025-01-15"),
-    },
-    {
-      id: "clt-002",
-      clientCode: "CLT-2025-0002",
-      name: "Priya Patel",
-      email: "priya.patel@innovateindia.com",
-      phone: "+91-87654-32109",
-      company: "Innovate India Ltd",
-      address: "789 Startup Lane, Mumbai, Maharashtra",
-      gstId: "27AABCI5678Z2Z6",
-      companyAddress:
-        "321 Business Park, Andheri West, Mumbai, Maharashtra 400058",
-      companyWebsite: "https://innovate-india.com",
-      companyLinkedin: "https://linkedin.com/company/innovate-india",
-      companyOwner: "Rajesh Kumar",
-      pocName: "Priya Patel",
-      pocEmail: "priya.patel@innovateindia.com",
-      pocContact: "+91-87654-32109",
-      companyLogo:
-        "https://via.placeholder.com/150x50/10B981/FFFFFF?text=Innovate",
-      poNumber: "PO/IIL/2025/002",
-      industry: "E-commerce",
-      companySize: "startup",
-      status: "active",
-      source: "Website",
-      notes: "New client, potential for long-term partnership",
-      createdAt: new Date("2025-01-20"),
-      updatedAt: new Date("2025-01-20"),
-    },
-    {
-      id: "clt-003",
-      clientCode: "CLT-2025-0003",
-      name: "Amit Kumar",
-      email: "amit.kumar@girnarsoftware.com",
-      phone: "+91-76543-21098",
-      company: "Girnar Software Prvt. Ltd.",
-      address: "21, Girnar, Govind Marg, Moti Dongri Road, Jaipur Rajsthan",
-      gstId: "08AACCG7277J1Z6",
-      companyAddress: "Rajasthan - 300004, India",
-      companyWebsite: "https://girnarsoftware.com",
-      companyLinkedin: "https://linkedin.com/company/girnar-software",
-      companyOwner: "Amit Kumar",
-      pocName: "Amit Kumar",
-      pocEmail: "amit.kumar@girnarsoftware.com",
-      pocContact: "+91-76543-21098",
-      companyLogo:
-        "https://via.placeholder.com/150x50/EF4444/FFFFFF?text=Girnar",
-      poNumber: "PO/GSPL/202526/000496",
-      industry: "Software Development",
-      companySize: "medium",
-      status: "active",
-      source: "Direct",
-      notes: "Long-term client with multiple projects",
-      createdAt: new Date("2025-01-25"),
-      updatedAt: new Date("2025-01-25"),
-    },
-  ], []);
+  const clients = useMemo<Client[]>(
+    () => [
+      {
+        id: "clt-001",
+        clientCode: "CLT-2025-0001",
+        name: "John Smith",
+        email: "john.smith@techcorp.com",
+        phone: "+91-98765-43210",
+        company: "TechCorp Solutions",
+        address: "123 Tech Street, Bangalore, Karnataka",
+        gstId: "29AABCT1234Z1Z5",
+        companyAddress:
+          "456 Innovation Drive, Electronic City, Bangalore, Karnataka 560100",
+        companyWebsite: "https://techcorp-solutions.com",
+        companyLinkedin: "https://linkedin.com/company/techcorp-solutions",
+        companyOwner: "Sarah Johnson",
+        pocName: "John Smith",
+        pocEmail: "john.smith@techcorp.com",
+        pocContact: "+91-98765-43210",
+        companyLogo:
+          "https://via.placeholder.com/150x50/3B82F6/FFFFFF?text=TechCorp",
+        poNumber: "PO/TCS/2025/001",
+        industry: "Technology",
+        companySize: "medium",
+        status: "active",
+        source: "Referral",
+        notes: "High-value client with ongoing projects",
+        createdAt: new Date("2025-01-15"),
+        updatedAt: new Date("2025-01-15"),
+      },
+      {
+        id: "clt-002",
+        clientCode: "CLT-2025-0002",
+        name: "Priya Patel",
+        email: "priya.patel@innovateindia.com",
+        phone: "+91-87654-32109",
+        company: "Innovate India Ltd",
+        address: "789 Startup Lane, Mumbai, Maharashtra",
+        gstId: "27AABCI5678Z2Z6",
+        companyAddress:
+          "321 Business Park, Andheri West, Mumbai, Maharashtra 400058",
+        companyWebsite: "https://innovate-india.com",
+        companyLinkedin: "https://linkedin.com/company/innovate-india",
+        companyOwner: "Rajesh Kumar",
+        pocName: "Priya Patel",
+        pocEmail: "priya.patel@innovateindia.com",
+        pocContact: "+91-87654-32109",
+        companyLogo:
+          "https://via.placeholder.com/150x50/10B981/FFFFFF?text=Innovate",
+        poNumber: "PO/IIL/2025/002",
+        industry: "E-commerce",
+        companySize: "startup",
+        status: "active",
+        source: "Website",
+        notes: "New client, potential for long-term partnership",
+        createdAt: new Date("2025-01-20"),
+        updatedAt: new Date("2025-01-20"),
+      },
+      {
+        id: "clt-003",
+        clientCode: "CLT-2025-0003",
+        name: "Amit Kumar",
+        email: "amit.kumar@girnarsoftware.com",
+        phone: "+91-76543-21098",
+        company: "Girnar Software Prvt. Ltd.",
+        address: "21, Girnar, Govind Marg, Moti Dongri Road, Jaipur Rajsthan",
+        gstId: "08AACCG7277J1Z6",
+        companyAddress: "Rajasthan - 300004, India",
+        companyWebsite: "https://girnarsoftware.com",
+        companyLinkedin: "https://linkedin.com/company/girnar-software",
+        companyOwner: "Amit Kumar",
+        pocName: "Amit Kumar",
+        pocEmail: "amit.kumar@girnarsoftware.com",
+        pocContact: "+91-76543-21098",
+        companyLogo:
+          "https://via.placeholder.com/150x50/EF4444/FFFFFF?text=Girnar",
+        poNumber: "PO/GSPL/202526/000496",
+        industry: "Software Development",
+        companySize: "medium",
+        status: "active",
+        source: "Direct",
+        notes: "Long-term client with multiple projects",
+        createdAt: new Date("2025-01-25"),
+        updatedAt: new Date("2025-01-25"),
+      },
+    ],
+    []
+  );
 
   const [selectedClientId, setSelectedClientId] = useState<string | "">("");
   const [saveMessage, setSaveMessage] = useState<string>("");
@@ -193,9 +204,12 @@ export const InvoiceEditor: React.FC<InvoiceEditorProps> = ({
   const invoiceRef = useRef<HTMLDivElement>(null);
 
   // Optimized form data update handler to prevent unnecessary re-renders
-  const handleFormDataChange = useCallback((field: keyof typeof formData, value: string) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
-  }, []);
+  const handleFormDataChange = useCallback(
+    (field: keyof typeof formData, value: string) => {
+      setFormData((prev) => ({ ...prev, [field]: value }));
+    },
+    []
+  );
 
   // Custom print handler that only prints the invoice
   const handlePrint = () => {
@@ -313,22 +327,21 @@ export const InvoiceEditor: React.FC<InvoiceEditorProps> = ({
     }
   }, [client]);
 
-  const handleItemChange = useCallback((
-    index: number,
-    field: keyof InvoiceItem,
-    value: string | number
-  ) => {
-    const newItems = [...items];
-    newItems[index] = { ...newItems[index], [field]: value };
+  const handleItemChange = useCallback(
+    (index: number, field: keyof InvoiceItem, value: string | number) => {
+      const newItems = [...items];
+      newItems[index] = { ...newItems[index], [field]: value };
 
-    // Recalculate total
-    if (field === "quantity" || field === "unitPrice") {
-      newItems[index].total =
-        newItems[index].quantity * newItems[index].unitPrice;
-    }
+      // Recalculate total
+      if (field === "quantity" || field === "unitPrice") {
+        newItems[index].total =
+          newItems[index].quantity * newItems[index].unitPrice;
+      }
 
-    setItems(newItems);
-  }, [items]);
+      setItems(newItems);
+    },
+    [items]
+  );
 
   const addItem = useCallback(() => {
     const newItem: InvoiceItem = {
@@ -340,14 +353,17 @@ export const InvoiceEditor: React.FC<InvoiceEditorProps> = ({
       unitPrice: 0,
       total: 0,
     };
-    setItems(prev => [...prev, newItem]);
+    setItems((prev) => [...prev, newItem]);
   }, [invoice?.id]);
 
-  const removeItem = useCallback((index: number) => {
-    if (items.length > 1) {
-      setItems(prev => prev.filter((_, i) => i !== index));
-    }
-  }, [items.length]);
+  const removeItem = useCallback(
+    (index: number) => {
+      if (items.length > 1) {
+        setItems((prev) => prev.filter((_, i) => i !== index));
+      }
+    },
+    [items.length]
+  );
 
   const calculateSubtotal = useMemo(() => {
     return items.reduce((sum, item) => sum + item.total, 0);
@@ -407,8 +423,6 @@ export const InvoiceEditor: React.FC<InvoiceEditorProps> = ({
     }
     return "18%";
   };
-
-
 
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat("en-IN", {
@@ -473,8 +487,9 @@ export const InvoiceEditor: React.FC<InvoiceEditorProps> = ({
       return tens[Math.floor(amount / 10)] + " " + ones[amount % 10];
     }
     if (amount < 1000) {
-      if (amount % 100 === 0)
+      if (amount % 100 === 0) {
         return ones[Math.floor(amount / 100)] + " Hundred";
+      }
       return (
         ones[Math.floor(amount / 100)] +
         " Hundred " +
@@ -482,27 +497,25 @@ export const InvoiceEditor: React.FC<InvoiceEditorProps> = ({
       );
     }
     if (amount < 100000) {
-      if (amount % 1000 === 0)
-        return getAmountInWords(Math.floor(amount / 1000)) + " Thousand";
-      return (
-        getAmountInWords(Math.floor(amount / 1000)) +
-        " Thousand " +
-        getAmountInWords(amount % 1000)
-      );
+      const thousands = Math.floor(amount / 1000);
+      const remainder = amount % 1000;
+      let result = getAmountInWords(thousands) + " Thousand";
+      if (remainder > 0) {
+        result += " " + getAmountInWords(remainder);
+      }
+      return result;
     }
     if (amount < 10000000) {
-      if (amount % 100000 === 0)
-        return getAmountInWords(Math.floor(amount / 100000)) + " Lakh";
-      return (
-        getAmountInWords(Math.floor(amount / 100000)) +
-        " Lakh " +
-        getAmountInWords(amount % 100000)
-      );
+      const lakhs = Math.floor(amount / 100000);
+      const remainder = amount % 100000;
+      let result = getAmountInWords(lakhs) + " Lakh";
+      if (remainder > 0) {
+        result += " " + getAmountInWords(remainder);
+      }
+      return result;
     }
     return "Amount too large";
   };
-
-
 
   const handleSave = async () => {
     setIsSaving(true);
@@ -576,13 +589,13 @@ export const InvoiceEditor: React.FC<InvoiceEditorProps> = ({
 
       // Show success message
       setSaveMessage("Invoice saved successfully! Redirecting to invoices...");
-      
+
       // Redirect to invoices page after a short delay
       setTimeout(() => {
-        router.push('/invoices');
+        router.push("/invoices");
       }, 1500);
     } catch (error) {
-      console.error('Error saving invoice:', error);
+      console.error("Error saving invoice:", error);
       setSaveMessage("Error saving invoice. Please try again.");
       setTimeout(() => setSaveMessage(""), 3000);
     } finally {
@@ -651,8 +664,6 @@ export const InvoiceEditor: React.FC<InvoiceEditorProps> = ({
     updatedAt: new Date(),
   };
 
-
-
   return (
     <>
       <style jsx global>{`
@@ -714,8 +725,6 @@ export const InvoiceEditor: React.FC<InvoiceEditorProps> = ({
             </div>
           )}
 
-
-
           <div className="flex justify-between items-center mb-4">
             <div>
               <h2 className="text-lg font-semibold text-gray-800">
@@ -749,8 +758,6 @@ export const InvoiceEditor: React.FC<InvoiceEditorProps> = ({
               >
                 Print
               </button>
-
-
 
               <button
                 onClick={handleDownloadPDF}
@@ -825,7 +832,7 @@ export const InvoiceEditor: React.FC<InvoiceEditorProps> = ({
                       type="date"
                       value={formData.dueDate}
                       onChange={(e) =>
-                        handleFormDataChange('dueDate', e.target.value)
+                        handleFormDataChange("dueDate", e.target.value)
                       }
                       className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                     />
@@ -857,7 +864,7 @@ export const InvoiceEditor: React.FC<InvoiceEditorProps> = ({
                       type="text"
                       value={formData.paymentTerms}
                       onChange={(e) =>
-                        handleFormDataChange('paymentTerms', e.target.value)
+                        handleFormDataChange("paymentTerms", e.target.value)
                       }
                       className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                       placeholder="e.g., Net 30"
@@ -871,7 +878,7 @@ export const InvoiceEditor: React.FC<InvoiceEditorProps> = ({
                       type="text"
                       value={formData.deliveryNote}
                       onChange={(e) =>
-                        handleFormDataChange('deliveryNote', e.target.value)
+                        handleFormDataChange("deliveryNote", e.target.value)
                       }
                       className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                       placeholder="e.g., DN-001"
@@ -1127,7 +1134,8 @@ export const InvoiceEditor: React.FC<InvoiceEditorProps> = ({
                         // Update the form's Purchase Order Number
                         setFormData((prev) => ({
                           ...prev,
-                          purchaseOrderNo: selectedClient.poNumber || "PO/GSPL/202526/000496",
+                          purchaseOrderNo:
+                            selectedClient.poNumber || "PO/GSPL/202526/000496",
                         }));
                       }
                     }}
@@ -1334,48 +1342,52 @@ export const InvoiceEditor: React.FC<InvoiceEditorProps> = ({
                         </div>
                       </div>
 
-                                         {/* Title field for item */}
-                   <div className="mb-3">
-                     <label className="block text-sm font-medium text-gray-700 mb-1">
-                       Title *
-                     </label>
-                     <input
-                       type="text"
-                       value={item.title || ""}
-                       onChange={(e) => {
-                         const updatedItems = [...items];
-                         updatedItems[index] = {
-                           ...updatedItems[index],
-                           title: e.target.value,
-                         };
-                         setItems(updatedItems);
-                       }}
-                       className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                       placeholder="e.g., Web Development, Mobile App, Consulting"
-                       required
-                     />
-                   </div>
+                      {/* Title field for item */}
+                      <div className="mb-3">
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                          Title *
+                        </label>
+                        <input
+                          type="text"
+                          value={item.title || ""}
+                          onChange={(e) => {
+                            const updatedItems = [...items];
+                            updatedItems[index] = {
+                              ...updatedItems[index],
+                              title: e.target.value,
+                            };
+                            setItems(updatedItems);
+                          }}
+                          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          placeholder="e.g., Web Development, Mobile App, Consulting"
+                          required
+                        />
+                      </div>
 
-                   {/* Description field for manual details */}
-                   <div className="mb-3">
-                     <label className="block text-sm font-medium text-gray-700 mb-1">
-                       Description
-                     </label>
-                     <textarea
-                       value={item.description || ""}
-                       onChange={(e) => {
-                         const updatedItems = [...items];
-                         updatedItems[index] = {
-                           ...updatedItems[index],
-                           description: e.target.value,
-                         };
-                         setItems(updatedItems);
-                       }}
-                       className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                       rows={3}
-                       placeholder="Add all details manually for this item..."
-                     />
-                   </div>
+                      {/* Description field for manual details */}
+                      <div className="mb-3">
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                          Description
+                        </label>
+                        <textarea
+                          value={item.description || ""}
+                          onChange={(e) => {
+                            const updatedItems = [...items];
+                            updatedItems[index] = {
+                              ...updatedItems[index],
+                              description: e.target.value,
+                            };
+                            setItems(updatedItems);
+                          }}
+                          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          rows={3}
+                          placeholder="Add all details manually for this item..."
+                        />
+                        <p className="text-xs text-gray-500 mt-1">
+                          💡 Line breaks will be preserved in the generated
+                          invoice
+                        </p>
+                      </div>
                     </div>
                   ))}
                 </div>
@@ -1398,7 +1410,11 @@ export const InvoiceEditor: React.FC<InvoiceEditorProps> = ({
                           name="taxType"
                           value="igst"
                           checked={taxType === "igst"}
-                          onChange={(e) => setTaxType(e.target.value as "igst" | "sgst-cgst" | "no-gst")}
+                          onChange={(e) =>
+                            setTaxType(
+                              e.target.value as "igst" | "sgst-cgst" | "no-gst"
+                            )
+                          }
                           className="mr-2 text-blue-600 focus:ring-blue-500"
                         />
                         <span className="text-sm text-gray-700">
@@ -1411,7 +1427,11 @@ export const InvoiceEditor: React.FC<InvoiceEditorProps> = ({
                           name="taxType"
                           value="sgst-cgst"
                           checked={taxType === "sgst-cgst"}
-                          onChange={(e) => setTaxType(e.target.value as "igst" | "sgst-cgst" | "no-gst")}
+                          onChange={(e) =>
+                            setTaxType(
+                              e.target.value as "igst" | "sgst-cgst" | "no-gst"
+                            )
+                          }
                           className="mr-2 text-blue-600 focus:ring-blue-500"
                         />
                         <span className="text-sm text-gray-700">
@@ -1424,7 +1444,11 @@ export const InvoiceEditor: React.FC<InvoiceEditorProps> = ({
                           name="taxType"
                           value="no-gst"
                           checked={taxType === "no-gst"}
-                          onChange={(e) => setTaxType(e.target.value as "igst" | "sgst-cgst" | "no-gst")}
+                          onChange={(e) =>
+                            setTaxType(
+                              e.target.value as "igst" | "sgst-cgst" | "no-gst"
+                            )
+                          }
                           className="mr-2 text-blue-600 focus:ring-blue-500"
                         />
                         <span className="text-sm text-gray-700">
@@ -1433,13 +1457,26 @@ export const InvoiceEditor: React.FC<InvoiceEditorProps> = ({
                       </label>
                     </div>
                   </div>
-                  
+
                   <div className="p-4 bg-blue-50 rounded-md">
                     <div className="text-sm text-blue-800">
-                      <div className="font-semibold mb-2">Current Tax Configuration:</div>
-                      <div>Tax Type: <span className="font-medium">{getTaxType()}</span></div>
-                      <div>Tax Rate: <span className="font-medium">{getTaxRate()}</span></div>
-                      <div>Tax Amount: <span className="font-medium">₹{formatCurrency(calculateTax)}</span></div>
+                      <div className="font-semibold mb-2">
+                        Current Tax Configuration:
+                      </div>
+                      <div>
+                        Tax Type:{" "}
+                        <span className="font-medium">{getTaxType()}</span>
+                      </div>
+                      <div>
+                        Tax Rate:{" "}
+                        <span className="font-medium">{getTaxRate()}</span>
+                      </div>
+                      <div>
+                        Tax Amount:{" "}
+                        <span className="font-medium">
+                          ₹{formatCurrency(calculateTax)}
+                        </span>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -1492,8 +1529,6 @@ export const InvoiceEditor: React.FC<InvoiceEditorProps> = ({
                   </div>
                 </div>
               </div>
-
-
             </div>
           )}
         </div>

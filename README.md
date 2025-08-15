@@ -182,3 +182,4 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 **🏢 Built with ❤️ for modern, web-based business management**
 
 **📚 [View Complete Documentation](./docs/README.md)**
+# Force Vercel rebuild - Fri Aug 15 23:36:37 IST 2025

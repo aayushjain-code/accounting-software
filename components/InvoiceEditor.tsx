@@ -55,6 +55,7 @@ export const InvoiceEditor: React.FC<InvoiceEditorProps> = ({
     {
       id: "1",
       invoiceId: invoice?.id || "temp",
+      title: "Web Development",
       description: "IT Design and Development",
       quantity: 1,
       unitPrice: 100000,
@@ -328,6 +329,7 @@ export const InvoiceEditor: React.FC<InvoiceEditorProps> = ({
     const newItem: InvoiceItem = {
       id: Date.now().toString(),
       invoiceId: invoice?.id || "temp",
+      title: "",
       description: "",
       quantity: 1,
       unitPrice: 0,
@@ -1350,26 +1352,48 @@ export const InvoiceEditor: React.FC<InvoiceEditorProps> = ({
                         </div>
                       </div>
 
-                      {/* Description field for manual details */}
-                      <div className="mb-3">
-                        <label className="block text-sm font-medium text-gray-700 mb-1">
-                          Description
-                        </label>
-                        <textarea
-                          value={item.description || ""}
-                          onChange={(e) => {
-                            const updatedItems = [...items];
-                            updatedItems[index] = {
-                              ...updatedItems[index],
-                              description: e.target.value,
-                            };
-                            setItems(updatedItems);
-                          }}
-                          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                          rows={3}
-                          placeholder="Add all details manually for this item..."
-                        />
-                      </div>
+                                         {/* Title field for item */}
+                   <div className="mb-3">
+                     <label className="block text-sm font-medium text-gray-700 mb-1">
+                       Title *
+                     </label>
+                     <input
+                       type="text"
+                       value={item.title || ""}
+                       onChange={(e) => {
+                         const updatedItems = [...items];
+                         updatedItems[index] = {
+                           ...updatedItems[index],
+                           title: e.target.value,
+                         };
+                         setItems(updatedItems);
+                       }}
+                       className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                       placeholder="e.g., Web Development, Mobile App, Consulting"
+                       required
+                     />
+                   </div>
+
+                   {/* Description field for manual details */}
+                   <div className="mb-3">
+                     <label className="block text-sm font-medium text-gray-700 mb-1">
+                       Description
+                     </label>
+                     <textarea
+                       value={item.description || ""}
+                       onChange={(e) => {
+                         const updatedItems = [...items];
+                         updatedItems[index] = {
+                           ...updatedItems[index],
+                           description: e.target.value,
+                         };
+                         setItems(updatedItems);
+                       }}
+                       className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                       rows={3}
+                       placeholder="Add all details manually for this item..."
+                     />
+                   </div>
                     </div>
                   ))}
                 </div>

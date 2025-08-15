@@ -730,7 +730,15 @@ export const InvoiceTemplate: React.FC<InvoiceTemplateProps> = (props) => {
                     React.createElement(
                       "td",
                       { style: { border: "1px solid #000", padding: "4px 6px" } },
-                      item.description || "IT Design and Development"
+                      [
+                        React.createElement(
+                          "strong",
+                          {},
+                          item.title || "Item Title"
+                        ),
+                        React.createElement("br"),
+                        item.description || "IT Design and Development"
+                      ]
                     ),
                     React.createElement(
                       "td",

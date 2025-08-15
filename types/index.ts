@@ -167,6 +167,7 @@ export interface Invoice {
 export interface InvoiceItem {
   id: string;
   invoiceId: string;
+  title?: string;
   description: string;
   quantity: number;
   unitPrice: number;

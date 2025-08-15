@@ -293,7 +293,7 @@ export default function ClientsPage() {
     goToPage,
     changePageSize,
   } = usePagination(filteredClients, {
-    initialPageSize: 12,
+    initialPageSize: 16,
     enableVirtualScroll: false,
   });
 
@@ -525,7 +525,7 @@ export default function ClientsPage() {
       {viewMode === "cards" ? (
         /* Cards View */
         <div className="space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
             {clientsByStatus.map((client) => (
               <ClientCard
                 key={client.id}
@@ -557,7 +557,7 @@ export default function ClientsPage() {
             onPageChange={goToPage}
             onPageSizeChange={changePageSize}
             showPageSizeSelector={true}
-            pageSizeOptions={[6, 12, 24, 48]}
+            pageSizeOptions={[8, 16, 32, 64]}
           />
         </div>
       )}

@@ -31,7 +31,6 @@ export function usePagination<T>(
     initialPageSize = 10,
     enableVirtualScroll = false,
     enableInfiniteScroll = false,
-    containerHeight = 400,
     itemHeight = 50,
   } = options;
 
@@ -51,17 +50,9 @@ export function usePagination<T>(
       items,
       pageSize,
       currentPage,
-      containerHeight,
       itemHeight
     );
-  }, [
-    items,
-    pageSize,
-    currentPage,
-    containerHeight,
-    itemHeight,
-    enableVirtualScroll,
-  ]);
+  }, [items, pageSize, currentPage, itemHeight, enableVirtualScroll]);
 
   // Infinite scroll pagination
   const infiniteScrollPagination = useMemo(() => {

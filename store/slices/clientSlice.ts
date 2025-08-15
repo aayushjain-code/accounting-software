@@ -45,7 +45,7 @@ export const createClientSlice: StateCreator<ClientSlice> = (set, get) => ({
     return get().clients.find(client => client.id === id);
   },
 
-  getProjectsByClient: clientId => {
+  getProjectsByClient: _clientId => {
     // This will be implemented when we have access to projects
     return [];
   },

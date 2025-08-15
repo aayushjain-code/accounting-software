@@ -51,6 +51,9 @@ const TimesheetGenerator: React.FC<TimesheetGeneratorProps> = ({
     }
 
     const [year, month] = selectedMonth.split("-").map(Number);
+    if (!year || !month) {
+      return [];
+    }
     const startDate = startOfMonth(new Date(year, month - 1));
     const endDate = endOfMonth(new Date(year, month - 1));
 

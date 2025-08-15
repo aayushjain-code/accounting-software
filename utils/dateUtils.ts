@@ -63,8 +63,7 @@ export const parseDate = (date: string | Date | number): Date | null => {
  */
 export const formatDate = (
   date: Date | string | number,
-  formatString: string = "yyyy-MM-dd",
-  options?: DateFormatOptions
+  formatString: string = "yyyy-MM-dd"
 ): string => {
   const parsedDate = parseDate(date);
   if (!parsedDate) return "Invalid Date";

@@ -95,7 +95,7 @@ export const formatPhoneNumber = (phone: string): string => {
 // Email masking for privacy
 export const maskEmail = (email: string): string => {
   const [localPart, domain] = email.split("@");
-  if (localPart.length <= 2) return email;
+  if (!localPart || !domain || localPart.length <= 2) return email;
 
   const maskedLocal =
     localPart.charAt(0) +

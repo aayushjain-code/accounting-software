@@ -1,5 +1,3 @@
-import { format } from "date-fns";
-
 // Code generation utilities
 export class CodeGenerator {
   private static counters = new Map<string, number>();
@@ -7,14 +5,6 @@ export class CodeGenerator {
   // Reset counters (useful for testing)
   static resetCounters() {
     this.counters.clear();
-  }
-
-  // Get next counter for a specific type
-  private static getNextCounter(type: string): number {
-    const current = this.counters.get(type) || 0;
-    const next = current + 1;
-    this.counters.set(type, next);
-    return next;
   }
 
   // Generate client code: CLT-YYYY-XXXX
@@ -204,7 +194,7 @@ export class CodeGenerator {
       const maxNumber = Math.max(
         ...existingCodes.map(code => {
           const match = new RegExp(`${prefix}-\\d{4}-(\\d+)`).exec(code);
-          return match ? parseInt(match[1]) : 0;
+          return match && match[1] ? parseInt(match[1]) : 0;
         })
       );
       counter = maxNumber + 1;
@@ -238,17 +228,28 @@ export class CodeGenerator {
 
     for (const [type, pattern] of Object.entries(patterns)) {
       const match = code.match(pattern);
-      if (match) {
-        const year = parseInt(match[1]);
-        const sequence = parseInt(match[match.length - 1]);
-        const month = match.length > 3 ? parseInt(match[2]) : undefined;
+      if (match && match[1] && match[match.length - 1]) {
+        const year = parseInt(match[1]!);
+        const sequence = parseInt(match[match.length - 1]!);
+        const month =
+          match.length > 3 && match[2] ? parseInt(match[2]) : undefined;
 
-        return {
+        const result: {
+          type: string;
+          year: number;
+          month?: number;
+          sequence: number;
+        } = {
           type,
           year,
-          month,
           sequence,
         };
+
+        if (month !== undefined) {
+          result.month = month;
+        }
+
+        return result;
       }
     }
 

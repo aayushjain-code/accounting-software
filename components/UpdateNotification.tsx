@@ -17,18 +17,20 @@ export const UpdateNotification: React.FC<UpdateNotificationProps> = ({
   useEffect(() => {
     if (changelog.length > 0) {
       const [latest] = changelog;
-      const lastSeen = localStorage.getItem("lastSeenUpdate");
+      if (latest) {
+        const lastSeen = localStorage.getItem("lastSeenUpdate");
 
-      if (!lastSeen || new Date(latest.releaseDate) > new Date(lastSeen)) {
-        setLatestUpdate(latest);
-        setIsVisible(true);
+        if (!lastSeen || new Date(latest.releaseDate) > new Date(lastSeen)) {
+          setLatestUpdate(latest);
+          setIsVisible(true);
+        }
       }
     }
   }, [changelog]);
 
   const handleDismiss = (): void => {
     setLatestUpdate(null);
-    setLastSeen(new Date().toISOString());
+    localStorage.setItem("lastSeenUpdate", new Date().toISOString());
   };
 
   const handleViewUpdate = (): void => {

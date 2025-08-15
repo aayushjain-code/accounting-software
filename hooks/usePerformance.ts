@@ -54,9 +54,9 @@ export function usePerformance({
   );
 
   const trackDataLoad = useCallback(
-    (dataSize: number, loadTime: number) => {
+    (loadTime: number) => {
       if (!enabled) return;
-      performanceMonitor.trackDataLoad(componentName, dataSize, loadTime);
+      performanceMonitor.trackDataLoad(componentName, loadTime);
     },
     [componentName, enabled]
   );
@@ -126,7 +126,6 @@ export function useMeasureDataProcessing<T>(
     // Track processing performance
     performanceMonitor.trackDataProcessing(
       processorName,
-      data.length,
       processingTime.current
     );
 

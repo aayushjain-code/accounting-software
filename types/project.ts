@@ -1,4 +1,4 @@
-import { BaseEntity, StatusOptions, TaxType } from "./common";
+import { BaseEntity, StatusOptions } from "./common";
 
 export interface Project extends BaseEntity {
   projectCode: string; // PRJ-YYYY-XXXX format

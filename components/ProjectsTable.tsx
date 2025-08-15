@@ -62,8 +62,8 @@ export const ProjectsTable: React.FC<ProjectsTableProps> = ({
   };
 
   const renderReadOnlyCell = (
-    project: Project,
-    field: keyof Project,
+    _project: Project,
+    _field: keyof Project,
     value: string | number | boolean
   ) => {
     return <div className="px-2 py-1">{value?.toString() || "-"}</div>;

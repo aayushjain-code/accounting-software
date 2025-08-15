@@ -142,7 +142,7 @@ export const Tooltip: React.FC<TooltipProps> = ({
     setTooltipPosition({ x: clampedX, y: clampedY });
   }, [position]);
 
-  useEffect(() => {
+  useEffect((): (() => void) | void => {
     if (isVisible) {
       updatePosition();
       const handleScroll = () => updatePosition();
@@ -158,7 +158,7 @@ export const Tooltip: React.FC<TooltipProps> = ({
     }
   }, [isVisible, updatePosition]);
 
-  useEffect(() => {
+  useEffect((): (() => void) => {
     return () => {
       if (timeoutRef.current) {
         clearTimeout(timeoutRef.current);

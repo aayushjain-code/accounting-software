@@ -9,8 +9,6 @@ import {
   Expense,
   DailyLog,
   CompanyProfile,
-  UserProfile,
-  ChangelogEntry,
   InvoiceItem,
   InvoiceFile,
   TimesheetEntry,
@@ -738,7 +736,7 @@ export const useAccountingStore = create<AccountingStore>()(
         return get().invoices.find(i => i.id === invoiceId)?.files || [];
       },
 
-      getInvoiceFilesByMonth: month => {
+      getInvoiceFilesByMonth: _month => {
         // For now, return all files since we removed the month field
         // In a real implementation, you might want to add month metadata or use a different approach
         return get().invoiceFiles;
@@ -769,8 +767,8 @@ export const useAccountingStore = create<AccountingStore>()(
         const invoice: Invoice = {
           id: `invoice_${Date.now()}`,
           timesheetId: timesheet.id,
-          clientId: timesheet.clientId || "",
-          projectId: timesheet.projectId || "",
+          clientId: project.clientId,
+          projectId: timesheet.projectId,
           invoiceNumber: `INV-${Date.now()}`,
           issueDate: new Date(),
           dueDate: addDays(new Date(), 30),

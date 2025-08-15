@@ -1,7 +1,11 @@
 import { chromium, FullConfig } from "@playwright/test";
 
 async function globalSetup(config: FullConfig) {
-  const { baseURL } = config.projects[0].use;
+  const project = config.projects[0];
+  if (!project) {
+    throw new Error("No projects found in Playwright configuration");
+  }
+  const { baseURL } = project.use;
 
   // Launch browser and create a new context
   const browser = await chromium.launch();

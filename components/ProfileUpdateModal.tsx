@@ -40,10 +40,10 @@ export const ProfileUpdateModal: React.FC<ProfileUpdateModalProps> = ({
       const updatedProfile: Partial<UserProfile> = {
         firstName: formData.firstName,
         lastName: formData.lastName,
-        phone: formData.phone || undefined,
-        department: formData.department || undefined,
-        position: formData.position || undefined,
-        bio: formData.bio || undefined,
+        ...(formData.phone && { phone: formData.phone }),
+        ...(formData.department && { department: formData.department }),
+        ...(formData.position && { position: formData.position }),
+        ...(formData.bio && { bio: formData.bio }),
         preferences: {
           theme: formData.theme,
           notifications: {

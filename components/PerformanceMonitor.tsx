@@ -184,7 +184,6 @@ export const usePerformanceMonitor = (): PerformanceMonitorHook => {
 
   const clearStats = (): void => {
     performanceMonitor.reset();
-    setStats(performanceMonitor.getReport());
   };
 
   const exportReport = (): void => {

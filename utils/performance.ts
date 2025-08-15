@@ -33,7 +33,9 @@ export const performance = {
       window.performance.mark(endMark);
       window.performance.measure(name, startMark, endMark);
       const measure = window.performance.getEntriesByName(name)[0];
-      console.log(`${name} took ${measure.duration}ms`);
+      if (measure) {
+        console.log(`${name} took ${measure.duration}ms`);
+      }
     }
   },
 
@@ -225,8 +227,7 @@ export const lazyLoading = {
 
   // Lazy load components
   lazyLoadComponent: <T extends React.ComponentType<any>>(
-    importFn: () => Promise<{ default: T }>,
-    fallback?: React.ComponentType
+    importFn: () => Promise<{ default: T }>
   ) => {
     return React.lazy(importFn);
   },
@@ -239,7 +240,6 @@ export const pagination = {
     items: T[],
     pageSize: number,
     currentPage: number,
-    containerHeight: number,
     itemHeight: number
   ) => {
     const startIndex = (currentPage - 1) * pageSize;
@@ -295,9 +295,10 @@ export const pagination = {
 
     const endIndex = startIndex + pageSize;
     const paginatedItems = items.slice(startIndex, endIndex);
+    const lastItem = paginatedItems[paginatedItems.length - 1];
     const nextCursor =
-      paginatedItems.length > 0
-        ? getCursor(paginatedItems[paginatedItems.length - 1])
+      paginatedItems.length > 0 && lastItem !== undefined
+        ? getCursor(lastItem)
         : null;
 
     return {
@@ -331,11 +332,7 @@ export const virtualization = {
   },
 
   // Calculate scroll position
-  getScrollPosition: (
-    index: number,
-    itemHeight: number,
-    containerHeight: number
-  ) => {
+  getScrollPosition: (index: number, itemHeight: number) => {
     return index * itemHeight;
   },
 
@@ -414,11 +411,7 @@ export const performanceMonitor = {
   },
 
   // Track data load performance
-  trackDataLoad: (
-    componentName: string,
-    dataSize: number,
-    loadTime: number
-  ) => {
+  trackDataLoad: (componentName: string, loadTime: number) => {
     const key = `${componentName}-dataLoad`;
     if (!performanceMonitor.metrics.dataLoadTimes[key]) {
       performanceMonitor.metrics.dataLoadTimes[key] = [];
@@ -435,11 +428,7 @@ export const performanceMonitor = {
   },
 
   // Track data processing performance
-  trackDataProcessing: (
-    processorName: string,
-    dataSize: number,
-    processingTime: number
-  ) => {
+  trackDataProcessing: (processorName: string, processingTime: number) => {
     if (!performanceMonitor.metrics.dataProcessingTimes[processorName]) {
       performanceMonitor.metrics.dataProcessingTimes[processorName] = [];
     }

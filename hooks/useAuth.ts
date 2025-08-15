@@ -1,11 +1,5 @@
 import { useState, useEffect } from "react";
 
-interface AuthStatus {
-  isAuthenticated: boolean;
-  isLocked: boolean;
-  remainingTime: number;
-}
-
 export const useAuth = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isLoading, setIsLoading] = useState(true);

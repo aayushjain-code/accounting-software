@@ -22,7 +22,7 @@ export const Tooltip: React.FC<TooltipProps> = ({
 }) => {
   const [isVisible, setIsVisible] = useState(false);
   const [tooltipPosition, setTooltipPosition] = useState({ x: 0, y: 0 });
-  const [finalPosition] = useState(position);
+  // const [finalPosition] = useState(position);
   const triggerRef = useRef<HTMLDivElement>(null);
   const tooltipRef = useRef<HTMLDivElement>(null);
   const timeoutRef = useRef<NodeJS.Timeout>();
@@ -138,7 +138,7 @@ export const Tooltip: React.FC<TooltipProps> = ({
       Math.min(bestCoords.y, viewportHeight - tooltipRect.height - 8)
     );
 
-    setFinalPosition(bestPosition);
+            // setFinalPosition(bestPosition);
     setTooltipPosition({ x: clampedX, y: clampedY });
   }, [position]);
 

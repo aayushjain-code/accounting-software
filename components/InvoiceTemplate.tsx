@@ -35,10 +35,11 @@ interface InvoiceTemplateProps {
     hsnCode: string;
     unit: string;
   };
+  taxType?: "igst" | "sgst-cgst";
 }
 
 export const InvoiceTemplate: React.FC<InvoiceTemplateProps> = (props) => {
-  const { invoice, client, items, companyInfo, clientInfo, itemDetails } =
+  const { invoice, client, items, companyInfo, clientInfo, itemDetails, taxType = "igst" } =
     props;
 
   const formatCurrency = (amount: number) => {
@@ -54,23 +55,37 @@ export const InvoiceTemplate: React.FC<InvoiceTemplateProps> = (props) => {
 
   const calculateTax = () => {
     const subtotal = calculateSubtotal();
-    // Default to IGST (18%) - can be overridden manually
-    return (subtotal * 18) / 100;
+    if (taxType === "sgst-cgst") {
+      // SGST (9%) + CGST (9%) = 18%
+      return (subtotal * 18) / 100;
+    } else {
+      // IGST (18%)
+      return (subtotal * 18) / 100;
+    }
   };
 
   const calculateSGST = () => {
     const subtotal = calculateSubtotal();
-    return 0; // Manual override required
+    if (taxType === "sgst-cgst") {
+      return (subtotal * 9) / 100; // 9% SGST
+    }
+    return 0; // No SGST for IGST
   };
 
   const calculateCGST = () => {
     const subtotal = calculateSubtotal();
-    return 0; // Manual override required
+    if (taxType === "sgst-cgst") {
+      return (subtotal * 9) / 100; // 9% CGST
+    }
+    return 0; // No CGST for IGST
   };
 
   const calculateIGST = () => {
     const subtotal = calculateSubtotal();
-    return (subtotal * 18) / 100; // Default IGST calculation
+    if (taxType === "igst") {
+      return (subtotal * 18) / 100; // 18% IGST
+    }
+    return 0; // No IGST for SGST+CGST
   };
 
   const calculateTotal = () => {
@@ -78,11 +93,17 @@ export const InvoiceTemplate: React.FC<InvoiceTemplateProps> = (props) => {
   };
 
   const getTaxType = () => {
-    return "IGST"; // Default tax type
+    if (taxType === "sgst-cgst") {
+      return "SGST + CGST";
+    }
+    return "IGST";
   };
 
   const getTaxRate = () => {
-    return "18%"; // Default tax rate
+    if (taxType === "sgst-cgst") {
+      return "9% + 9%";
+    }
+    return "18%";
   };
 
   const getAmountInWords = (amount: number): string => {

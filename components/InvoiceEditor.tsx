@@ -69,6 +69,8 @@ export const InvoiceEditor: React.FC<InvoiceEditorProps> = ({
     unit: "Nos",
   });
 
+  const [taxType, setTaxType] = useState<"igst" | "sgst-cgst">("igst");
+
   const [companyInfo, setCompanyInfo] = useState({
     name: "Brandsmashers Tech",
     address: "1st Floor, JAP Tower, Raisen RD, Ward 44, Govindpura",
@@ -348,23 +350,37 @@ export const InvoiceEditor: React.FC<InvoiceEditorProps> = ({
 
   const calculateTax = () => {
     const subtotal = calculateSubtotal();
-    // Default to IGST (18%) - can be overridden manually
-    return (subtotal * 18) / 100;
+    if (taxType === "sgst-cgst") {
+      // SGST (9%) + CGST (9%) = 18%
+      return (subtotal * 18) / 100;
+    } else {
+      // IGST (18%)
+      return (subtotal * 18) / 100;
+    }
   };
 
   const calculateSGST = () => {
     const subtotal = calculateSubtotal();
-    return 0; // Manual override required
+    if (taxType === "sgst-cgst") {
+      return (subtotal * 9) / 100; // 9% SGST
+    }
+    return 0; // No SGST for IGST
   };
 
   const calculateCGST = () => {
     const subtotal = calculateSubtotal();
-    return 0; // Manual override required
+    if (taxType === "sgst-cgst") {
+      return (subtotal * 9) / 100; // 9% CGST
+    }
+    return 0; // No CGST for IGST
   };
 
   const calculateIGST = () => {
     const subtotal = calculateSubtotal();
-    return (subtotal * 18) / 100; // Default IGST calculation
+    if (taxType === "igst") {
+      return (subtotal * 18) / 100; // 18% IGST
+    }
+    return 0; // No IGST for SGST+CGST
   };
 
   const calculateTotal = () => {
@@ -372,11 +388,17 @@ export const InvoiceEditor: React.FC<InvoiceEditorProps> = ({
   };
 
   const getTaxType = () => {
-    return "IGST"; // Default tax type
+    if (taxType === "sgst-cgst") {
+      return "SGST + CGST";
+    }
+    return "IGST";
   };
 
   const getTaxRate = () => {
-    return "18%"; // Default tax rate
+    if (taxType === "sgst-cgst") {
+      return "9% + 9%";
+    }
+    return "18%";
   };
 
   const calculateWorkingDays = (workingDays: string, leave: string) => {
@@ -1296,6 +1318,57 @@ export const InvoiceEditor: React.FC<InvoiceEditorProps> = ({
                 </div>
               </div>
 
+              {/* Tax Configuration */}
+              <div className="bg-gray-50 p-6 rounded-lg">
+                <h3 className="text-lg font-semibold text-gray-800 mb-4">
+                  Tax Configuration
+                </h3>
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Tax Type
+                    </label>
+                    <div className="space-y-2">
+                      <label className="flex items-center">
+                        <input
+                          type="radio"
+                          name="taxType"
+                          value="igst"
+                          checked={taxType === "igst"}
+                          onChange={(e) => setTaxType(e.target.value as "igst" | "sgst-cgst")}
+                          className="mr-2 text-blue-600 focus:ring-blue-500"
+                        />
+                        <span className="text-sm text-gray-700">
+                          IGST (18%) - Inter-state transactions
+                        </span>
+                      </label>
+                      <label className="flex items-center">
+                        <input
+                          type="radio"
+                          name="taxType"
+                          value="sgst-cgst"
+                          checked={taxType === "sgst-cgst"}
+                          onChange={(e) => setTaxType(e.target.value as "igst" | "sgst-cgst")}
+                          className="mr-2 text-blue-600 focus:ring-blue-500"
+                        />
+                        <span className="text-sm text-gray-700">
+                          SGST (9%) + CGST (9%) - Intra-state transactions
+                        </span>
+                      </label>
+                    </div>
+                  </div>
+                  
+                  <div className="p-4 bg-blue-50 rounded-md">
+                    <div className="text-sm text-blue-800">
+                      <div className="font-semibold mb-2">Current Tax Configuration:</div>
+                      <div>Tax Type: <span className="font-medium">{getTaxType()}</span></div>
+                      <div>Tax Rate: <span className="font-medium">{getTaxRate()}</span></div>
+                      <div>Tax Amount: <span className="font-medium">₹{formatCurrency(calculateTax())}</span></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
               {/* Item Details */}
               <div className="bg-gray-50 p-6 rounded-lg">
                 <h3 className="text-lg font-semibold text-gray-800 mb-4">
@@ -1445,12 +1518,31 @@ export const InvoiceEditor: React.FC<InvoiceEditorProps> = ({
                       ₹{formatCurrency(calculateSubtotal())}
                     </span>
                   </div>
-                  <div className="flex justify-between">
-                    <span className="text-gray-600">IGST (18%):</span>
-                    <span className="font-medium">
-                      ₹{formatCurrency(calculateTax())}
-                    </span>
-                  </div>
+                  
+                  {taxType === "igst" ? (
+                    <div className="flex justify-between">
+                      <span className="text-gray-600">IGST (18%):</span>
+                      <span className="font-medium">
+                        ₹{formatCurrency(calculateIGST())}
+                      </span>
+                    </div>
+                  ) : (
+                    <>
+                      <div className="flex justify-between">
+                        <span className="text-gray-600">SGST (9%):</span>
+                        <span className="font-medium">
+                          ₹{formatCurrency(calculateSGST())}
+                        </span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-gray-600">CGST (9%):</span>
+                        <span className="font-medium">
+                          ₹{formatCurrency(calculateCGST())}
+                        </span>
+                      </div>
+                    </>
+                  )}
+                  
                   <div className="flex justify-between border-t border-blue-200 pt-2">
                     <span className="text-blue-800 font-semibold">Total:</span>
                     <span className="text-blue-800 font-bold text-lg">
@@ -1474,12 +1566,12 @@ export const InvoiceEditor: React.FC<InvoiceEditorProps> = ({
           <InvoiceTemplate
             invoice={previewInvoice}
             client={previewClient}
-
             items={items}
             companyInfo={companyInfo}
             clientInfo={clientInfo}
             signatureInfo={signatureInfo}
             itemDetails={itemDetails}
+            taxType={taxType}
           />
         </div>
       </div>

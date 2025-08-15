@@ -24,6 +24,8 @@ interface DailyEntry {
   description: string;
   hours: number;
   isWeekend: boolean;
+  isLeave: boolean;
+  leaveType?: 'full' | 'half' | 'sick' | 'casual' | 'annual';
 }
 
 export default function TimesheetGeneratorPage() {
@@ -37,6 +39,10 @@ export default function TimesheetGeneratorPage() {
   const [employeeRole, setEmployeeRole] = useState("");
   const [dailyEntries, setDailyEntries] = useState<DailyEntry[]>([]);
   const [isPreviewMode, setIsPreviewMode] = useState(false);
+
+  const [selectedDateForLeave, setSelectedDateForLeave] = useState<string>("");
+  const [leaveType, setLeaveType] = useState<'full' | 'half' | 'sick' | 'casual' | 'annual'>('full');
+  const [uploadedFile, setUploadedFile] = useState<File | null>(null);
 
   // Generate daily entries for the selected month
   const generateDailyEntries = useMemo(() => {
@@ -56,6 +62,8 @@ export default function TimesheetGeneratorPage() {
         description: isWeekendDay ? "" : "",
         hours: isWeekendDay ? 0 : 8,
         isWeekend: isWeekendDay,
+        isLeave: false,
+        leaveType: undefined,
       };
     });
   }, [selectedMonth]);
@@ -100,6 +108,7 @@ export default function TimesheetGeneratorPage() {
               th { background-color: #f2f2f2; font-weight: bold; }
               .hours { text-align: right; }
               .weekend { background-color: #f9f9f9; }
+              .leave { background-color: #ffe6e6; }
               .header { text-align: center; margin-bottom: 20px; font-size: 18px; font-weight: bold; }
             </style>
           </head>
@@ -118,7 +127,7 @@ export default function TimesheetGeneratorPage() {
                 ${dailyEntries
                   .map(
                     (entry) => `
-                  <tr class="${entry.isWeekend ? "weekend" : ""}">
+                  <tr class="${entry.isWeekend ? "weekend" : entry.isLeave ? "leave" : ""}">
                     <td>${entry.date}</td>
                     <td>${entry.taskName}</td>
                     <td>${entry.description}</td>
@@ -135,6 +144,98 @@ export default function TimesheetGeneratorPage() {
       printWindow.document.close();
       printWindow.print();
     }
+  };
+
+  const handleDownloadBlankFormat = () => {
+    const csvContent = [
+      ['Date', 'Task Name', 'Description', 'Hours', 'Leave Type', 'Is Leave'],
+      ...dailyEntries.map(entry => [
+        entry.date,
+        entry.taskName,
+        entry.description,
+        entry.hours,
+        entry.leaveType || '',
+        entry.isLeave ? 'Yes' : 'No'
+      ])
+    ].map(row => row.map(cell => `"${cell}"`).join(',')).join('\n');
+
+    const blob = new Blob([csvContent], { type: 'text/csv' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `Timesheet_${employeeName}_${employeeRole}_${selectedMonth}_blank.csv`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    window.URL.revokeObjectURL(url);
+  };
+
+  const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file && file.type === 'text/csv') {
+      setUploadedFile(file);
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const text = e.target?.result as string;
+        const lines = text.split('\n');
+        const newEntries = dailyEntries.map((entry, index) => {
+          if (index < lines.length - 1 && lines[index + 1]) {
+            const values = lines[index + 1].split(',').map(v => v.replace(/"/g, '').trim());
+            if (values.length >= 6) {
+              return {
+                ...entry,
+                taskName: values[1] || entry.taskName,
+                description: values[2] || entry.description,
+                hours: parseInt(values[3]) || entry.hours,
+                isLeave: values[5] === 'Yes',
+                leaveType: values[4] as 'full' | 'half' | 'sick' | 'casual' | 'annual' || undefined,
+              };
+            }
+          }
+          return entry;
+        });
+        setDailyEntries(newEntries);
+      };
+      reader.readAsText(file);
+    }
+  };
+
+  const handleMarkLeave = () => {
+    if (selectedDateForLeave && leaveType) {
+      setDailyEntries(prev => 
+        prev.map(entry => 
+          entry.date === selectedDateForLeave 
+            ? { 
+                ...entry, 
+                isLeave: true, 
+                leaveType,
+                taskName: `${leaveType.charAt(0).toUpperCase() + leaveType.slice(1)} Leave`,
+                description: `${leaveType.charAt(0).toUpperCase() + leaveType.slice(1)} Leave`,
+                hours: leaveType === 'half' ? 4 : 0
+              }
+            : entry
+        )
+      );
+      setSelectedDateForLeave("");
+      setLeaveType('full');
+    }
+  };
+
+  const handleRemoveLeave = (date: string) => {
+    setDailyEntries(prev => 
+      prev.map(entry => 
+        entry.date === date 
+          ? { 
+              ...entry, 
+              isLeave: false, 
+              leaveType: undefined,
+              taskName: "",
+              description: "",
+              hours: entry.isWeekend ? 0 : 8
+            }
+          : entry
+      )
+    );
   };
 
   const selectedProjectData = projects.find((p) => p.id === selectedProject);
@@ -287,6 +388,100 @@ export default function TimesheetGeneratorPage() {
                 </div>
               )}
 
+              {/* Leave Management and File Operations */}
+              <div className="mt-8 space-y-6">
+                <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-xl p-6">
+                  <h3 className="font-semibold text-blue-800 dark:text-blue-200 mb-4 flex items-center">
+                    <CalendarIcon className="h-5 w-5 mr-2" />
+                    Leave Management
+                  </h3>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div>
+                      <label className="block text-sm font-semibold text-blue-700 dark:text-blue-300 mb-2">
+                        Select Date
+                      </label>
+                      <select
+                        value={selectedDateForLeave}
+                        onChange={(e) => setSelectedDateForLeave(e.target.value)}
+                        className="w-full px-3 py-2 border border-blue-200 dark:border-blue-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 bg-white dark:bg-gray-700 text-blue-900 dark:text-blue-100"
+                      >
+                        <option value="">Choose a date</option>
+                        {dailyEntries.filter(entry => !entry.isWeekend).map(entry => (
+                          <option key={entry.date} value={entry.date}>
+                            {entry.date}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                    <div>
+                      <label className="block text-sm font-semibold text-blue-700 dark:text-blue-300 mb-2">
+                        Leave Type
+                      </label>
+                      <select
+                        value={leaveType}
+                        onChange={(e) => setLeaveType(e.target.value as 'full' | 'half' | 'sick' | 'casual' | 'annual')}
+                        className="w-full px-3 py-2 border border-blue-200 dark:border-blue-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 bg-white dark:bg-gray-700 text-blue-900 dark:text-blue-100"
+                      >
+                        <option value="full">Full Day Leave</option>
+                        <option value="half">Half Day Leave</option>
+                        <option value="sick">Sick Leave</option>
+                        <option value="casual">Casual Leave</option>
+                        <option value="annual">Annual Leave</option>
+                      </select>
+                    </div>
+                    <div className="flex items-end">
+                      <button
+                        onClick={handleMarkLeave}
+                        disabled={!selectedDateForLeave}
+                        className="w-full px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                      >
+                        Mark Leave
+                      </button>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-xl p-6">
+                  <h3 className="font-semibold text-green-800 dark:text-green-200 mb-4 flex items-center">
+                    <DocumentTextIcon className="h-5 w-5 mr-2" />
+                    File Operations
+                  </h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-semibold text-green-700 dark:text-green-300 mb-2">
+                        Download Blank Format
+                      </label>
+                      <button
+                        onClick={handleDownloadBlankFormat}
+                        className="w-full px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors flex items-center justify-center"
+                      >
+                        <ArrowDownTrayIcon className="h-5 w-5 mr-2" />
+                        Download CSV Template
+                      </button>
+                      <p className="text-xs text-green-600 dark:text-green-400 mt-2">
+                        Download blank format, fill it manually, then upload back
+                      </p>
+                    </div>
+                    <div>
+                      <label className="block text-sm font-semibold text-green-700 dark:text-green-300 mb-2">
+                        Upload Filled Format
+                      </label>
+                      <input
+                        type="file"
+                        accept=".csv"
+                        onChange={handleFileUpload}
+                        className="w-full px-3 py-2 border border-green-200 dark:border-green-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all duration-200 bg-white dark:bg-gray-700 text-green-900 dark:text-green-100"
+                      />
+                      {uploadedFile && (
+                        <p className="text-xs text-green-600 dark:text-green-400 mt-2">
+                          ✓ {uploadedFile.name} uploaded successfully
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              </div>
+
               <div className="mt-8 flex justify-end">
                 <button
                   onClick={handleGenerateTimesheet}
@@ -402,11 +597,22 @@ export default function TimesheetGeneratorPage() {
                       <tr
                         key={index}
                         className={
-                          entry.isWeekend ? "bg-gray-50 dark:bg-gray-800" : ""
+                          entry.isWeekend 
+                            ? "bg-gray-50 dark:bg-gray-800" 
+                            : entry.isLeave 
+                            ? "bg-red-50 dark:bg-red-900/20" 
+                            : ""
                         }
                       >
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100 border-r border-gray-200 dark:border-gray-700">
                           {entry.date}
+                          {entry.isLeave && (
+                            <div className="mt-1">
+                              <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800 dark:bg-red-800 dark:text-red-200">
+                                {entry.leaveType ? entry.leaveType.charAt(0).toUpperCase() + entry.leaveType.slice(1) : 'Leave'}
+                              </span>
+                            </div>
+                          )}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100 border-r border-gray-200 dark:border-gray-700">
                           <input
@@ -420,7 +626,7 @@ export default function TimesheetGeneratorPage() {
                               )
                             }
                             className="w-full border-none bg-transparent focus:outline-none focus:ring-0"
-                            disabled={entry.isWeekend}
+                            disabled={entry.isWeekend || entry.isLeave}
                           />
                         </td>
                         <td className="px-6 py-4 text-sm text-gray-900 dark:text-gray-100 border-r border-gray-200 dark:border-gray-700">
@@ -436,24 +642,36 @@ export default function TimesheetGeneratorPage() {
                             placeholder="Enter task description..."
                             className="w-full border-none bg-transparent resize-none focus:outline-none focus:ring-0"
                             rows={2}
+                            disabled={entry.isWeekend || entry.isLeave}
                           />
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100 text-right">
-                          <input
-                            type="number"
-                            value={entry.hours || ""}
-                            onChange={(e) =>
-                              handleEntryChange(
-                                entry.date,
-                                "hours",
-                                parseInt(e.target.value) || 0
-                              )
-                            }
-                            min="0"
-                            max="24"
-                            className="w-20 text-right border-none bg-transparent focus:outline-none focus:ring-0"
-                            disabled={entry.isWeekend}
-                          />
+                          <div className="flex items-center justify-end space-x-2">
+                            <input
+                              type="number"
+                              value={entry.hours || ""}
+                              onChange={(e) =>
+                                handleEntryChange(
+                                  entry.date,
+                                  "hours",
+                                  parseInt(e.target.value) || 0
+                                )
+                              }
+                              min="0"
+                              max="24"
+                              className="w-20 text-right border-none bg-transparent focus:outline-none focus:ring-0"
+                              disabled={entry.isWeekend || entry.isLeave}
+                            />
+                            {entry.isLeave && (
+                              <button
+                                onClick={() => handleRemoveLeave(entry.date)}
+                                className="px-2 py-1 text-xs bg-red-100 text-red-700 hover:bg-red-200 rounded transition-colors"
+                                title="Remove Leave"
+                              >
+                                ✕
+                              </button>
+                              )}
+                          </div>
                         </td>
                       </tr>
                     ))}
@@ -463,13 +681,13 @@ export default function TimesheetGeneratorPage() {
 
               {/* Summary */}
               <div className="mt-8 bg-gray-50 dark:bg-gray-800 p-6 rounded-xl">
-                <div className="grid grid-cols-3 gap-6 text-center">
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-6 text-center">
                   <div>
                     <p className="text-sm text-gray-600 dark:text-gray-400">
                       Total Working Days
                     </p>
                     <p className="text-2xl font-semibold text-gray-900 dark:text-white">
-                      {dailyEntries.filter((entry) => !entry.isWeekend).length}
+                      {dailyEntries.filter((entry) => !entry.isWeekend && !entry.isLeave).length}
                     </p>
                   </div>
                   <div>
@@ -489,6 +707,14 @@ export default function TimesheetGeneratorPage() {
                     </p>
                     <p className="text-2xl font-semibold text-gray-900 dark:text-white">
                       {dailyEntries.filter((entry) => entry.isWeekend).length}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-gray-600 dark:text-gray-400">
+                      Leave Days
+                    </p>
+                    <p className="text-2xl font-semibold text-gray-900 dark:text-white">
+                      {dailyEntries.filter((entry) => entry.isLeave).length}
                     </p>
                   </div>
                 </div>

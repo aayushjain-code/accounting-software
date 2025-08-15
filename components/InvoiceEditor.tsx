@@ -348,34 +348,23 @@ export const InvoiceEditor: React.FC<InvoiceEditorProps> = ({
 
   const calculateTax = () => {
     const subtotal = calculateSubtotal();
-    // Check if client is in same state (intra-state) or different state (inter-state)
-    const isIntraState = companyInfo.state === clientInfo.state;
-    
-    if (isIntraState) {
-      // Intra-state: SGST (9%) + CGST (9%) = 18%
-      return (subtotal * 18) / 100;
-    } else {
-      // Inter-state: IGST (18%)
-      return (subtotal * 18) / 100;
-    }
+    // Default to IGST (18%) - can be overridden manually
+    return (subtotal * 18) / 100;
   };
 
   const calculateSGST = () => {
     const subtotal = calculateSubtotal();
-    const isIntraState = companyInfo.state === clientInfo.state;
-    return isIntraState ? (subtotal * 9) / 100 : 0; // 9% SGST for intra-state
+    return 0; // Manual override required
   };
 
   const calculateCGST = () => {
     const subtotal = calculateSubtotal();
-    const isIntraState = companyInfo.state === clientInfo.state;
-    return isIntraState ? (subtotal * 9) / 100 : 0; // 9% CGST for intra-state
+    return 0; // Manual override required
   };
 
   const calculateIGST = () => {
     const subtotal = calculateSubtotal();
-    const isIntraState = companyInfo.state === clientInfo.state;
-    return isIntraState ? 0 : (subtotal * 18) / 100; // 18% IGST for inter-state
+    return (subtotal * 18) / 100; // Default IGST calculation
   };
 
   const calculateTotal = () => {
@@ -383,13 +372,11 @@ export const InvoiceEditor: React.FC<InvoiceEditorProps> = ({
   };
 
   const getTaxType = () => {
-    const isIntraState = companyInfo.state === clientInfo.state;
-    return isIntraState ? "SGST + CGST" : "IGST";
+    return "IGST"; // Default tax type
   };
 
   const getTaxRate = () => {
-    const isIntraState = companyInfo.state === clientInfo.state;
-    return isIntraState ? "9% + 9%" : "18%";
+    return "18%"; // Default tax rate
   };
 
   const calculateWorkingDays = (workingDays: string, leave: string) => {

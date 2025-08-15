@@ -32,8 +32,6 @@ export default function TimesheetManagementPage() {
   const { projects, clients } = useAccountingStore();
   
   const [selectedProject, setSelectedProject] = useState<string>("");
-  const [employeeName, setEmployeeName] = useState("");
-  const [employeeRole, setEmployeeRole] = useState("");
   const [uploadedFile, setUploadedFile] = useState<File | null>(null);
   const [timesheetUploads, setTimesheetUploads] = useState<TimesheetUpload[]>([]);
   const [isDragOver, setIsDragOver] = useState(false);
@@ -74,8 +72,8 @@ export default function TimesheetManagementPage() {
   };
 
   const handleSubmitTimesheet = () => {
-    if (!selectedProject || !employeeName || !employeeRole || !uploadedFile) {
-      alert("Please fill in all required fields and select a file");
+    if (!selectedProject || !uploadedFile) {
+      alert("Please select a project and file");
       return;
     }
 
@@ -96,8 +94,8 @@ export default function TimesheetManagementPage() {
       clientName: client.company,
       month: month,
       year: year,
-      employeeName,
-      employeeRole,
+      employeeName: "Not specified",
+      employeeRole: "Not specified",
       fileName: uploadedFile.name,
       fileSize: uploadedFile.size,
       uploadDate: new Date(),
@@ -107,8 +105,6 @@ export default function TimesheetManagementPage() {
     setTimesheetUploads(prev => [newTimesheet, ...prev]);
     
     // Reset form
-    setEmployeeName("");
-    setEmployeeRole("");
     setUploadedFile(null);
     
     alert("Timesheet uploaded successfully!");
@@ -244,32 +240,6 @@ export default function TimesheetManagementPage() {
                   <div className="space-y-4">
                     <div>
                       <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
-                        Employee Name *
-                      </label>
-                      <input
-                        type="text"
-                        value={employeeName}
-                        onChange={(e) => setEmployeeName(e.target.value)}
-                        placeholder="Enter employee name"
-                        className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
-                      />
-                    </div>
-
-                    <div>
-                      <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
-                        Employee Role *
-                      </label>
-                      <input
-                        type="text"
-                        value={employeeRole}
-                        onChange={(e) => setEmployeeRole(e.target.value)}
-                        placeholder="Enter employee role"
-                        className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
-                      />
-                    </div>
-
-                    <div>
-                      <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
                         <DocumentTextIcon className="h-4 w-4 inline mr-2 text-primary-600" />
                         Timesheet File *
                       </label>
@@ -317,7 +287,7 @@ export default function TimesheetManagementPage() {
 
                     <button
                       onClick={handleSubmitTimesheet}
-                      disabled={!employeeName || !employeeRole || !uploadedFile}
+                      disabled={!uploadedFile}
                       className="w-full px-4 py-3 bg-primary-600 text-white rounded-lg hover:bg-primary-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center justify-center"
                     >
                       <ArrowUpTrayIcon className="h-5 w-5 mr-2" />

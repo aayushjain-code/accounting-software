@@ -63,10 +63,6 @@ export const InvoiceEditor: React.FC<InvoiceEditorProps> = ({
   ]);
 
   const [itemDetails, setItemDetails] = useState({
-    technology: ".Net + Angular",
-    poNumber: "PO/GSPL/202526/000496",
-    workingDays: "23",
-    leave: "0",
     hsnCode: "998314",
     unit: "Nos",
   });
@@ -409,13 +405,7 @@ export const InvoiceEditor: React.FC<InvoiceEditorProps> = ({
     return "18%";
   };
 
-  const calculateWorkingDays = (workingDays: string, leave: string) => {
-    const workingDaysNum = parseInt(workingDays) || 0;
-    const leaveNum = parseInt(leave) || 0;
-    if (workingDaysNum === 0) return "Enter Working Days";
-    const calculated = workingDaysNum - leaveNum;
-    return `${calculated} / ${workingDaysNum}`;
-  };
+
 
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat("en-IN", {
@@ -509,19 +499,7 @@ export const InvoiceEditor: React.FC<InvoiceEditorProps> = ({
     return "Amount too large";
   };
 
-  // Validate working days and leave
-  useEffect(() => {
-    const workingDaysNum = parseInt(itemDetails.workingDays) || 0;
-    const leaveNum = parseInt(itemDetails.leave) || 0;
 
-    if (workingDaysNum > 0 && leaveNum > workingDaysNum) {
-      setValidationMessage("Leave days cannot exceed working days!");
-    } else if (workingDaysNum === 0) {
-      setValidationMessage("Please enter working days");
-    } else {
-      setValidationMessage("");
-    }
-  }, [itemDetails.workingDays, itemDetails.leave]);
 
   const handleSave = async () => {
     setIsSaving(true);
@@ -1372,88 +1350,25 @@ export const InvoiceEditor: React.FC<InvoiceEditorProps> = ({
                         </div>
                       </div>
 
-                      <div className="grid grid-cols-3 gap-3 mb-3">
-                        <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-1">
-                            Technology
-                          </label>
-                          <input
-                            type="text"
-                            value={itemDetails.technology}
-                            onChange={(e) =>
-                              setItemDetails({
-                                ...itemDetails,
-                                technology: e.target.value,
-                              })
-                            }
-                            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                          />
-                        </div>
-                        <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-1">
-                            Working Days
-                          </label>
-                          <input
-                            type="number"
-                            min="0"
-                            max="31"
-                            value={itemDetails.workingDays}
-                            onChange={(e) => {
-                              const value = e.target.value;
-                              if (
-                                value === "" ||
-                                (parseInt(value) >= 0 && parseInt(value) <= 31)
-                              ) {
-                                setItemDetails({
-                                  ...itemDetails,
-                                  workingDays: value,
-                                });
-                              }
-                            }}
-                            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                            placeholder="23"
-                          />
-                        </div>
-                        <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-1">
-                            Leave
-                          </label>
-                          <input
-                            type="number"
-                            min="0"
-                            max="31"
-                            value={itemDetails.leave}
-                            onChange={(e) => {
-                              const value = e.target.value;
-                              const workingDaysNum =
-                                parseInt(itemDetails.workingDays) || 0;
-                              if (
-                                value === "" ||
-                                (parseInt(value) >= 0 &&
-                                  parseInt(value) <= workingDaysNum)
-                              ) {
-                                setItemDetails({
-                                  ...itemDetails,
-                                  leave: value,
-                                });
-                              }
-                            }}
-                            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                            placeholder="0"
-                          />
-                        </div>
-                      </div>
-
+                      {/* Description field for manual details */}
                       <div className="mb-3">
                         <label className="block text-sm font-medium text-gray-700 mb-1">
-                          Calculated Working Days
+                          Description
                         </label>
-                        <div className="w-full px-3 py-2 bg-gray-100 border border-gray-300 rounded-md text-sm text-gray-700">
-                          {calculateWorkingDays(
-                            itemDetails.workingDays,
-                            itemDetails.leave
-                          )}
-                        </div>
+                        <textarea
+                          value={item.description || ""}
+                          onChange={(e) => {
+                            const updatedItems = [...items];
+                            updatedItems[index] = {
+                              ...updatedItems[index],
+                              description: e.target.value,
+                            };
+                            setItems(updatedItems);
+                          }}
+                          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          rows={3}
+                          placeholder="Add all details manually for this item..."
+                        />
                       </div>
                     </div>
                   ))}

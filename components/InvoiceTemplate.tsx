@@ -28,12 +28,9 @@ interface InvoiceTemplateProps {
     company: string;
   };
   itemDetails?: {
-    technology: string;
-    poNumber: string;
-    workingDays: string;
-    leave: string;
-    hsnCode: string;
-    unit: string;
+  
+          hsnCode: string;
+      unit: string;
   };
   formData?: {
     buyerOrderNo: string;
@@ -247,10 +244,6 @@ export const InvoiceTemplate: React.FC<InvoiceTemplateProps> = (props) => {
   const clientGstin = clientInfo?.gstin || client.gstId || "Client GSTIN";
   const clientStateCode = clientInfo?.stateCode || "Client State Code";
 
-  const technology = itemDetails?.technology || ".Net + Angular";
-  const poNumber = itemDetails?.poNumber || "PO/GSPL/202526/000496";
-  const workingDays = itemDetails?.workingDays || "23";
-  const leave = itemDetails?.leave || "0";
   const hsnCode = itemDetails?.hsnCode || "998314";
   const unit = itemDetails?.unit || "Nos";
 
@@ -737,24 +730,7 @@ export const InvoiceTemplate: React.FC<InvoiceTemplateProps> = (props) => {
                     React.createElement(
                       "td",
                       { style: { border: "1px solid #000", padding: "4px 6px" } },
-                      [
-                        React.createElement(
-                          "strong",
-                          {},
-                          item.description || "IT Design and Development"
-                        ),
-                        React.createElement("br"),
-                        client.name || "Client Name",
-                        React.createElement("br"),
-                        technology,
-                        React.createElement("br"),
-                        "No. of Working Days = " +
-                          workingDays +
-                          "/" +
-                          workingDays,
-                        React.createElement("br"),
-                        "Leave = " + leave,
-                      ]
+                      item.description || "IT Design and Development"
                     ),
                     React.createElement(
                       "td",

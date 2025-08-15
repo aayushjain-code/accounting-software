@@ -1541,57 +1541,7 @@ export const InvoiceEditor: React.FC<InvoiceEditorProps> = ({
                 </div>
               </div>
 
-              {/* Summary */}
-              <div className="bg-blue-50 p-6 rounded-lg">
-                <h3 className="text-lg font-semibold text-blue-800 mb-4">
-                  Invoice Summary
-                </h3>
-                <div className="space-y-2 text-sm">
-                  <div className="flex justify-between">
-                    <span className="text-gray-600">Subtotal:</span>
-                    <span className="font-medium">
-                      ₹{formatCurrency(calculateSubtotal())}
-                    </span>
-                  </div>
-                  
-                  {taxType === "igst" ? (
-                    <div className="flex justify-between">
-                      <span className="text-gray-600">IGST (18%):</span>
-                      <span className="font-medium">
-                        ₹{formatCurrency(calculateIGST())}
-                      </span>
-                    </div>
-                  ) : (
-                    <>
-                      <div className="flex justify-between">
-                        <span className="text-gray-600">SGST (9%):</span>
-                        <span className="font-medium">
-                          ₹{formatCurrency(calculateSGST())}
-                        </span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-gray-600">CGST (9%):</span>
-                        <span className="font-medium">
-                          ₹{formatCurrency(calculateCGST())}
-                        </span>
-                      </div>
-                    </>
-                  )}
-                  
-                  <div className="flex justify-between border-t border-blue-200 pt-2">
-                    <span className="text-blue-800 font-semibold">Total:</span>
-                    <span className="text-blue-800 font-bold text-lg">
-                      ₹{formatCurrency(calculateTotal())}
-                    </span>
-                  </div>
-                  <div className="mt-3 p-3 bg-blue-50 rounded-md">
-                    <p className="text-sm text-blue-700">
-                      <span className="font-semibold">Amount in words:</span>{" "}
-                      INR {getAmountInWords(calculateTotal())} Only
-                    </p>
-                  </div>
-                </div>
-              </div>
+
             </div>
           )}
         </div>

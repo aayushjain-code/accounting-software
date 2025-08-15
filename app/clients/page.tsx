@@ -8,16 +8,10 @@ import {
   PlusIcon,
   PencilIcon,
   TrashIcon,
-  EnvelopeIcon,
-  PhoneIcon,
-  GlobeAltIcon,
-  UserIcon,
-  MapPinIcon,
   MagnifyingGlassIcon,
   FunnelIcon,
   EyeIcon,
 } from "@heroicons/react/24/outline";
-import { format } from "date-fns";
 import toast from "react-hot-toast";
 import { Tooltip, ActionTooltip, IconTooltip } from "@/components/Tooltip";
 import { InformationCircleIcon } from "@heroicons/react/24/outline";
@@ -90,32 +84,30 @@ const ClientCard = React.memo(
     };
 
     return (
-      <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700 p-6 hover:shadow-md transition-all duration-200 group">
+      <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700 p-4 hover:shadow-md transition-all duration-200 group">
         {/* Header */}
-        <div className="flex items-start justify-between mb-4">
-          <div className="flex items-center space-x-3">
-            <div>
-              <div className="mb-2">
-                <span className="font-mono font-semibold text-primary-700 bg-primary-50 dark:bg-primary-900/20 px-2 py-1 rounded-md border border-primary-200 dark:border-primary-700 text-xs">
-                  {client.clientCode}
-                </span>
-              </div>
-              <h3 className="text-lg font-semibold text-gray-900 dark:text-white group-hover:text-primary-600 dark:group-hover:text-primary-400 transition-colors">
-                {client.name}
-              </h3>
-              <p className="text-sm text-gray-600 dark:text-gray-400">
-                {client.company}
-              </p>
+        <div className="flex items-start justify-between mb-3">
+          <div className="flex-1">
+            <div className="mb-2">
+              <span className="font-mono font-semibold text-primary-700 bg-primary-50 dark:bg-primary-900/20 px-2 py-1 rounded-md border border-primary-200 dark:border-primary-700 text-xs">
+                {client.clientCode}
+              </span>
             </div>
+            <h3 className="text-base font-semibold text-gray-900 dark:text-white group-hover:text-primary-600 dark:group-hover:text-primary-400 transition-colors mb-1">
+              {client.name}
+            </h3>
+            <p className="text-sm text-gray-600 dark:text-gray-400">
+              {client.company}
+            </p>
           </div>
-          <div className="flex items-center space-x-2">
+          <div className="flex items-center space-x-1 ml-2">
             <ActionTooltip
               content="View details"
               action="Click to see full profile"
             >
               <button
                 onClick={() => onView(client)}
-                className="p-2 text-gray-400 hover:text-primary-600 hover:bg-primary-50 rounded-lg transition-all duration-200"
+                className="p-1.5 text-gray-400 hover:text-primary-600 hover:bg-primary-50 rounded-lg transition-all duration-200"
               >
                 <EyeIcon className="h-4 w-4" />
               </button>
@@ -126,7 +118,7 @@ const ClientCard = React.memo(
             >
               <button
                 onClick={() => onEdit(client)}
-                className="p-2 text-gray-400 hover:text-primary-600 hover:bg-primary-50 rounded-lg transition-all duration-200"
+                className="p-1.5 text-gray-400 hover:text-primary-600 hover:bg-primary-50 rounded-lg transition-all duration-200"
               >
                 <PencilIcon className="h-4 w-4" />
               </button>
@@ -134,7 +126,7 @@ const ClientCard = React.memo(
             <ActionTooltip content="Delete client" action="Permanently remove">
               <button
                 onClick={() => onDelete(client.id)}
-                className="p-2 text-gray-400 hover:text-danger-600 hover:bg-danger-50 rounded-lg transition-all duration-200"
+                className="p-1.5 text-gray-400 hover:text-danger-600 hover:bg-danger-50 rounded-lg transition-all duration-200"
               >
                 <TrashIcon className="h-4 w-4" />
               </button>
@@ -142,116 +134,26 @@ const ClientCard = React.memo(
           </div>
         </div>
 
-        {/* Status and Company Size */}
-        <div className="flex items-center space-x-3 mb-4">
+        {/* Status, Company Size, and Industry */}
+        <div className="flex items-center space-x-2 mb-3">
           <span
-            className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border ${getStatusColor(
+            className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium border ${getStatusColor(
               client.status
             )}`}
           >
             {formatStatus(client.status)}
           </span>
           <span
-            className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getCompanySizeColor(
+            className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${getCompanySizeColor(
               client.companySize
             )}`}
           >
             {formatCompanySize(client.companySize)}
           </span>
           {client.industry && (
-            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
+            <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
               {client.industry}
             </span>
-          )}
-        </div>
-
-        {/* Contact Information */}
-        <div className="space-y-2 mb-4 max-h-32 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100 dark:scrollbar-thumb-gray-600 dark:scrollbar-track-gray-800">
-          <div className="flex items-center space-x-2 text-sm text-gray-600">
-            <EnvelopeIcon className="h-4 w-4 text-gray-400 flex-shrink-0" />
-            <span>{client.email}</span>
-          </div>
-          {client.phone && (
-            <div className="flex items-center space-x-2 text-sm text-gray-600">
-              <PhoneIcon className="h-4 w-4 text-gray-400 flex-shrink-0" />
-              <span>{client.phone}</span>
-            </div>
-          )}
-          {client.companyWebsite && (
-            <div className="flex items-center space-x-2 text-sm text-gray-600">
-              <GlobeAltIcon className="h-4 w-4 text-gray-400 flex-shrink-0" />
-              <a
-                href={
-                  client.companyWebsite.startsWith("http")
-                    ? client.companyWebsite
-                    : `https://${client.companyWebsite}`
-                }
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-primary-600 hover:text-primary-800 dark:text-primary-400 dark:hover:text-primary-300 underline transition-colors"
-                onClick={(e) => e.stopPropagation()}
-              >
-                {client.companyWebsite}
-              </a>
-            </div>
-          )}
-          {client.companyAddress && (
-            <div className="flex items-start space-x-2 text-sm text-gray-600">
-              <MapPinIcon className="h-4 w-4 text-gray-400 flex-shrink-0 mt-0.5" />
-              <span className="break-words">{client.companyAddress}</span>
-            </div>
-          )}
-        </div>
-
-        {/* POC Information */}
-        {client.pocName && (
-          <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-3 mb-4 max-h-32 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100 dark:scrollbar-thumb-gray-600 dark:scrollbar-track-gray-800">
-            <div className="flex items-center space-x-2 mb-2">
-              <UserIcon className="h-4 w-4 text-gray-500" />
-              <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                Point of Contact
-              </span>
-            </div>
-            <div className="space-y-1">
-              <div className="text-sm text-gray-600 dark:text-gray-400">
-                {client.pocName}
-              </div>
-              {client.pocEmail && (
-                <div className="text-sm text-gray-600 dark:text-gray-400">
-                  {client.pocEmail}
-                </div>
-              )}
-              {client.pocContact && (
-                <div className="text-sm text-gray-600 dark:text-gray-400">
-                  {client.pocContact}
-                </div>
-              )}
-            </div>
-          </div>
-        )}
-
-        {/* GST Information */}
-        {client.gstId && (
-          <div className="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-3 mb-4 max-h-32 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100 dark:scrollbar-thumb-gray-600 dark:scrollbar-track-gray-800">
-            <div className="flex items-center space-x-2 mb-2">
-              <ReceiptRefundIcon className="h-4 w-4 text-blue-600" />
-              <span className="text-sm font-medium text-blue-700 dark:text-blue-300">
-                GST Number
-              </span>
-            </div>
-            <div className="text-sm text-blue-800 dark:text-blue-200 font-mono">
-              {client.gstId}
-            </div>
-          </div>
-        )}
-
-        {/* Footer */}
-        <div className="flex items-center justify-between pt-4 border-t border-gray-100">
-          <div className="text-xs text-gray-500">
-            Created {format(new Date(client.createdAt), "MMM dd, yyyy")}
-          </div>
-          {client.source && (
-            <div className="text-xs text-gray-500">Source: {client.source}</div>
           )}
         </div>
       </div>
@@ -293,7 +195,7 @@ export default function ClientsPage() {
     goToPage,
     changePageSize,
   } = usePagination(filteredClients, {
-    initialPageSize: 16,
+    initialPageSize: 12,
     enableVirtualScroll: false,
   });
 
@@ -525,7 +427,7 @@ export default function ClientsPage() {
       {viewMode === "cards" ? (
         /* Cards View */
         <div className="space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {clientsByStatus.map((client) => (
               <ClientCard
                 key={client.id}
@@ -540,12 +442,12 @@ export default function ClientsPage() {
       ) : (
         /* Table View */
         <div className="space-y-6">
-                  <ClientsTable
-          clients={clientsByStatus}
-          onEdit={handleEdit}
-          onDelete={handleDelete}
-          onView={handleView}
-        />
+          <ClientsTable
+            clients={clientsByStatus}
+            onEdit={handleEdit}
+            onDelete={handleDelete}
+            onView={handleView}
+          />
         </div>
       )}
 
@@ -557,7 +459,7 @@ export default function ClientsPage() {
             onPageChange={goToPage}
             onPageSizeChange={changePageSize}
             showPageSizeSelector={true}
-            pageSizeOptions={[8, 16, 32, 64]}
+            pageSizeOptions={[6, 12, 24, 48]}
           />
         </div>
       )}

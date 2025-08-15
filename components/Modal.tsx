@@ -28,7 +28,7 @@ export default function Modal({
   children,
   footer,
   size = "md",
-  closeOnOverlayClick = true,
+  // closeOnOverlayClick = true,
 }: ModalProps): JSX.Element | null {
   const modalRef = useRef<HTMLDivElement>(null);
 

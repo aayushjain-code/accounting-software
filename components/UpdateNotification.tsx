@@ -9,7 +9,7 @@ interface UpdateNotificationProps {
 
 export const UpdateNotification: React.FC<UpdateNotificationProps> = ({
   changelog,
-  onDismiss,
+  // onDismiss, // Not currently used
 }) => {
   const [isVisible, setIsVisible] = useState(false);
   const [latestUpdate, setLatestUpdate] = useState<ChangelogEntry | null>(null);

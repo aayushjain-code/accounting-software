@@ -41,7 +41,7 @@ interface InvoiceTemplateProps {
     purchaseOrderNo: string;
     purchaseOrderDate: string;
   };
-  taxType?: "igst" | "sgst-cgst";
+  taxType?: "igst" | "sgst-cgst" | "no-gst";
 }
 
 export const InvoiceTemplate: React.FC<InvoiceTemplateProps> = (props) => {
@@ -69,7 +69,9 @@ export const InvoiceTemplate: React.FC<InvoiceTemplateProps> = (props) => {
 
   const calculateTax = () => {
     const subtotal = calculateSubtotal();
-    if (taxType === "sgst-cgst") {
+    if (taxType === "no-gst") {
+      return 0; // No tax for non-GST invoices
+    } else if (taxType === "sgst-cgst") {
       // SGST (9%) + CGST (9%) = 18%
       return (subtotal * 18) / 100;
     } else {
@@ -83,7 +85,7 @@ export const InvoiceTemplate: React.FC<InvoiceTemplateProps> = (props) => {
     if (taxType === "sgst-cgst") {
       return (subtotal * 9) / 100; // 9% SGST
     }
-    return 0; // No SGST for IGST
+    return 0; // No SGST for IGST or no-GST
   };
 
   const calculateCGST = () => {
@@ -91,7 +93,7 @@ export const InvoiceTemplate: React.FC<InvoiceTemplateProps> = (props) => {
     if (taxType === "sgst-cgst") {
       return (subtotal * 9) / 100; // 9% CGST
     }
-    return 0; // No CGST for IGST
+    return 0; // No CGST for IGST or no-GST
   };
 
   const calculateIGST = () => {
@@ -99,7 +101,7 @@ export const InvoiceTemplate: React.FC<InvoiceTemplateProps> = (props) => {
     if (taxType === "igst") {
       return (subtotal * 18) / 100; // 18% IGST
     }
-    return 0; // No IGST for SGST+CGST
+    return 0; // No IGST for SGST+CGST or no-GST
   };
 
   const calculateTotal = () => {
@@ -107,14 +109,18 @@ export const InvoiceTemplate: React.FC<InvoiceTemplateProps> = (props) => {
   };
 
   const getTaxType = () => {
-    if (taxType === "sgst-cgst") {
+    if (taxType === "no-gst") {
+      return "No GST";
+    } else if (taxType === "sgst-cgst") {
       return "SGST + CGST";
     }
     return "IGST";
   };
 
   const getTaxRate = () => {
-    if (taxType === "sgst-cgst") {
+    if (taxType === "no-gst") {
+      return "0%";
+    } else if (taxType === "sgst-cgst") {
       return "9% + 9%";
     }
     return "18%";
@@ -811,56 +817,58 @@ export const InvoiceTemplate: React.FC<InvoiceTemplateProps> = (props) => {
             ]
           ),
 
-          // Tax Row
-          React.createElement(
-            "div",
-            {
-              style: {
-                display: "flex",
-                border: "1px solid #000",
-                borderTop: "none",
-                marginTop: "-1px",
+          // Tax Row (only show if GST is applicable)
+          ...(taxType !== "no-gst" ? [
+            React.createElement(
+              "div",
+              {
+                style: {
+                  display: "flex",
+                  border: "1px solid #000",
+                  borderTop: "none",
+                  marginTop: "-1px",
+                },
               },
-            },
-            [
-              React.createElement(
-                "div",
-                {
-                  style: {
-                    flex: 5,
-                    borderRight: "1px solid #000",
-                    padding: "4px 6px",
-                    textAlign: "right",
-                    fontWeight: "bold",
+              [
+                React.createElement(
+                  "div",
+                  {
+                    style: {
+                      flex: 5,
+                      borderRight: "1px solid #000",
+                      padding: "4px 6px",
+                      textAlign: "right",
+                      fontWeight: "bold",
+                    },
                   },
-                },
-                getTaxType()
-              ),
-              React.createElement(
-                "div",
-                {
-                  style: {
-                    flex: 1,
-                    borderRight: "1px solid #000",
-                    padding: "4px 6px",
-                    textAlign: "center",
+                  getTaxType()
+                ),
+                React.createElement(
+                  "div",
+                  {
+                    style: {
+                      flex: 1,
+                      borderRight: "1px solid #000",
+                      padding: "4px 6px",
+                      textAlign: "center",
+                    },
                   },
-                },
-                getTaxRate()
-              ),
-              React.createElement(
-                "div",
-                {
-                  style: {
-                    flex: 1,
-                    padding: "4px 6px",
-                    textAlign: "right",
+                  getTaxRate()
+                ),
+                React.createElement(
+                  "div",
+                  {
+                    style: {
+                      flex: 1,
+                      padding: "4px 6px",
+                      textAlign: "right",
+                    },
                   },
-                },
-                formatCurrency(taxAmount)
-              ),
-            ]
-          ),
+                  formatCurrency(taxAmount)
+                ),
+              ]
+            )
+          ] : []),
 
           // Total Row
           React.createElement(
@@ -973,7 +981,7 @@ export const InvoiceTemplate: React.FC<InvoiceTemplateProps> = (props) => {
                         textAlign: "center",
                       },
                     },
-                    getTaxType()
+                    taxType === "no-gst" ? "Tax" : getTaxType()
                   ),
                   React.createElement(
                     "th",
@@ -1021,7 +1029,7 @@ export const InvoiceTemplate: React.FC<InvoiceTemplateProps> = (props) => {
                         textAlign: "center",
                       },
                     },
-                    [
+                    taxType === "no-gst" ? "N/A" : [
                       getTaxType() + " " + getTaxRate(),
                       React.createElement("br"),
                       "Amount: " + formatCurrency(taxAmount),
@@ -1036,7 +1044,7 @@ export const InvoiceTemplate: React.FC<InvoiceTemplateProps> = (props) => {
                         textAlign: "right",
                       },
                     },
-                    formatCurrency(taxAmount)
+                    taxType === "no-gst" ? "N/A" : formatCurrency(taxAmount)
                   ),
                 ]),
                 React.createElement("tr", {}, [
@@ -1075,31 +1083,33 @@ export const InvoiceTemplate: React.FC<InvoiceTemplateProps> = (props) => {
                         fontWeight: "bold",
                       },
                     },
-                    formatCurrency(taxAmount)
+                    taxType === "no-gst" ? "N/A" : formatCurrency(taxAmount)
                   ),
                 ]),
               ]),
             ]
           ),
 
-          // Tax Amount in Words
-          React.createElement(
-            "div",
-            {
-              style: {
-                marginTop: "6px",
-                fontSize: "11px",
+          // Tax Amount in Words (only show if GST is applicable)
+          ...(taxType !== "no-gst" ? [
+            React.createElement(
+              "div",
+              {
+                style: {
+                  marginTop: "6px",
+                  fontSize: "11px",
+                },
               },
-            },
-            [
-              React.createElement(
-                "strong",
-                {},
-                getTaxType() + " Amount (in words): "
-              ),
-              getTaxAmountInWords(taxAmount),
-            ]
-          ),
+              [
+                React.createElement(
+                  "strong",
+                  {},
+                  getTaxType() + " Amount (in words): "
+                ),
+                getTaxAmountInWords(taxAmount),
+              ]
+            )
+          ] : []),
 
           // Declaration
           React.createElement(

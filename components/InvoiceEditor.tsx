@@ -71,7 +71,7 @@ export const InvoiceEditor: React.FC<InvoiceEditorProps> = ({
     unit: "Nos",
   });
 
-  const [taxType, setTaxType] = useState<"igst" | "sgst-cgst">("igst");
+  const [taxType, setTaxType] = useState<"igst" | "sgst-cgst" | "no-gst">("igst");
 
   const [companyInfo, setCompanyInfo] = useState({
     name: "Brandsmashers Tech",
@@ -352,7 +352,9 @@ export const InvoiceEditor: React.FC<InvoiceEditorProps> = ({
 
   const calculateTax = () => {
     const subtotal = calculateSubtotal();
-    if (taxType === "sgst-cgst") {
+    if (taxType === "no-gst") {
+      return 0; // No tax for non-GST invoices
+    } else if (taxType === "sgst-cgst") {
       // SGST (9%) + CGST (9%) = 18%
       return (subtotal * 18) / 100;
     } else {
@@ -366,7 +368,7 @@ export const InvoiceEditor: React.FC<InvoiceEditorProps> = ({
     if (taxType === "sgst-cgst") {
       return (subtotal * 9) / 100; // 9% SGST
     }
-    return 0; // No SGST for IGST
+    return 0; // No SGST for IGST or no-GST
   };
 
   const calculateCGST = () => {
@@ -374,7 +376,7 @@ export const InvoiceEditor: React.FC<InvoiceEditorProps> = ({
     if (taxType === "sgst-cgst") {
       return (subtotal * 9) / 100; // 9% CGST
     }
-    return 0; // No CGST for IGST
+    return 0; // No CGST for IGST or no-GST
   };
 
   const calculateIGST = () => {
@@ -382,7 +384,7 @@ export const InvoiceEditor: React.FC<InvoiceEditorProps> = ({
     if (taxType === "igst") {
       return (subtotal * 18) / 100; // 18% IGST
     }
-    return 0; // No IGST for SGST+CGST
+    return 0; // No IGST for SGST+CGST or no-GST
   };
 
   const calculateTotal = () => {
@@ -390,14 +392,18 @@ export const InvoiceEditor: React.FC<InvoiceEditorProps> = ({
   };
 
   const getTaxType = () => {
-    if (taxType === "sgst-cgst") {
+    if (taxType === "no-gst") {
+      return "No GST";
+    } else if (taxType === "sgst-cgst") {
       return "SGST + CGST";
     }
     return "IGST";
   };
 
   const getTaxRate = () => {
-    if (taxType === "sgst-cgst") {
+    if (taxType === "no-gst") {
+      return "0%";
+    } else if (taxType === "sgst-cgst") {
       return "9% + 9%";
     }
     return "18%";
@@ -1471,7 +1477,7 @@ export const InvoiceEditor: React.FC<InvoiceEditorProps> = ({
                           name="taxType"
                           value="igst"
                           checked={taxType === "igst"}
-                          onChange={(e) => setTaxType(e.target.value as "igst" | "sgst-cgst")}
+                          onChange={(e) => setTaxType(e.target.value as "igst" | "sgst-cgst" | "no-gst")}
                           className="mr-2 text-blue-600 focus:ring-blue-500"
                         />
                         <span className="text-sm text-gray-700">
@@ -1484,11 +1490,24 @@ export const InvoiceEditor: React.FC<InvoiceEditorProps> = ({
                           name="taxType"
                           value="sgst-cgst"
                           checked={taxType === "sgst-cgst"}
-                          onChange={(e) => setTaxType(e.target.value as "igst" | "sgst-cgst")}
+                          onChange={(e) => setTaxType(e.target.value as "igst" | "sgst-cgst" | "no-gst")}
                           className="mr-2 text-blue-600 focus:ring-blue-500"
                         />
                         <span className="text-sm text-gray-700">
                           SGST (9%) + CGST (9%) - Intra-state transactions
+                        </span>
+                      </label>
+                      <label className="flex items-center">
+                        <input
+                          type="radio"
+                          name="taxType"
+                          value="no-gst"
+                          checked={taxType === "no-gst"}
+                          onChange={(e) => setTaxType(e.target.value as "igst" | "sgst-cgst" | "no-gst")}
+                          className="mr-2 text-blue-600 focus:ring-blue-500"
+                        />
+                        <span className="text-sm text-gray-700">
+                          No GST - Non-GST invoices
                         </span>
                       </label>
                     </div>

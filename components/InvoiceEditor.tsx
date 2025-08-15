@@ -5,7 +5,6 @@ import { Invoice, InvoiceItem, Client, Project } from "@/types";
 import { InvoiceTemplate } from "./InvoiceTemplate";
 import { useAccountingStore } from "@/store";
 import { useRouter } from "next/navigation";
-import { ChevronDownIcon, ChevronRightIcon } from "@heroicons/react/24/outline";
 
 // Import jsPDF and html2canvas for PDF generation
 import jsPDF from "jspdf";
@@ -70,16 +69,6 @@ export const InvoiceEditor: React.FC<InvoiceEditorProps> = ({
   });
 
   const [taxType, setTaxType] = useState<"igst" | "sgst-cgst" | "no-gst">("igst");
-
-  // State for managing collapsible sections
-  const [sectionsExpanded, setSectionsExpanded] = useState({
-    invoiceDetails: true,
-    companyInfo: false,
-    clientInfo: false,
-    items: true,
-    taxConfig: false,
-    additionalInfo: false,
-  });
 
   const [companyInfo, setCompanyInfo] = useState({
     name: "Brandsmashers Tech",
@@ -419,14 +408,6 @@ export const InvoiceEditor: React.FC<InvoiceEditorProps> = ({
     return "18%";
   };
 
-  // Helper function to toggle section expansion
-  const toggleSection = (section: keyof typeof sectionsExpanded) => {
-    setSectionsExpanded(prev => ({
-      ...prev,
-      [section]: !prev[section]
-    }));
-  };
-
 
 
   const formatCurrency = (amount: number) => {
@@ -672,38 +653,6 @@ export const InvoiceEditor: React.FC<InvoiceEditorProps> = ({
 
 
 
-  // Collapsible section component
-  const CollapsibleSection = ({ 
-    title, 
-    section, 
-    children, 
-    defaultExpanded = false 
-  }: { 
-    title: string; 
-    section: keyof typeof sectionsExpanded; 
-    children: React.ReactNode; 
-    defaultExpanded?: boolean;
-  }) => (
-    <div className="border border-gray-200 rounded-lg mb-4">
-      <button
-        onClick={() => toggleSection(section)}
-        className="w-full px-6 py-4 bg-gray-50 hover:bg-gray-100 transition-colors flex justify-between items-center text-left"
-      >
-        <h3 className="text-lg font-semibold text-gray-800">{title}</h3>
-        {sectionsExpanded[section] ? (
-          <ChevronDownIcon className="w-5 h-5 text-gray-600" />
-        ) : (
-          <ChevronRightIcon className="w-5 h-5 text-gray-600" />
-        )}
-      </button>
-      {sectionsExpanded[section] && (
-        <div className="p-6 border-t border-gray-200">
-          {children}
-        </div>
-      )}
-    </div>
-  );
-
   return (
     <>
       <style jsx global>{`
@@ -817,7 +766,10 @@ export const InvoiceEditor: React.FC<InvoiceEditorProps> = ({
           {isEditing && (
             <div className="space-y-6">
               {/* Invoice Details */}
-              <CollapsibleSection title="Invoice Details" section="invoiceDetails">
+              <div className="bg-gray-50 p-4 rounded-lg">
+                <h3 className="text-base font-semibold text-gray-800 mb-3">
+                  Invoice Details
+                </h3>
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -1043,10 +995,13 @@ export const InvoiceEditor: React.FC<InvoiceEditorProps> = ({
                     />
                   </div>
                 </div>
-              </CollapsibleSection>
+              </div>
 
               {/* Company Information */}
-              <CollapsibleSection title="Company Information" section="companyInfo">
+              <div className="bg-gray-50 p-6 rounded-lg">
+                <h3 className="text-lg font-semibold text-gray-800 mb-4">
+                  Company Information
+                </h3>
                 <div className="space-y-3">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -1131,10 +1086,13 @@ export const InvoiceEditor: React.FC<InvoiceEditorProps> = ({
                     />
                   </div>
                 </div>
-              </CollapsibleSection>
+              </div>
 
               {/* Client Information */}
-              <CollapsibleSection title="Client Information" section="clientInfo">
+              <div className="bg-gray-50 p-6 rounded-lg">
+                <h3 className="text-lg font-semibold text-gray-800 mb-4">
+                  Client Information
+                </h3>
 
                 {/* Client Selection Dropdown */}
                 <div className="mb-4">
@@ -1278,10 +1236,10 @@ export const InvoiceEditor: React.FC<InvoiceEditorProps> = ({
                     placeholder="Enter PO Number"
                   />
                 </div>
-              </CollapsibleSection>
+              </div>
 
               {/* Items & Item Details */}
-              <CollapsibleSection title="Items & Item Details" section="items">
+              <div className="bg-gray-50 p-6 rounded-lg">
                 <div className="flex justify-between items-center mb-4">
                   <h3 className="text-lg font-semibold text-gray-800">
                     Items & Item Details
@@ -1421,10 +1379,13 @@ export const InvoiceEditor: React.FC<InvoiceEditorProps> = ({
                     </div>
                   ))}
                 </div>
-              </CollapsibleSection>
+              </div>
 
               {/* Tax Configuration */}
-              <CollapsibleSection title="Tax Configuration" section="taxConfig">
+              <div className="bg-gray-50 p-6 rounded-lg">
+                <h3 className="text-lg font-semibold text-gray-800 mb-4">
+                  Tax Configuration
+                </h3>
                 <div className="space-y-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -1482,7 +1443,7 @@ export const InvoiceEditor: React.FC<InvoiceEditorProps> = ({
                     </div>
                   </div>
                 </div>
-              </CollapsibleSection>
+              </div>
 
               {/* Validation Message */}
               {validationMessage && (
@@ -1492,7 +1453,10 @@ export const InvoiceEditor: React.FC<InvoiceEditorProps> = ({
               )}
 
               {/* Signature Information */}
-              <CollapsibleSection title="Signature Information" section="additionalInfo">
+              <div className="bg-gray-50 p-6 rounded-lg">
+                <h3 className="text-lg font-semibold text-gray-800 mb-4">
+                  Signature Information
+                </h3>
                 <div className="space-y-3">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -1527,7 +1491,7 @@ export const InvoiceEditor: React.FC<InvoiceEditorProps> = ({
                     />
                   </div>
                 </div>
-              </CollapsibleSection>
+              </div>
 
 
             </div>

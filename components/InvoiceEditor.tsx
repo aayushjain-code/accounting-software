@@ -340,12 +340,15 @@ export const InvoiceEditor: React.FC<InvoiceEditorProps> = ({
   const handleItemChange = useCallback(
     (index: number, field: keyof InvoiceItem, value: string | number) => {
       const newItems = [...items];
-      newItems[index] = { ...newItems[index], [field]: value };
+      const currentItem = newItems[index];
+      if (currentItem) {
+        newItems[index] = { ...currentItem, [field]: value } as InvoiceItem;
 
-      // Recalculate total
-      if (field === "quantity" || field === "unitPrice") {
-        newItems[index].total =
-          newItems[index].quantity * newItems[index].unitPrice;
+        // Recalculate total
+        if (field === "quantity" || field === "unitPrice") {
+          newItems[index].total =
+            newItems[index].quantity * newItems[index].unitPrice;
+        }
       }
 
       setItems(newItems);

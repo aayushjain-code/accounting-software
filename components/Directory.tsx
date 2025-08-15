@@ -92,7 +92,9 @@ export const Directory: React.FC<DirectoryProps> = ({
 
   // Removed inline editing functionality - users must use explicit edit button
 
-  const renderSortIcon = (field: keyof DirectoryContact): JSX.Element => {
+  const renderSortIcon = (
+    field: keyof DirectoryContact
+  ): JSX.Element | null => {
     if (sortField !== field) {
       return null;
     }
@@ -104,8 +106,8 @@ export const Directory: React.FC<DirectoryProps> = ({
   };
 
   const renderReadOnlyCell = (
-    contact: DirectoryContact,
-    field: keyof DirectoryContact,
+    _contact: DirectoryContact,
+    _field: keyof DirectoryContact,
     value: string | number | boolean
   ) => {
     return <div className="px-2 py-1">{value?.toString() || "-"}</div>;

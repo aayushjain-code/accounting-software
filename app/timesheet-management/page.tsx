@@ -74,7 +74,7 @@ export default function TimesheetManagementPage(): JSX.Element {
 
     const files = Array.from(e.dataTransfer.files);
     if (files.length > 0) {
-      setUploadedFile(files[0]);
+      setUploadedFile(files[0] || null);
     }
   };
 

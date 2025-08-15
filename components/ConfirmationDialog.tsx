@@ -26,7 +26,7 @@ export const ConfirmationDialog: React.FC<ConfirmationDialogProps> = ({
     return null;
   }
 
-  const getVariantStyles = (): string => {
+  const getVariantStyles = (): { icon: string; button: string } => {
     switch (variant) {
       case "danger":
         return {

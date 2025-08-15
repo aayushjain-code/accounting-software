@@ -29,7 +29,8 @@ const StatCard = React.memo(
   }: {
     title: string;
     value: string;
-    icon: React.ComponentType<{ className?: string }>;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    icon: React.ComponentType<any>; // Allow Heroicons and other icon types
     change?: string;
     changeType?: "positive" | "negative";
     color?: string;

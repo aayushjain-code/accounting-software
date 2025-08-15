@@ -56,6 +56,22 @@ export default function InvoiceDemoPage(): JSX.Element {
   //   updatedAt: new Date(),
   // };
 
+  const sampleItems: InvoiceItem[] = [
+    {
+      id: "item1",
+      invoiceId: "invoice1",
+      title: "IT Design and Development",
+      description: "IT Design and Development",
+      quantity: 1,
+      unitPrice: 100000,
+      total: 100000,
+      hsnCode: "998314",
+      unit: "Nos",
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    },
+  ];
+
   const sampleInvoice: Invoice = {
     id: "invoice1",
     timesheetId: "timesheet1",
@@ -75,22 +91,6 @@ export default function InvoiceDemoPage(): JSX.Element {
     createdAt: new Date(),
     updatedAt: new Date(),
   };
-
-  const sampleItems: InvoiceItem[] = [
-    {
-      id: "item1",
-      invoiceId: "invoice1",
-      title: "IT Design and Development",
-      description: "IT Design and Development",
-      quantity: 1,
-      unitPrice: 100000,
-      total: 100000,
-      hsnCode: "998314",
-      unit: "Nos",
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    },
-  ];
 
   return (
     <div className="min-h-screen bg-gray-100 py-8">

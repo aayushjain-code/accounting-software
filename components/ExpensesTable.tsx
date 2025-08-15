@@ -60,7 +60,7 @@ export const ExpensesTable: React.FC<ExpensesTableProps> = ({
     }).format(amount);
   };
 
-  const getCategoryIcon = (category: string): JSX.Element => {
+  const getCategoryIcon = (category: string): string => {
     switch (category.toLowerCase()) {
       case "travel":
         return "✈";

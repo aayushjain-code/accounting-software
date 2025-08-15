@@ -206,7 +206,12 @@ export default function ProfilePage(): JSX.Element {
           : undefined,
       };
 
-      updateCompanyProfile(profileData);
+      // Filter out undefined values to satisfy exactOptionalPropertyTypes
+      const filteredProfileData = Object.fromEntries(
+        Object.entries(profileData).filter(([, value]) => value !== undefined)
+      );
+
+      updateCompanyProfile(filteredProfileData);
       setIsEditing(false);
       toast.success("Company profile updated successfully");
     };

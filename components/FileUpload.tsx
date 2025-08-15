@@ -65,13 +65,15 @@ const FileUpload: React.FC<FileUploadProps> = ({
 
       for (let i = 0; i < newFiles.length; i++) {
         const file = newFiles[i];
-        const error = validateFile(file);
-        if (error) {
-          setError(error);
-          hasError = true;
-          break;
+        if (file) {
+          const error = validateFile(file);
+          if (error) {
+            setError(error);
+            hasError = true;
+            break;
+          }
+          validFiles.push(file);
         }
-        validFiles.push(file);
       }
 
       if (hasError) {

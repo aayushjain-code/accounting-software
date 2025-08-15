@@ -450,20 +450,22 @@ export default function TimesheetDetailPage({
         if (files) {
           for (let i = 0; i < files.length; i++) {
             const file = files[i];
-            const timesheetFile: TimesheetFile = {
-              id: generateId(),
-              timesheetId: timesheet.id,
-              fileName: file.name,
-              originalName: file.name,
-              fileSize: file.size,
-              fileType: file.type,
-              uploadDate: new Date(),
-              uploadedBy: "User",
-              filePath: "",
-              createdAt: new Date(),
-              updatedAt: new Date(),
-            };
-            addTimesheetFile(timesheet.id, timesheetFile);
+            if (file) {
+              const timesheetFile: TimesheetFile = {
+                id: generateId(),
+                timesheetId: timesheet.id,
+                fileName: file.name,
+                originalName: file.name,
+                fileSize: file.size,
+                fileType: file.type,
+                uploadDate: new Date(),
+                uploadedBy: "User",
+                filePath: "",
+                createdAt: new Date(),
+                updatedAt: new Date(),
+              };
+              addTimesheetFile(timesheet.id, timesheetFile);
+            }
           }
           toast.success("Files uploaded successfully");
         }

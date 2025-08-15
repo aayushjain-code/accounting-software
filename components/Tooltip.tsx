@@ -138,7 +138,7 @@ export const Tooltip: React.FC<TooltipProps> = ({
       Math.min(bestCoords.y, viewportHeight - tooltipRect.height - 8)
     );
 
-            // setFinalPosition(bestPosition);
+    // setFinalPosition(bestPosition);
     setTooltipPosition({ x: clampedX, y: clampedY });
   }, [position]);
 
@@ -219,7 +219,8 @@ export const Tooltip: React.FC<TooltipProps> = ({
 interface IconTooltipProps {
   children: React.ReactNode;
   content: string;
-  icon?: React.ComponentType<{ className?: string }>;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  icon?: React.ComponentType<any>; // Allow Heroicons and other icon types
   position?: "top" | "bottom" | "left" | "right";
   className?: string;
 }

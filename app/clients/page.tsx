@@ -25,6 +25,11 @@ import { ViewToggle } from "@/components/ViewToggle";
 import { ClientsTable } from "@/components/ClientsTable";
 import { ClientViewModal } from "@/components/ClientViewModal";
 
+// Wrapper component to fix type compatibility with IconTooltip
+const InfoIcon = ({ className }: { className?: string }) => (
+  <InformationCircleIcon className={className} />
+);
+
 // Enhanced Client Card Component
 const ClientCard = React.memo(
   ({
@@ -570,13 +575,12 @@ export default function ClientsPage(): JSX.Element {
             <div>
               <label className="block text-sm font-semibold text-gray-700 mb-3">
                 Client Name *
-                <IconTooltip
-                  content="Enter the primary contact person's name"
-                  icon={InformationCircleIcon}
-                  position="right"
+                <span
+                  className="ml-1 text-gray-400 hover:text-gray-600 transition-colors cursor-help"
+                  title="Enter the primary contact person's name"
                 >
-                  <span></span>
-                </IconTooltip>
+                  ⓘ
+                </span>
               </label>
               <input
                 type="text"
@@ -598,7 +602,9 @@ export default function ClientsPage(): JSX.Element {
                 Company *
                 <IconTooltip
                   content="Enter the company or organization name"
-                  icon={InformationCircleIcon}
+                  icon={({ className }) => (
+                    <InformationCircleIcon className={className} />
+                  )}
                   position="right"
                 >
                   <span></span>
@@ -624,7 +630,9 @@ export default function ClientsPage(): JSX.Element {
                 Email *
                 <IconTooltip
                   content="Primary email address for communication"
-                  icon={InformationCircleIcon}
+                  icon={({ className }) => (
+                    <InformationCircleIcon className={className} />
+                  )}
                   position="right"
                 >
                   <span></span>
@@ -650,7 +658,7 @@ export default function ClientsPage(): JSX.Element {
                 Phone
                 <IconTooltip
                   content="Contact phone number"
-                  icon={InformationCircleIcon}
+                  icon={InfoIcon}
                   position="right"
                 >
                   <span></span>
@@ -670,7 +678,7 @@ export default function ClientsPage(): JSX.Element {
                 Industry
                 <IconTooltip
                   content="Client's business industry or sector"
-                  icon={InformationCircleIcon}
+                  icon={InfoIcon}
                   position="right"
                 >
                   <span></span>
@@ -690,7 +698,7 @@ export default function ClientsPage(): JSX.Element {
                 Company Size
                 <IconTooltip
                   content="Size of the client's organization"
-                  icon={InformationCircleIcon}
+                  icon={InfoIcon}
                   position="right"
                 >
                   <span></span>
@@ -723,7 +731,7 @@ export default function ClientsPage(): JSX.Element {
                 Status
                 <IconTooltip
                   content="Current relationship status with the client"
-                  icon={InformationCircleIcon}
+                  icon={InfoIcon}
                   position="right"
                 >
                   <span></span>
@@ -757,7 +765,7 @@ export default function ClientsPage(): JSX.Element {
                 Company Website
                 <IconTooltip
                   content="Client's official website URL"
-                  icon={InformationCircleIcon}
+                  icon={InfoIcon}
                   position="right"
                 >
                   <span></span>
@@ -780,7 +788,7 @@ export default function ClientsPage(): JSX.Element {
                 Company Address
                 <IconTooltip
                   content="Physical address of the company"
-                  icon={InformationCircleIcon}
+                  icon={InfoIcon}
                   position="right"
                 >
                   <span></span>
@@ -806,7 +814,7 @@ export default function ClientsPage(): JSX.Element {
                 GST Number
                 <IconTooltip
                   content="Client's GST registration number"
-                  icon={InformationCircleIcon}
+                  icon={InfoIcon}
                   position="right"
                 >
                   <span></span>
@@ -827,7 +835,7 @@ export default function ClientsPage(): JSX.Element {
                 POC Name
                 <IconTooltip
                   content="Point of contact person's name"
-                  icon={InformationCircleIcon}
+                  icon={InfoIcon}
                   position="right"
                 >
                   <span></span>
@@ -847,7 +855,7 @@ export default function ClientsPage(): JSX.Element {
                 POC Email
                 <IconTooltip
                   content="Point of contact's email address"
-                  icon={InformationCircleIcon}
+                  icon={InfoIcon}
                   position="right"
                 >
                   <span></span>
@@ -869,7 +877,7 @@ export default function ClientsPage(): JSX.Element {
               Notes
               <IconTooltip
                 content="Additional notes about the client"
-                icon={InformationCircleIcon}
+                icon={InfoIcon}
                 position="right"
               >
                 <span></span>

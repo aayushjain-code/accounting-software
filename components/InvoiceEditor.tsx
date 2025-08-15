@@ -1271,40 +1271,21 @@ export const InvoiceEditor: React.FC<InvoiceEditorProps> = ({
                         )}
                       </div>
 
-                      <div className="grid grid-cols-2 gap-3 mb-3">
-                        <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-1">
-                            Description
-                          </label>
-                          <input
-                            type="text"
-                            value={item.description}
-                            onChange={(e) =>
-                              handleItemChange(
-                                index,
-                                "description",
-                                e.target.value
-                              )
-                            }
-                            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                          />
-                        </div>
-                        <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-1">
-                            HSN/SAC Code
-                          </label>
-                          <input
-                            type="text"
-                            value={itemDetails.hsnCode}
-                            onChange={(e) =>
-                              setItemDetails({
-                                ...itemDetails,
-                                hsnCode: e.target.value,
-                              })
-                            }
-                            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                          />
-                        </div>
+                      <div className="mb-3">
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                          HSN/SAC Code
+                        </label>
+                        <input
+                          type="text"
+                          value={itemDetails.hsnCode}
+                          onChange={(e) =>
+                            setItemDetails({
+                              ...itemDetails,
+                              hsnCode: e.target.value,
+                            })
+                          }
+                          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        />
                       </div>
 
                       <div className="grid grid-cols-3 gap-3 mb-3">

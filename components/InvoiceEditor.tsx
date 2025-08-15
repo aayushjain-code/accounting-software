@@ -1251,11 +1251,11 @@ export const InvoiceEditor: React.FC<InvoiceEditorProps> = ({
                 </div>
               </div>
 
-              {/* Line Items */}
+              {/* Items & Item Details */}
               <div className="bg-gray-50 p-6 rounded-lg">
                 <div className="flex justify-between items-center mb-4">
                   <h3 className="text-lg font-semibold text-gray-800">
-                    Line Items
+                    Items & Item Details
                   </h3>
                   <button
                     onClick={addItem}
@@ -1365,6 +1365,90 @@ export const InvoiceEditor: React.FC<InvoiceEditorProps> = ({
                           </div>
                         </div>
                       </div>
+
+                      <div className="grid grid-cols-3 gap-3 mb-3">
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-1">
+                            Technology
+                          </label>
+                          <input
+                            type="text"
+                            value={itemDetails.technology}
+                            onChange={(e) =>
+                              setItemDetails({
+                                ...itemDetails,
+                                technology: e.target.value,
+                              })
+                            }
+                            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-1">
+                            Working Days
+                          </label>
+                          <input
+                            type="number"
+                            min="0"
+                            max="31"
+                            value={itemDetails.workingDays}
+                            onChange={(e) => {
+                              const value = e.target.value;
+                              if (
+                                value === "" ||
+                                (parseInt(value) >= 0 && parseInt(value) <= 31)
+                              ) {
+                                setItemDetails({
+                                  ...itemDetails,
+                                  workingDays: value,
+                                });
+                              }
+                            }}
+                            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            placeholder="23"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-1">
+                            Leave
+                          </label>
+                          <input
+                            type="number"
+                            min="0"
+                            max="31"
+                            value={itemDetails.leave}
+                            onChange={(e) => {
+                              const value = e.target.value;
+                              const workingDaysNum =
+                                parseInt(itemDetails.workingDays) || 0;
+                              if (
+                                value === "" ||
+                                (parseInt(value) >= 0 &&
+                                  parseInt(value) <= workingDaysNum)
+                              ) {
+                                setItemDetails({
+                                  ...itemDetails,
+                                  leave: value,
+                                });
+                              }
+                            }}
+                            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            placeholder="0"
+                          />
+                        </div>
+                      </div>
+
+                      <div className="mb-3">
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                          Calculated Working Days
+                        </label>
+                        <div className="w-full px-3 py-2 bg-gray-100 border border-gray-300 rounded-md text-sm text-gray-700">
+                          {calculateWorkingDays(
+                            itemDetails.workingDays,
+                            itemDetails.leave
+                          )}
+                        </div>
+                      </div>
                     </div>
                   ))}
                 </div>
@@ -1421,101 +1505,12 @@ export const InvoiceEditor: React.FC<InvoiceEditorProps> = ({
                 </div>
               </div>
 
-              {/* Item Details */}
-              <div className="bg-gray-50 p-6 rounded-lg">
-                <h3 className="text-lg font-semibold text-gray-800 mb-4">
-                  Item Details
-                </h3>
-
-                {/* Validation Message */}
-                {validationMessage && (
-                  <div className="mb-4 p-3 bg-yellow-100 border border-yellow-400 text-yellow-700 rounded-md">
-                    {validationMessage}
-                  </div>
-                )}
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Technology
-                    </label>
-                    <input
-                      type="text"
-                      value={itemDetails.technology}
-                      onChange={(e) =>
-                        setItemDetails({
-                          ...itemDetails,
-                          technology: e.target.value,
-                        })
-                      }
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Working Days
-                    </label>
-                    <input
-                      type="number"
-                      min="0"
-                      max="31"
-                      value={itemDetails.workingDays}
-                      onChange={(e) => {
-                        const value = e.target.value;
-                        if (
-                          value === "" ||
-                          (parseInt(value) >= 0 && parseInt(value) <= 31)
-                        ) {
-                          setItemDetails({
-                            ...itemDetails,
-                            workingDays: value,
-                          });
-                        }
-                      }}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                      placeholder="23"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Leave
-                    </label>
-                    <input
-                      type="number"
-                      min="0"
-                      max="31"
-                      value={itemDetails.leave}
-                      onChange={(e) => {
-                        const value = e.target.value;
-                        const workingDaysNum =
-                          parseInt(itemDetails.workingDays) || 0;
-                        if (
-                          value === "" ||
-                          (parseInt(value) >= 0 &&
-                            parseInt(value) <= workingDaysNum)
-                        ) {
-                          setItemDetails({
-                            ...itemDetails,
-                            leave: value,
-                          });
-                        }
-                      }}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                      placeholder="0"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Calculated Working Days
-                    </label>
-                    <div className="w-full px-3 py-2 bg-gray-100 border border-gray-300 rounded-md text-sm text-gray-700">
-                      {calculateWorkingDays(
-                        itemDetails.workingDays,
-                        itemDetails.leave
-                      )}
-                    </div>
-                  </div>
+              {/* Validation Message */}
+              {validationMessage && (
+                <div className="mb-4 p-3 bg-yellow-100 border border-yellow-400 text-yellow-700 rounded-md">
+                  {validationMessage}
                 </div>
-              </div>
+              )}
 
               {/* Signature Information */}
               <div className="bg-gray-50 p-6 rounded-lg">

@@ -714,98 +714,100 @@ export const InvoiceTemplate: React.FC<InvoiceTemplateProps> = (props) => {
                   ),
                 ]),
               ]),
-              React.createElement("tbody", {}, [
-                React.createElement("tr", {}, [
-                  React.createElement(
-                    "td",
-                    {
-                      style: {
-                        border: "1px solid #000",
-                        padding: "4px 6px",
-                        textAlign: "center",
+              React.createElement("tbody", {}, 
+                items.map((item, index) => 
+                  React.createElement("tr", { key: item.id }, [
+                    React.createElement(
+                      "td",
+                      {
+                        style: {
+                          border: "1px solid #000",
+                          padding: "4px 6px",
+                          textAlign: "center",
+                        },
                       },
-                    },
-                    "1"
-                  ),
-                  React.createElement(
-                    "td",
-                    { style: { border: "1px solid #000", padding: "4px 6px" } },
-                    [
-                      React.createElement(
-                        "strong",
-                        {},
-                        "IT Design and Development"
-                      ),
-                      React.createElement("br"),
-                      client.name || "Client Name",
-                      React.createElement("br"),
-                      technology,
-                      React.createElement("br"),
-                      "No. of Working Days = " +
-                        workingDays +
-                        "/" +
-                        workingDays,
-                      React.createElement("br"),
-                      "Leave = " + leave,
-                    ]
-                  ),
-                  React.createElement(
-                    "td",
-                    {
-                      style: {
-                        border: "1px solid #000",
-                        padding: "4px 6px",
-                        textAlign: "center",
+                      (index + 1).toString()
+                    ),
+                    React.createElement(
+                      "td",
+                      { style: { border: "1px solid #000", padding: "4px 6px" } },
+                      [
+                        React.createElement(
+                          "strong",
+                          {},
+                          item.description || "IT Design and Development"
+                        ),
+                        React.createElement("br"),
+                        client.name || "Client Name",
+                        React.createElement("br"),
+                        technology,
+                        React.createElement("br"),
+                        "No. of Working Days = " +
+                          workingDays +
+                          "/" +
+                          workingDays,
+                        React.createElement("br"),
+                        "Leave = " + leave,
+                      ]
+                    ),
+                    React.createElement(
+                      "td",
+                      {
+                        style: {
+                          border: "1px solid #000",
+                          padding: "4px 6px",
+                          textAlign: "center",
+                        },
                       },
-                    },
-                    hsnCode
-                  ),
-                  React.createElement(
-                    "td",
-                    {
-                      style: {
-                        border: "1px solid #000",
-                        padding: "4px 6px",
-                        textAlign: "center",
+                      hsnCode
+                    ),
+                    React.createElement(
+                      "td",
+                      {
+                        style: {
+                          border: "1px solid #000",
+                          padding: "4px 6px",
+                          textAlign: "center",
+                        },
                       },
-                    },
-                    (items[0]?.quantity || 1) + " " + unit
-                  ),
-                  React.createElement(
-                    "td",
-                    {
-                      style: {
-                        border: "1px solid #000",
-                        padding: "4px 6px",
-                        textAlign: "right",
+                      item.quantity + " " + unit
+                    ),
+                    React.createElement(
+                      "td",
+                      {
+                        style: {
+                          border: "1px solid #000",
+                          padding: "4px 6px",
+                          textAlign: "right",
+                        },
                       },
-                    },
-                    formatCurrency(items[0]?.unitPrice || 0)
-                  ),
-                  React.createElement(
-                    "td",
-                    {
-                      style: {
-                        border: "1px solid #000",
-                        padding: "4px 6px",
-                        textAlign: "center",
+                      formatCurrency(item.unitPrice)
+                    ),
+                    React.createElement(
+                      "td",
+                      {
+                        style: {
+                          border: "1px solid #000",
+                          padding: "4px 6px",
+                          textAlign: "center",
+                        },
                       },
-                    },
-                    unit
-                  ),
-                  React.createElement(
-                    "td",
-                    {
-                      style: {
-                        border: "1px solid #000",
-                        padding: "4px 6px",
-                        textAlign: "right",
+                      unit
+                    ),
+                    React.createElement(
+                      "td",
+                      {
+                        style: {
+                          border: "1px solid #000",
+                          padding: "4px 6px",
+                          textAlign: "right",
+                        },
                       },
-                    },
-                    formatCurrency(items[0]?.total || 0)
-                  ),
-                ]),
-              ]),
+                      formatCurrency(item.total)
+                    ),
+                  ])
+                )
+              ),
             ]
           ),
 
@@ -895,7 +897,7 @@ export const InvoiceTemplate: React.FC<InvoiceTemplateProps> = (props) => {
                     textAlign: "center",
                   },
                 },
-                (items[0]?.quantity || 1) + " " + unit
+                items.reduce((sum, item) => sum + item.quantity, 0) + " " + unit
               ),
               React.createElement(
                 "div",

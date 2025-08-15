@@ -38,8 +38,8 @@ const ClientCard = React.memo(
     onDelete: (id: string) => void;
     onView: (client: Client) => void;
   }) => {
-    const getStatusColor = (status: string | undefined) => {
-      const safeStatus = status || "active";
+    const getStatusColor = (status: string | undefined): string => {
+      const safeStatus = status ?? "active";
       switch (safeStatus) {
         case "active":
           return "bg-green-100 text-green-800 border-green-200";
@@ -54,8 +54,8 @@ const ClientCard = React.memo(
       }
     };
 
-    const getCompanySizeColor = (size: string | undefined) => {
-      const safeSize = size || "small";
+    const getCompanySizeColor = (size: string | undefined): string => {
+      const safeSize = size ?? "small";
       switch (safeSize) {
         case "startup":
           return "bg-purple-100 text-purple-800";
@@ -72,13 +72,13 @@ const ClientCard = React.memo(
       }
     };
 
-    const formatStatus = (status: string | undefined) => {
-      const safeStatus = status || "active";
+    const formatStatus = (status: string | undefined): string => {
+      const safeStatus = status ?? "active";
       return safeStatus.charAt(0).toUpperCase() + safeStatus.slice(1);
     };
 
-    const formatCompanySize = (size: string | undefined) => {
-      const safeSize = size || "small";
+    const formatCompanySize = (size: string | undefined): string => {
+      const safeSize = size ?? "small";
       return safeSize.charAt(0).toUpperCase() + safeSize.slice(1);
     };
 
@@ -162,7 +162,7 @@ const ClientCard = React.memo(
 
 ClientCard.displayName = "ClientCard";
 
-export default function ClientsPage() {
+export default function ClientsPage(): JSX.Element {
   const { clients, addClient, updateClient, deleteClient, invoices } =
     useAccountingStore();
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -239,7 +239,7 @@ export default function ClientsPage() {
     performanceMonitor.recordRenderTime("ClientsPage", renderTime);
   }, [renderStart]);
 
-  const validateForm = () => {
+  const validateForm = (): boolean => {
     const newErrors: Record<string, string> = {};
 
     if (!formData.name.trim()) {
@@ -256,7 +256,7 @@ export default function ClientsPage() {
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent): Promise<void> => {
     e.preventDefault();
 
     if (!validateForm()) {
@@ -301,7 +301,7 @@ export default function ClientsPage() {
     setErrors({});
   };
 
-  const handleEdit = (client: Client) => {
+  const handleEdit = (client: Client): void => {
     setEditingClient(client);
     setFormData({
       name: client.name,
@@ -327,17 +327,17 @@ export default function ClientsPage() {
     setIsModalOpen(true);
   };
 
-  const handleDelete = (id: string) => {
+  const handleDelete = (id: string): void => {
     setClientToDelete(id);
     setShowDeleteDialog(true);
   };
 
-  const handleView = (client: Client) => {
+  const handleView = (client: Client): void => {
     setViewingClient(client);
     setIsViewModalOpen(true);
   };
 
-  const confirmDelete = () => {
+  const confirmDelete = (): void => {
     if (clientToDelete) {
       deleteClient(clientToDelete);
       toast.success("Client deleted successfully");

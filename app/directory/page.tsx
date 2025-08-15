@@ -25,7 +25,7 @@ interface DirectoryContact {
   updatedAt: Date;
 }
 
-export default function DirectoryPage() {
+export default function DirectoryPage(): JSX.Element {
   const [contacts, setContacts] = useState<DirectoryContact[]>([
     {
       id: "1",
@@ -93,26 +93,26 @@ export default function DirectoryPage() {
     null
   );
 
-  const handleAdd = () => {
+  const handleAdd = (): void => {
     setShowAddModal(true);
   };
 
-  const handleEdit = (contact: DirectoryContact) => {
+  const handleEdit = (contact: DirectoryContact): void => {
     setEditingContact({ ...contact });
     setShowEditModal(true);
   };
 
-  const handleDelete = (contactId: string) => {
+  const handleDelete = (contactId: string): void => {
     setContacts(contacts.filter(c => c.id !== contactId));
     toast.success("Contact deleted successfully!");
   };
 
-  const handleView = (contact: DirectoryContact) => {
+  const handleView = (contact: DirectoryContact): void => {
     setCurrentContact(contact);
     setShowViewModal(true);
   };
 
-  const handleSaveContact = (contact: DirectoryContact) => {
+  const handleSaveContact = (contact: DirectoryContact): void => {
     if (contact.id) {
       // Update existing contact
       setContacts(
@@ -255,7 +255,7 @@ const ContactForm: React.FC<ContactFormProps> = ({
     }
   );
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = (e: React.FormEvent): void => {
     e.preventDefault();
     onSave(formData as DirectoryContact);
   };
@@ -270,7 +270,7 @@ const ContactForm: React.FC<ContactFormProps> = ({
           <input
             type="text"
             required
-            value={formData.name || ""}
+            value={formData.name ?? ""}
             onChange={e => setFormData({ ...formData, name: e.target.value })}
             className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
           />
@@ -283,7 +283,7 @@ const ContactForm: React.FC<ContactFormProps> = ({
           <input
             type="text"
             required
-            value={formData.role || ""}
+            value={formData.role ?? ""}
             onChange={e => setFormData({ ...formData, role: e.target.value })}
             className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
           />
@@ -296,7 +296,7 @@ const ContactForm: React.FC<ContactFormProps> = ({
           <input
             type="email"
             required
-            value={formData.email || ""}
+            value={formData.email ?? ""}
             onChange={e => setFormData({ ...formData, email: e.target.value })}
             className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
           />
@@ -308,7 +308,7 @@ const ContactForm: React.FC<ContactFormProps> = ({
           </label>
           <input
             type="tel"
-            value={formData.phone || ""}
+            value={formData.phone ?? ""}
             onChange={e => setFormData({ ...formData, phone: e.target.value })}
             className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
           />
@@ -321,7 +321,7 @@ const ContactForm: React.FC<ContactFormProps> = ({
           <input
             type="text"
             required
-            value={formData.company || ""}
+            value={formData.company ?? ""}
             onChange={e =>
               setFormData({ ...formData, company: e.target.value })
             }
@@ -335,7 +335,7 @@ const ContactForm: React.FC<ContactFormProps> = ({
           </label>
           <input
             type="text"
-            value={formData.city || ""}
+            value={formData.city ?? ""}
             onChange={e => setFormData({ ...formData, city: e.target.value })}
             className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
           />
@@ -347,7 +347,7 @@ const ContactForm: React.FC<ContactFormProps> = ({
           </label>
           <input
             type="text"
-            value={formData.state || ""}
+            value={formData.state ?? ""}
             onChange={e => setFormData({ ...formData, state: e.target.value })}
             className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
           />
@@ -359,7 +359,7 @@ const ContactForm: React.FC<ContactFormProps> = ({
           </label>
           <input
             type="text"
-            value={formData.country || ""}
+            value={formData.country ?? ""}
             onChange={e =>
               setFormData({ ...formData, country: e.target.value })
             }
@@ -373,7 +373,7 @@ const ContactForm: React.FC<ContactFormProps> = ({
           </label>
           <input
             type="url"
-            value={formData.website || ""}
+            value={formData.website ?? ""}
             onChange={e =>
               setFormData({ ...formData, website: e.target.value })
             }
@@ -382,33 +382,35 @@ const ContactForm: React.FC<ContactFormProps> = ({
         </div>
       </div>
 
-      <div>
+      <div className="md:col-span-2">
         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
           Notes
         </label>
         <textarea
           rows={3}
-          value={formData.notes || ""}
+          value={formData.notes ?? ""}
           onChange={e => setFormData({ ...formData, notes: e.target.value })}
           className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
         />
       </div>
 
-      <div className="flex items-center">
-        <input
-          type="checkbox"
-          id="isPrimary"
-          checked={formData.isPrimary || false}
-          onChange={e =>
-            setFormData({ ...formData, isPrimary: e.target.checked })
-          }
-          className="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded"
-        />
-        <label
-          htmlFor="isPrimary"
-          className="ml-2 block text-sm text-gray-700 dark:text-gray-300"
-        >
-          Primary contact for this company
+      <div className="md:col-span-2">
+        <label className="flex items-center">
+          <input
+            type="checkbox"
+            id="isPrimary"
+            checked={formData.isPrimary ?? false}
+            onChange={e =>
+              setFormData({ ...formData, isPrimary: e.target.checked })
+            }
+            className="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded"
+          />
+          <label
+            htmlFor="isPrimary"
+            className="ml-2 block text-sm text-gray-700 dark:text-gray-300"
+          >
+            Primary contact for this company
+          </label>
         </label>
       </div>
 
@@ -472,9 +474,9 @@ const ContactView: React.FC<ContactViewProps> = ({
               <label className="text-sm font-medium text-gray-500 dark:text-gray-400">
                 Phone
               </label>
-              <p className="text-sm text-gray-900 dark:text-white">
-                {contact.phone || "N/A"}
-              </p>
+              <div className="text-sm text-gray-600 dark:text-gray-400">
+                {contact.phone ?? "N/A"}
+              </div>
             </div>
           </div>
         </div>

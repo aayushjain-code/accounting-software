@@ -1,12 +1,11 @@
 "use client";
 
-import { useState, useEffect, useMemo } from "react";
+import { useState, useMemo } from "react";
 import { useAccountingStore } from "@/store";
 import { Expense } from "@/types";
 import { EXPENSE_CATEGORIES } from "@/constants";
 import {
   PlusIcon,
-  PencilIcon,
   TrashIcon,
   MagnifyingGlassIcon,
   FunnelIcon,
@@ -15,9 +14,6 @@ import {
   CalendarIcon,
   CurrencyDollarIcon,
   TagIcon,
-  ChevronUpIcon,
-  ChevronDownIcon,
-  CurrencyRupeeIcon,
 } from "@heroicons/react/24/outline";
 import { format } from "date-fns";
 import toast from "react-hot-toast";

@@ -49,15 +49,9 @@ const mainNavigation = [
 ];
 
 const betaArchiveNavigation = [
-  { name: "Timesheets", href: "/timesheet", icon: ClockIcon },
   {
     name: "Timesheet Generator",
     href: "/timesheet-generator",
-    icon: DocumentTextIcon,
-  },
-  {
-    name: "Invoices",
-    href: "/invoices",
     icon: DocumentTextIcon,
   },
 ];

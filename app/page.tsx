@@ -472,8 +472,8 @@ export default function Home(): JSX.Element {
                           {needsApproval && timesheet && (
                             <button
                               onClick={() => {
-                                // Navigate to timesheet page for review
-                                window.location.href = `/timesheet`;
+                                // Navigate to timesheet management page for review
+                                window.location.href = `/timesheet-management`;
                               }}
                               className="ml-2 text-xs text-blue-600 hover:text-blue-800 underline"
                             >

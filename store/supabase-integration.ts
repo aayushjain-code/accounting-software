@@ -36,14 +36,17 @@ export const getDefaultDueDate = (): string => {
 export const createTimesheetInSupabase = async (timesheet: any) => {
   try {
     const supabaseTimesheet = {
+      timesheet_code: `TMS-${timesheet.year}-${String(timesheet.month + 1).padStart(2, "0")}-${Date.now().toString().slice(-4)}`,
       user_id: "default-user-id", // TODO: Get from auth context
       project_id: timesheet.projectId || "",
-      week_start_date: timesheet.month || "",
-      week_end_date: timesheet.month || "",
+      month: new Date(timesheet.weekStartDate || timesheet.month).getMonth(),
+      year: new Date(timesheet.weekStartDate || timesheet.month).getFullYear(),
       status: timesheet.status || "draft",
-      notes: "",
       total_hours: timesheet.totalHours || 0,
       total_amount: timesheet.totalAmount || 0,
+      billing_rate: timesheet.billingRate || 0,
+      days_worked: timesheet.daysWorked || 0,
+      notes: timesheet.notes || "",
     };
 
     return await TimesheetService.createTimesheet(supabaseTimesheet);
@@ -57,14 +60,17 @@ export const createTimesheetInSupabase = async (timesheet: any) => {
 export const updateTimesheetInSupabase = async (id: string, timesheet: any) => {
   try {
     const supabaseTimesheet = {
+      timesheet_code: `TMS-${timesheet.year}-${String(timesheet.month + 1).padStart(2, "0")}-${Date.now().toString().slice(-4)}`,
       user_id: "default-user-id", // TODO: Get from auth context
       project_id: timesheet.projectId || "",
-      week_start_date: timesheet.month || "",
-      week_end_date: timesheet.month || "",
+      month: new Date(timesheet.weekStartDate || timesheet.month).getMonth(),
+      year: new Date(timesheet.weekStartDate || timesheet.month).getFullYear(),
       status: timesheet.status || "draft",
-      notes: "",
       total_hours: timesheet.totalHours || 0,
       total_amount: timesheet.totalAmount || 0,
+      billing_rate: timesheet.billingRate || 0,
+      days_worked: timesheet.daysWorked || 0,
+      notes: timesheet.notes || "",
     };
 
     return await TimesheetService.updateTimesheet(id, supabaseTimesheet);
@@ -75,7 +81,10 @@ export const updateTimesheetInSupabase = async (id: string, timesheet: any) => {
 };
 
 // Create invoice in Supabase
-export const createInvoiceInSupabase = async (invoice: any, invoiceNumber: string) => {
+export const createInvoiceInSupabase = async (
+  invoice: any,
+  invoiceNumber: string
+) => {
   try {
     const supabaseInvoice = {
       client_id: invoice.clientId || "",
@@ -87,10 +96,10 @@ export const createInvoiceInSupabase = async (invoice: any, invoiceNumber: strin
       subtotal: invoice.subtotal || 0,
       tax_rate: invoice.taxRate || 0,
       tax_amount: invoice.taxAmount || 0,
-      total_amount: invoice.total || 0,
+      total: invoice.total || 0,
+      payment_terms: invoice.paymentTerms || "Net 30",
       notes: invoice.notes || "",
-      terms: invoice.paymentTerms || "",
-      payment_instructions: "",
+      terms_conditions: invoice.paymentTerms || "Net 30",
     };
 
     return await InvoiceService.createInvoice(supabaseInvoice);
@@ -113,10 +122,10 @@ export const updateInvoiceInSupabase = async (id: string, invoice: any) => {
       subtotal: invoice.subtotal || 0,
       tax_rate: invoice.taxRate || 0,
       tax_amount: invoice.taxAmount || 0,
-      total_amount: invoice.total || 0,
+      total: invoice.total || 0,
+      payment_terms: invoice.paymentTerms || "Net 30",
       notes: invoice.notes || "",
-      terms: invoice.paymentTerms || "",
-      payment_instructions: "",
+      terms_conditions: invoice.paymentTerms || "Net 30",
     };
 
     return await InvoiceService.updateInvoice(id, supabaseInvoice);

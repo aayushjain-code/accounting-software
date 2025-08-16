@@ -863,10 +863,12 @@ export const useAccountingStore = create<AccountingStore>()(
           if (timesheetsResponse?.data) {
             const supabaseTimesheets = timesheetsResponse.data.map(ts => ({
               id: ts.id,
-              timesheetCode: ts.timesheet_code || `TMS-${new Date(ts.week_start_date).getFullYear()}-${String(new Date(ts.week_start_date).getMonth() + 1).padStart(2, '0')}-${ts.id.slice(-4)}`,
+              timesheetCode:
+                ts.timesheet_code ||
+                `TMS-${new Date(ts.week_start_date).getFullYear()}-${String(new Date(ts.week_start_date).getMonth() + 1).padStart(2, "0")}-${ts.id.slice(-4)}`,
               userId: ts.user_id,
               projectId: ts.project_id,
-              month: `${new Date(ts.week_start_date).getFullYear()}-${String(new Date(ts.week_start_date).getMonth() + 1).padStart(2, '0')}`,
+              month: `${new Date(ts.week_start_date).getFullYear()}-${String(new Date(ts.week_start_date).getMonth() + 1).padStart(2, "0")}`,
               year: new Date(ts.week_start_date).getFullYear(),
               weekStartDate: ts.week_start_date,
               weekEndDate: ts.week_end_date,
@@ -904,7 +906,9 @@ export const useAccountingStore = create<AccountingStore>()(
               clientId: inv.client_id,
               projectId: inv.project_id,
               issueDate: inv.issue_date ? new Date(inv.issue_date) : new Date(),
-              dueDate: inv.due_date ? new Date(inv.due_date) : new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
+              dueDate: inv.due_date
+                ? new Date(inv.due_date)
+                : new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
               status: inv.status,
               subtotal: inv.subtotal || 0,
               taxRate: inv.tax_rate || 0,

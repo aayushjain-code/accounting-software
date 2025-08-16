@@ -2,14 +2,17 @@ import { supabase } from "@/lib/supabase";
 import { BaseFilters } from "@/types";
 
 export interface CreateTimesheetData {
+  timesheet_code: string;
   user_id: string;
   project_id: string;
-  week_start_date: string;
-  week_end_date: string;
+  month: number;
+  year: number;
   status?: "draft" | "submitted" | "approved" | "rejected" | "invoiced";
-  notes?: string;
   total_hours?: number;
   total_amount?: number;
+  billing_rate?: number;
+  days_worked?: number;
+  notes?: string;
 }
 
 export interface UpdateTimesheetData extends Partial<CreateTimesheetData> {}

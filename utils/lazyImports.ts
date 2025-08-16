@@ -34,12 +34,35 @@ export const lazyLoadWithChunk = <T extends ComponentType<any>>(
   });
 };
 
-// Common lazy imports - using dynamic imports for code splitting
+// Lazy imports for components that are not immediately needed
+export const LazyClientViewModal = () => import("@/components/ClientViewModal");
+export const LazyProfileUpdateModal = () => import("@/components/ProfileUpdateModal");
+export const LazyChangelogModal = () => import("@/components/ChangelogModal");
+export const LazyUpdateNotification = () => import("@/components/UpdateNotification");
+export const LazyUpdateNotificationWrapper = () => import("@/components/UpdateNotificationWrapper");
+export const LazyPerformanceDashboard = () => import("@/components/PerformanceDashboard");
+export const LazyPerformanceMonitor = () => import("@/components/PerformanceMonitor");
+export const LazyStorageManager = () => import("@/components/StorageManager");
+export const LazyTestInput = () => import("@/components/TestInput");
+export const LazyTimesheetGenerator = () => import("@/components/TimesheetGenerator");
+export const LazyTooltip = () => import("@/components/Tooltip");
+export const LazyViewToggle = () => import("@/components/ViewToggle");
+export const LazyPagination = () => import("@/components/Pagination");
+export const LazyErrorBoundary = () => import("@/components/ErrorBoundary");
+export const LazyDatabaseLoader = () => import("@/components/DatabaseLoader");
+export const LazyLazyLoader = () => import("@/components/LazyLoader");
+export const LazyFileList = () => import("@/components/FileList");
+export const LazyFileUpload = () => import("@/components/FileUpload");
 export const LazyInvoiceEditor = () => import("@/components/InvoiceEditor");
 export const LazyInvoiceTemplate = () => import("@/components/InvoiceTemplate");
-export const LazyExpensesTable = () => import("@/components/ExpensesTable");
+export const LazyConfirmationDialog = () => import("@/components/ConfirmationDialog");
+export const LazyModal = () => import("@/components/Modal");
+export const LazyButton = () => import("@/components/Button");
+export const LazyCard = () => import("@/components/Card");
+export const LazyAuthOverlay = () => import("@/components/AuthOverlay");
+export const LazyLogoutButton = () => import("@/components/LogoutButton");
+export const LazyLayout = () => import("@/components/Layout");
 export const LazyClientsTable = () => import("@/components/ClientsTable");
 export const LazyProjectsTable = () => import("@/components/ProjectsTable");
+export const LazyExpensesTable = () => import("@/components/ExpensesTable");
 export const LazyDailyLogsTable = () => import("@/components/DailyLogsTable");
-export const LazyTimesheetsTable = () => import("@/components/TimesheetsTable");
-export const LazyInvoicesTable = () => import("@/components/InvoicesTable");

@@ -11,10 +11,10 @@ export interface CreateInvoiceData {
   subtotal?: number;
   tax_rate?: number;
   tax_amount?: number;
-  total_amount?: number;
+  total?: number;
+  payment_terms?: string;
   notes?: string;
-  terms?: string;
-  payment_instructions?: string;
+  terms_conditions?: string;
 }
 
 export interface UpdateInvoiceData extends Partial<CreateInvoiceData> {}
@@ -318,7 +318,7 @@ export class InvoiceService {
         subtotal,
         tax_rate: taxRate,
         tax_amount: taxAmount,
-        total_amount: totalAmount,
+        total: totalAmount,
         notes: `Generated from timesheet ${timesheet.timesheet_code}`,
       };
 

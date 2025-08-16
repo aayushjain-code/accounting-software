@@ -541,11 +541,11 @@ export const InvoiceEditor: React.FC<InvoiceEditorProps> = ({
       }
 
       // Show success message
-      setSaveMessage("Invoice saved successfully! Redirecting to invoices...");
+      setSaveMessage("Invoice saved successfully! Redirecting to invoice management...");
 
-      // Redirect to invoices page after a short delay
+      // Redirect to invoice management page after a short delay
       setTimeout(() => {
-        router.push("/invoices");
+        router.push("/invoice-management");
       }, 1500);
     } catch (error) {
       console.error("Error saving invoice:", error);

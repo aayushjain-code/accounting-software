@@ -19,6 +19,12 @@ import { DashboardStats } from "@/types/dashboard";
 import { CodeGenerator } from "@/utils/codeGenerator";
 import { InvoiceService } from "@/lib/api/invoices";
 import { TimesheetService } from "@/lib/api/timesheets";
+import {
+  createTimesheetInSupabase,
+  updateTimesheetInSupabase,
+  createInvoiceInSupabase,
+  updateInvoiceInSupabase,
+} from "./supabase-integration";
 
 interface AccountingStore {
   // Data
@@ -323,20 +329,9 @@ export const useAccountingStore = create<AccountingStore>()(
 
       addTimesheet: async timesheet => {
         try {
-          // Create timesheet in Supabase
-          const supabaseTimesheet = {
-            user_id: "default-user-id", // TODO: Get from auth context
-            project_id: timesheet.projectId,
-            week_start_date: timesheet.month, // Use month as week_start_date for now
-            week_end_date: timesheet.month, // Use month as week_end_date for now
-            status: timesheet.status || "draft",
-            notes: "", // Timesheet doesn't have notes in frontend type
-            total_hours: timesheet.totalHours || 0,
-            total_amount: timesheet.totalAmount || 0,
-          };
+          // Create timesheet in Supabase using utility function
+          const createdTimesheet = await createTimesheetInSupabase(timesheet);
 
-          const createdTimesheet = await TimesheetService.createTimesheet(supabaseTimesheet);
-          
           if (createdTimesheet) {
             // Convert Supabase response to frontend format and update store
             const newTimesheet: Timesheet = {
@@ -346,7 +341,7 @@ export const useAccountingStore = create<AccountingStore>()(
               createdAt: new Date(createdTimesheet.created_at),
               updatedAt: new Date(createdTimesheet.updated_at),
             };
-            
+
             set(state => ({ timesheets: [...state.timesheets, newTimesheet] }));
           }
         } catch (error) {
@@ -370,29 +365,23 @@ export const useAccountingStore = create<AccountingStore>()(
         console.log("🔄 Store updateTimesheet called with:", { id, timesheet });
 
         try {
-          // Update timesheet in Supabase
-          const supabaseTimesheet = {
-            user_id: "default-user-id", // TODO: Get from auth context
-            project_id: timesheet.projectId || "",
-            week_start_date: timesheet.month || "",
-            week_end_date: timesheet.month || "",
-            status: timesheet.status || "draft",
-            notes: "", // Timesheet doesn't have notes in frontend type
-            total_hours: timesheet.totalHours || 0,
-            total_amount: timesheet.totalAmount || 0,
-          };
+          // Update timesheet in Supabase using utility function
+          const updatedTimesheet = await updateTimesheetInSupabase(
+            id,
+            timesheet
+          );
 
-          const updatedTimesheet = await TimesheetService.updateTimesheet(id, supabaseTimesheet);
-          
           if (updatedTimesheet) {
             // Update frontend state with Supabase response
             set(state => ({
               timesheets: state.timesheets.map(t =>
-                t.id === id ? { 
-                  ...t, 
-                  ...timesheet, 
-                  updatedAt: new Date(updatedTimesheet.updated_at) 
-                } : t
+                t.id === id
+                  ? {
+                      ...t,
+                      ...timesheet,
+                      updatedAt: new Date(updatedTimesheet.updated_at),
+                    }
+                  : t
               ),
             }));
           }
@@ -464,27 +453,16 @@ export const useAccountingStore = create<AccountingStore>()(
       addInvoice: async invoice => {
         try {
           // Generate invoice number since it's not provided in the input
-          const invoiceNumber = CodeGenerator.generateInvoiceCode(get().invoices);
-          
-          // Create invoice in Supabase
-          const supabaseInvoice = {
-            client_id: invoice.clientId,
-            project_id: invoice.projectId,
-            invoice_number: invoiceNumber,
-            issue_date: invoice.issueDate ? invoice.issueDate.toISOString().split('T')[0] || new Date().toISOString().split('T')[0] : new Date().toISOString().split('T')[0],
-            due_date: invoice.dueDate ? invoice.dueDate.toISOString().split('T')[0] || new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0] : new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0], // 30 days from now
-            status: invoice.status || "draft",
-            subtotal: invoice.subtotal || 0,
-            tax_rate: invoice.taxRate || 0,
-            tax_amount: invoice.taxAmount || 0,
-            total_amount: invoice.total || 0,
-            notes: invoice.notes || "",
-            terms: invoice.paymentTerms || "",
-            payment_instructions: "",
-          };
+          const invoiceNumber = CodeGenerator.generateInvoiceCode(
+            get().invoices
+          );
 
-          const createdInvoice = await InvoiceService.createInvoice(supabaseInvoice);
-          
+          // Create invoice in Supabase using utility function
+          const createdInvoice = await createInvoiceInSupabase(
+            invoice,
+            invoiceNumber
+          );
+
           if (createdInvoice) {
             // Convert Supabase response to frontend format and update store
             const newInvoice: Invoice = {
@@ -494,7 +472,7 @@ export const useAccountingStore = create<AccountingStore>()(
               createdAt: new Date(createdInvoice.created_at),
               updatedAt: new Date(createdInvoice.updated_at),
             };
-            
+
             set(state => ({ invoices: [...state.invoices, newInvoice] }));
           }
         } catch (error) {
@@ -513,34 +491,20 @@ export const useAccountingStore = create<AccountingStore>()(
 
       updateInvoice: async (id, invoice) => {
         try {
-          // Update invoice in Supabase
-          const supabaseInvoice = {
-            client_id: invoice.clientId,
-            project_id: invoice.projectId,
-            invoice_number: invoice.invoiceNumber,
-            issue_date: invoice.issueDate?.toISOString().split('T')[0] || new Date().toISOString().split('T')[0],
-            due_date: invoice.dueDate?.toISOString().split('T')[0] || new Date().toISOString().split('T')[0],
-            status: invoice.status,
-            subtotal: invoice.subtotal || 0,
-            tax_rate: invoice.taxRate || 0,
-            tax_amount: invoice.taxAmount || 0,
-            total_amount: invoice.total || 0,
-            notes: invoice.notes || "",
-            terms: invoice.paymentTerms || "",
-            payment_instructions: "",
-          };
+          // Update invoice in Supabase using utility function
+          const updatedInvoice = await updateInvoiceInSupabase(id, invoice);
 
-          const updatedInvoice = await InvoiceService.updateInvoice(id, supabaseInvoice);
-          
           if (updatedInvoice) {
             // Update frontend state with Supabase response
             set(state => ({
               invoices: state.invoices.map(i =>
-                i.id === id ? { 
-                  ...i, 
-                  ...invoice, 
-                  updatedAt: new Date(updatedInvoice.updated_at) 
-                } : i
+                i.id === id
+                  ? {
+                      ...i,
+                      ...invoice,
+                      updatedAt: new Date(updatedInvoice.updated_at),
+                    }
+                  : i
               ),
             }));
           }
@@ -893,29 +857,41 @@ export const useAccountingStore = create<AccountingStore>()(
       loadDataFromSupabase: async () => {
         try {
           console.log("🔄 Loading data from Supabase...");
-          
+
           // Load timesheets
           const timesheetsResponse = await TimesheetService.getTimesheets();
           if (timesheetsResponse?.data) {
             const supabaseTimesheets = timesheetsResponse.data.map(ts => ({
               id: ts.id,
+              timesheetCode: ts.timesheet_code || `TMS-${new Date(ts.week_start_date).getFullYear()}-${String(new Date(ts.week_start_date).getMonth() + 1).padStart(2, '0')}-${ts.id.slice(-4)}`,
               userId: ts.user_id,
               projectId: ts.project_id,
-              month: new Date(ts.week_start_date).getMonth(),
+              month: `${new Date(ts.week_start_date).getFullYear()}-${String(new Date(ts.week_start_date).getMonth() + 1).padStart(2, '0')}`,
               year: new Date(ts.week_start_date).getFullYear(),
               weekStartDate: ts.week_start_date,
               weekEndDate: ts.week_end_date,
               status: ts.status,
-              notes: ts.notes,
-              totalHours: ts.total_hours,
-              totalAmount: ts.total_amount,
+              notes: ts.notes || "",
+              totalHours: ts.total_hours || 0,
+              totalAmount: ts.total_amount || 0,
+              totalWorkingDays: 22, // Default value, calculate if needed
               daysWorked: 0, // Calculate from entries if needed
+              daysLeave: 0, // Default value
+              hoursPerDay: 8, // Default value
               billingRate: 0, // Get from project if needed
+              submittedAt: undefined,
+              approvedAt: undefined,
+              approvedBy: undefined,
+              rejectionReason: undefined,
+              invoiceId: undefined,
+              invoicedAt: undefined,
+              files: [],
+              entries: [],
               createdAt: new Date(ts.created_at),
               updatedAt: new Date(ts.updated_at),
             }));
-            
-            set({ timesheets: supabaseTimesheets });
+
+            set({ timesheets: supabaseTimesheets as any });
           }
 
           // Load invoices
@@ -923,24 +899,38 @@ export const useAccountingStore = create<AccountingStore>()(
           if (invoicesResponse?.data) {
             const supabaseInvoices = invoicesResponse.data.map(inv => ({
               id: inv.id,
+              invoiceNumber: inv.invoice_number || `INV-${inv.id.slice(-6)}`,
+              timesheetId: "", // Empty string instead of undefined
               clientId: inv.client_id,
               projectId: inv.project_id,
-              invoiceNumber: inv.invoice_number,
-              issueDate: inv.issue_date,
-              dueDate: inv.due_date,
+              issueDate: inv.issue_date ? new Date(inv.issue_date) : new Date(),
+              dueDate: inv.due_date ? new Date(inv.due_date) : new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
               status: inv.status,
-              subtotal: inv.subtotal,
-              taxRate: inv.tax_rate,
-              taxAmount: inv.tax_amount,
-              total: inv.total_amount,
-              notes: inv.notes,
-              terms: inv.terms,
-              paymentInstructions: inv.payment_instructions,
+              subtotal: inv.subtotal || 0,
+              taxRate: inv.tax_rate || 0,
+              taxAmount: inv.tax_amount || 0,
+              total: inv.total_amount || 0,
+              poNumber: undefined,
+              deliveryNote: undefined,
+              paymentTerms: inv.terms || "Net 30",
+              items: [], // Load invoice items separately if needed
+              files: [],
+              notes: inv.notes || "",
+              referenceNo: undefined,
+              buyerOrderNo: undefined,
+              buyerOrderDate: undefined,
+              purchaseOrderNo: undefined,
+              purchaseOrderDate: undefined,
+              dispatchDocNo: undefined,
+              deliveryNoteDate: undefined,
+              dispatchedThrough: undefined,
+              destination: undefined,
+              termsOfDelivery: undefined,
               createdAt: new Date(inv.created_at),
               updatedAt: new Date(inv.updated_at),
             }));
-            
-            set({ invoices: supabaseInvoices });
+
+            set({ invoices: supabaseInvoices as any });
           }
 
           console.log("✅ Data loaded from Supabase successfully");

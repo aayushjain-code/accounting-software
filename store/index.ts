@@ -17,6 +17,8 @@ import {
 } from "@/types";
 import { DashboardStats } from "@/types/dashboard";
 import { CodeGenerator } from "@/utils/codeGenerator";
+import { InvoiceService } from "@/lib/api/invoices";
+import { TimesheetService } from "@/lib/api/timesheets";
 
 interface AccountingStore {
   // Data
@@ -120,6 +122,12 @@ interface AccountingStore {
 
   // Replace all data (for import functionality)
   replaceAllData: (data: Partial<AccountingStore>) => void;
+
+  // Load data from Supabase
+  loadDataFromSupabase: () => Promise<void>;
+
+  // Sync data between Supabase and local store
+  syncWithSupabase: () => Promise<void>;
 }
 
 const generateId = () => Math.random().toString(36).substr(2, 9);
@@ -313,29 +321,90 @@ export const useAccountingStore = create<AccountingStore>()(
         }
       },
 
-      addTimesheet: timesheet => {
-        const newTimesheet: Timesheet = {
-          ...timesheet,
-          id: generateId(),
-          timesheetCode: CodeGenerator.generateTimesheetCode(
-            timesheet.month,
-            get().timesheets
-          ),
-          createdAt: new Date(),
-          updatedAt: new Date(),
-        };
-        set(state => ({ timesheets: [...state.timesheets, newTimesheet] }));
+      addTimesheet: async timesheet => {
+        try {
+          // Create timesheet in Supabase
+          const supabaseTimesheet = {
+            user_id: "default-user-id", // TODO: Get from auth context
+            project_id: timesheet.projectId,
+            week_start_date: timesheet.month, // Use month as week_start_date for now
+            week_end_date: timesheet.month, // Use month as week_end_date for now
+            status: timesheet.status || "draft",
+            notes: "", // Timesheet doesn't have notes in frontend type
+            total_hours: timesheet.totalHours || 0,
+            total_amount: timesheet.totalAmount || 0,
+          };
+
+          const createdTimesheet = await TimesheetService.createTimesheet(supabaseTimesheet);
+          
+          if (createdTimesheet) {
+            // Convert Supabase response to frontend format and update store
+            const newTimesheet: Timesheet = {
+              ...timesheet,
+              id: createdTimesheet.id,
+              timesheetCode: createdTimesheet.timesheet_code,
+              createdAt: new Date(createdTimesheet.created_at),
+              updatedAt: new Date(createdTimesheet.updated_at),
+            };
+            
+            set(state => ({ timesheets: [...state.timesheets, newTimesheet] }));
+          }
+        } catch (error) {
+          console.error("Failed to create timesheet in Supabase:", error);
+          // Fallback to local storage if Supabase fails
+          const newTimesheet: Timesheet = {
+            ...timesheet,
+            id: generateId(),
+            timesheetCode: CodeGenerator.generateTimesheetCode(
+              timesheet.month,
+              get().timesheets
+            ),
+            createdAt: new Date(),
+            updatedAt: new Date(),
+          };
+          set(state => ({ timesheets: [...state.timesheets, newTimesheet] }));
+        }
       },
 
       updateTimesheet: async (id, timesheet) => {
         console.log("🔄 Store updateTimesheet called with:", { id, timesheet });
 
-        // Update frontend state immediately for responsive UI
-        set(state => ({
-          timesheets: state.timesheets.map(t =>
-            t.id === id ? { ...t, ...timesheet, updatedAt: new Date() } : t
-          ),
-        }));
+        try {
+          // Update timesheet in Supabase
+          const supabaseTimesheet = {
+            user_id: "default-user-id", // TODO: Get from auth context
+            project_id: timesheet.projectId || "",
+            week_start_date: timesheet.month || "",
+            week_end_date: timesheet.month || "",
+            status: timesheet.status || "draft",
+            notes: "", // Timesheet doesn't have notes in frontend type
+            total_hours: timesheet.totalHours || 0,
+            total_amount: timesheet.totalAmount || 0,
+          };
+
+          const updatedTimesheet = await TimesheetService.updateTimesheet(id, supabaseTimesheet);
+          
+          if (updatedTimesheet) {
+            // Update frontend state with Supabase response
+            set(state => ({
+              timesheets: state.timesheets.map(t =>
+                t.id === id ? { 
+                  ...t, 
+                  ...timesheet, 
+                  updatedAt: new Date(updatedTimesheet.updated_at) 
+                } : t
+              ),
+            }));
+          }
+        } catch (error) {
+          console.error("Failed to update timesheet in Supabase:", error);
+          // Fallback to local storage update
+          set(state => ({
+            timesheets: state.timesheets.map(t =>
+              t.id === id ? { ...t, ...timesheet, updatedAt: new Date() } : t
+            ),
+          }));
+        }
 
         // Persist to localStorage for web-based app
         try {
@@ -392,24 +461,98 @@ export const useAccountingStore = create<AccountingStore>()(
         }));
       },
 
-      addInvoice: invoice => {
-        const newInvoice: Invoice = {
-          ...invoice,
-          id: generateId(),
-          invoiceNumber: CodeGenerator.generateInvoiceCode(get().invoices),
-          createdAt: new Date(),
-          updatedAt: new Date(),
-        };
-        set(state => ({ invoices: [...state.invoices, newInvoice] }));
+      addInvoice: async invoice => {
+        try {
+          // Generate invoice number since it's not provided in the input
+          const invoiceNumber = CodeGenerator.generateInvoiceCode(get().invoices);
+          
+          // Create invoice in Supabase
+          const supabaseInvoice = {
+            client_id: invoice.clientId,
+            project_id: invoice.projectId,
+            invoice_number: invoiceNumber,
+            issue_date: invoice.issueDate ? invoice.issueDate.toISOString().split('T')[0] || new Date().toISOString().split('T')[0] : new Date().toISOString().split('T')[0],
+            due_date: invoice.dueDate ? invoice.dueDate.toISOString().split('T')[0] || new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0] : new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0], // 30 days from now
+            status: invoice.status || "draft",
+            subtotal: invoice.subtotal || 0,
+            tax_rate: invoice.taxRate || 0,
+            tax_amount: invoice.taxAmount || 0,
+            total_amount: invoice.total || 0,
+            notes: invoice.notes || "",
+            terms: invoice.paymentTerms || "",
+            payment_instructions: "",
+          };
+
+          const createdInvoice = await InvoiceService.createInvoice(supabaseInvoice);
+          
+          if (createdInvoice) {
+            // Convert Supabase response to frontend format and update store
+            const newInvoice: Invoice = {
+              ...invoice,
+              id: createdInvoice.id,
+              invoiceNumber: createdInvoice.invoice_number,
+              createdAt: new Date(createdInvoice.created_at),
+              updatedAt: new Date(createdInvoice.updated_at),
+            };
+            
+            set(state => ({ invoices: [...state.invoices, newInvoice] }));
+          }
+        } catch (error) {
+          console.error("Failed to create invoice in Supabase:", error);
+          // Fallback to local storage if Supabase fails
+          const newInvoice: Invoice = {
+            ...invoice,
+            id: generateId(),
+            invoiceNumber: CodeGenerator.generateInvoiceCode(get().invoices),
+            createdAt: new Date(),
+            updatedAt: new Date(),
+          };
+          set(state => ({ invoices: [...state.invoices, newInvoice] }));
+        }
       },
 
       updateInvoice: async (id, invoice) => {
-        // Update frontend state immediately for responsive UI
-        set(state => ({
-          invoices: state.invoices.map(i =>
-            i.id === id ? { ...i, ...invoice, updatedAt: new Date() } : i
-          ),
-        }));
+        try {
+          // Update invoice in Supabase
+          const supabaseInvoice = {
+            client_id: invoice.clientId,
+            project_id: invoice.projectId,
+            invoice_number: invoice.invoiceNumber,
+            issue_date: invoice.issueDate?.toISOString().split('T')[0] || new Date().toISOString().split('T')[0],
+            due_date: invoice.dueDate?.toISOString().split('T')[0] || new Date().toISOString().split('T')[0],
+            status: invoice.status,
+            subtotal: invoice.subtotal || 0,
+            tax_rate: invoice.taxRate || 0,
+            tax_amount: invoice.taxAmount || 0,
+            total_amount: invoice.total || 0,
+            notes: invoice.notes || "",
+            terms: invoice.paymentTerms || "",
+            payment_instructions: "",
+          };
+
+          const updatedInvoice = await InvoiceService.updateInvoice(id, supabaseInvoice);
+          
+          if (updatedInvoice) {
+            // Update frontend state with Supabase response
+            set(state => ({
+              invoices: state.invoices.map(i =>
+                i.id === id ? { 
+                  ...i, 
+                  ...invoice, 
+                  updatedAt: new Date(updatedInvoice.updated_at) 
+                } : i
+              ),
+            }));
+          }
+        } catch (error) {
+          console.error("Failed to update invoice in Supabase:", error);
+          // Fallback to local storage update
+          set(state => ({
+            invoices: state.invoices.map(i =>
+              i.id === id ? { ...i, ...invoice, updatedAt: new Date() } : i
+            ),
+          }));
+        }
 
         // Persist to localStorage for web-based app
         try {
@@ -744,6 +887,77 @@ export const useAccountingStore = create<AccountingStore>()(
 
       getExpensesByProject: projectId => {
         return get().expenses.filter(e => e.projectId === projectId);
+      },
+
+      // Load data from Supabase
+      loadDataFromSupabase: async () => {
+        try {
+          console.log("🔄 Loading data from Supabase...");
+          
+          // Load timesheets
+          const timesheetsResponse = await TimesheetService.getTimesheets();
+          if (timesheetsResponse?.data) {
+            const supabaseTimesheets = timesheetsResponse.data.map(ts => ({
+              id: ts.id,
+              userId: ts.user_id,
+              projectId: ts.project_id,
+              month: new Date(ts.week_start_date).getMonth(),
+              year: new Date(ts.week_start_date).getFullYear(),
+              weekStartDate: ts.week_start_date,
+              weekEndDate: ts.week_end_date,
+              status: ts.status,
+              notes: ts.notes,
+              totalHours: ts.total_hours,
+              totalAmount: ts.total_amount,
+              daysWorked: 0, // Calculate from entries if needed
+              billingRate: 0, // Get from project if needed
+              createdAt: new Date(ts.created_at),
+              updatedAt: new Date(ts.updated_at),
+            }));
+            
+            set({ timesheets: supabaseTimesheets });
+          }
+
+          // Load invoices
+          const invoicesResponse = await InvoiceService.getInvoices();
+          if (invoicesResponse?.data) {
+            const supabaseInvoices = invoicesResponse.data.map(inv => ({
+              id: inv.id,
+              clientId: inv.client_id,
+              projectId: inv.project_id,
+              invoiceNumber: inv.invoice_number,
+              issueDate: inv.issue_date,
+              dueDate: inv.due_date,
+              status: inv.status,
+              subtotal: inv.subtotal,
+              taxRate: inv.tax_rate,
+              taxAmount: inv.tax_amount,
+              total: inv.total_amount,
+              notes: inv.notes,
+              terms: inv.terms,
+              paymentInstructions: inv.payment_instructions,
+              createdAt: new Date(inv.created_at),
+              updatedAt: new Date(inv.updated_at),
+            }));
+            
+            set({ invoices: supabaseInvoices });
+          }
+
+          console.log("✅ Data loaded from Supabase successfully");
+        } catch (error) {
+          console.error("❌ Failed to load data from Supabase:", error);
+        }
+      },
+
+      // Sync data between Supabase and local store
+      syncWithSupabase: async () => {
+        try {
+          console.log("🔄 Syncing data with Supabase...");
+          await get().loadDataFromSupabase();
+          console.log("✅ Data synced with Supabase successfully");
+        } catch (error) {
+          console.error("❌ Failed to sync with Supabase:", error);
+        }
       },
 
       generateInvoiceFromTimesheet: timesheetId => {

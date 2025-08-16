@@ -6,7 +6,7 @@ import { useAccountingStore } from "../store";
 export const useDatabaseLoader = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const { replaceAllData } = useAccountingStore();
+  const { replaceAllData, loadDataFromSupabase } = useAccountingStore();
 
   const loadDataFromDatabase = async () => {
     if (typeof window === "undefined") {
@@ -80,6 +80,16 @@ export const useDatabaseLoader = () => {
       // Update the store with data
       replaceAllData(data);
       console.log("🔄 Database loader: Store updated with data");
+
+      // Now try to load data from Supabase to sync/override local data
+      try {
+        console.log("🔄 Database loader: Attempting to load data from Supabase...");
+        await loadDataFromSupabase();
+        console.log("🔄 Database loader: Supabase data loaded successfully");
+      } catch (supabaseError) {
+        console.warn("🔄 Database loader: Supabase data loading failed, using local data:", supabaseError);
+        // Continue with local data if Supabase fails
+      }
 
       setIsLoading(false);
     } catch (error) {

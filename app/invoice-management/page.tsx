@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect, useCallback } from "react";
 import { useAccountingStore } from "@/store";
 import {
   DocumentTextIcon,
@@ -9,6 +9,8 @@ import {
   XMarkIcon,
 } from "@heroicons/react/24/outline";
 import Modal from "@/components/Modal";
+import { InvoiceService } from "@/lib/api/invoices";
+import { CodeGenerator } from "@/utils/codeGenerator";
 
 // Interface for uploaded invoice records
 interface InvoiceUpload {
@@ -22,10 +24,11 @@ interface InvoiceUpload {
   uploadDate: Date;
   status: "pending" | "approved" | "rejected";
   file: File;
+  invoiceId?: string; // Supabase invoice ID
 }
 
 export default function InvoiceManagementPage(): JSX.Element {
-  const { projects, clients } = useAccountingStore();
+  const { projects, clients, invoices, addInvoice } = useAccountingStore();
   const [selectedProject, setSelectedProject] = useState<string | null>(null);
   const [uploadedFile, setUploadedFile] = useState<File | null>(null);
   const [isDragOver, setIsDragOver] = useState(false);
@@ -34,6 +37,8 @@ export default function InvoiceManagementPage(): JSX.Element {
     null
   );
   const [isViewModalOpen, setIsViewModalOpen] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [message, setMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null);
 
   // Get current month for default selection
   const currentMonth = new Date().toLocaleString("default", {
@@ -50,6 +55,38 @@ export default function InvoiceManagementPage(): JSX.Element {
       invoice => invoice.projectId === selectedProject
     );
   }, [selectedProject, invoiceUploads]);
+
+  // Load existing invoices from Supabase on component mount
+  const loadInvoicesFromSupabase = useCallback(async () => {
+    try {
+      const response = await InvoiceService.getInvoices();
+      if (response?.data) {
+        // Convert Supabase invoices to upload format
+        const supabaseInvoices = response.data.map(inv => ({
+          id: inv.id,
+          projectId: inv.project_id || "",
+          projectName: projects.find(p => p.id === inv.project_id)?.name || "Unknown Project",
+          clientName: clients.find(c => c.id === inv.client_id)?.name || "Unknown Client",
+          month: inv.issue_date ? new Date(inv.issue_date).toLocaleString("default", { month: "long", year: "numeric" }) : "Unknown",
+          fileName: `Invoice-${inv.invoice_number}`,
+          fileSize: 0, // File size not stored in database
+          uploadDate: new Date(inv.created_at),
+          status: inv.status as "pending" | "approved" | "rejected",
+          file: new File([], `Invoice-${inv.invoice_number}`),
+          invoiceId: inv.id,
+        }));
+        
+        setInvoiceUploads(supabaseInvoices);
+      }
+    } catch (error) {
+      console.error("Failed to load invoices from Supabase:", error);
+      setMessage({ type: 'error', text: 'Failed to load invoices from database' });
+    }
+  }, [projects, clients]);
+
+  useEffect(() => {
+    loadInvoicesFromSupabase();
+  }, [loadInvoicesFromSupabase]);
 
   // Handle file drag and drop
   const handleDragOver = (e: React.DragEvent): void => {
@@ -80,47 +117,191 @@ export default function InvoiceManagementPage(): JSX.Element {
     }
   };
 
-  // Submit invoice upload
-  const handleSubmitInvoice = (): void => {
+  // Submit invoice upload and create in Supabase
+  const handleSubmitInvoice = async (): Promise<void> => {
     if (!uploadedFile || !selectedProject) {
+      setMessage({ type: 'error', text: 'Please select a project and file' });
       return;
     }
 
-    const project = projects.find(p => p.id === selectedProject);
-    const client = clients.find(c => c.id === project?.clientId);
+    setIsLoading(true);
+    setMessage(null);
 
-    const newInvoice: InvoiceUpload = {
-      id: Date.now().toString(),
-      projectId: selectedProject,
-      projectName: project?.name ?? "Unknown Project",
-      clientName: client?.name ?? "Unknown Client",
-      month: currentMonth,
-      fileName: uploadedFile.name,
-      fileSize: uploadedFile.size,
-      uploadDate: new Date(),
-      status: "pending",
-      file: uploadedFile,
-    };
+    try {
+      const project = projects.find(p => p.id === selectedProject);
+      const client = clients.find(c => c.id === project?.clientId);
 
-    setInvoiceUploads(prev => [...prev, newInvoice]);
-    setUploadedFile(null);
+      if (!project || !client) {
+        setMessage({ type: 'error', text: 'Project or client not found' });
+        return;
+      }
+
+      // Generate invoice number
+      const invoiceNumber = CodeGenerator.generateInvoiceCode();
+
+      // Create invoice data for Supabase
+      const issueDate = new Date().toISOString().split('T')[0] || new Date().toISOString().substring(0, 10);
+      const dueDate = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0] || new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().substring(0, 10);
+      
+      const invoiceData = {
+        client_id: client.id,
+        project_id: project.id,
+        invoice_number: invoiceNumber,
+        issue_date: issueDate,
+        due_date: dueDate,
+        status: "draft" as const,
+        subtotal: 0, // Will be calculated from items
+        tax_rate: 0,
+        tax_amount: 0,
+        total: 0,
+        payment_terms: "Net 30",
+        notes: `Invoice uploaded from file: ${uploadedFile.name}`,
+        terms_conditions: "Net 30",
+      };
+
+      // Create invoice in Supabase
+      const response = await InvoiceService.createInvoice(invoiceData);
+      
+      if (response?.data) {
+        // Add to local store
+        const newInvoice = {
+          id: response.data.id,
+          timesheetId: "",
+          clientId: client.id,
+          projectId: project.id,
+          invoiceNumber: invoiceNumber,
+          issueDate: new Date(invoiceData.issue_date),
+          dueDate: new Date(invoiceData.due_date),
+          status: "draft" as const,
+          subtotal: 0,
+          taxRate: 0,
+          taxAmount: 0,
+          total: 0,
+          poNumber: "",
+          deliveryNote: "",
+          paymentTerms: "Net 30",
+          referenceNo: "",
+          buyerOrderNo: "",
+          buyerOrderDate: "",
+          purchaseOrderNo: "",
+          purchaseOrderDate: "",
+          dispatchDocNo: "",
+          deliveryNoteDate: "",
+          dispatchedThrough: "",
+          destination: "",
+          termsOfDelivery: "",
+          items: [],
+          files: [],
+          notes: invoiceData.notes,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        };
+
+        addInvoice(newInvoice);
+
+        // Add to local uploads state
+        const newUpload: InvoiceUpload = {
+          id: response.data.id,
+          projectId: selectedProject,
+          projectName: project.name,
+          clientName: client.name,
+          month: currentMonth,
+          fileName: uploadedFile.name,
+          fileSize: uploadedFile.size,
+          uploadDate: new Date(),
+          status: "pending",
+          file: uploadedFile,
+          invoiceId: response.data.id,
+        };
+
+        setInvoiceUploads(prev => [...prev, newUpload]);
+        setUploadedFile(null);
+        setMessage({ type: 'success', text: `Invoice created successfully! Invoice #: ${invoiceNumber}` });
+        
+        // Clear success message after 5 seconds
+        setTimeout(() => setMessage(null), 5000);
+      } else {
+        throw new Error("Failed to create invoice in database");
+      }
+    } catch (error) {
+      console.error("Error creating invoice:", error);
+      setMessage({ type: 'error', text: 'Failed to create invoice. Please try again.' });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   // Handle status changes
-  const handleStatusChange = (
+  const handleStatusChange = async (
     invoiceId: string,
     newStatus: "approved" | "rejected"
-  ): void => {
-    setInvoiceUploads(prev =>
-      prev.map(invoice =>
-        invoice.id === invoiceId ? { ...invoice, status: newStatus } : invoice
-      )
-    );
+  ): Promise<void> => {
+    try {
+      // Find the invoice upload to get the Supabase invoice ID
+      const invoiceUpload = invoiceUploads.find(inv => inv.id === invoiceId);
+      if (!invoiceUpload?.invoiceId) {
+        setMessage({ type: 'error', text: 'Invoice not found in database' });
+        return;
+      }
+
+      // Map upload status to invoice status
+      const invoiceStatus = newStatus === "approved" ? "sent" : "draft";
+
+      // Update status in Supabase
+      const response = await InvoiceService.updateInvoice(invoiceUpload.invoiceId, {
+        status: invoiceStatus,
+      });
+
+      if (response?.data) {
+        // Update local state
+        setInvoiceUploads(prev =>
+          prev.map(invoice =>
+            invoice.id === invoiceId ? { ...invoice, status: newStatus } : invoice
+          )
+        );
+        
+        // Update local store
+        const storeInvoice = invoices.find(inv => inv.id === invoiceUpload.invoiceId);
+        if (storeInvoice) {
+          // Update the invoice in the store
+          // Note: You might need to add an updateInvoice action to your store
+        }
+
+        setMessage({ type: 'success', text: `Invoice status updated to ${newStatus}` });
+        setTimeout(() => setMessage(null), 3000);
+      } else {
+        throw new Error("Failed to update invoice status");
+      }
+    } catch (error) {
+      console.error("Error updating invoice status:", error);
+      setMessage({ type: 'error', text: 'Failed to update invoice status' });
+    }
   };
 
   // Delete invoice
-  const handleDeleteInvoice = (invoiceId: string): void => {
-    setInvoiceUploads(prev => prev.filter(invoice => invoice.id !== invoiceId));
+  const handleDeleteInvoice = async (invoiceId: string): Promise<void> => {
+    try {
+      const invoiceUpload = invoiceUploads.find(inv => inv.id === invoiceId);
+      if (!invoiceUpload?.invoiceId) {
+        setMessage({ type: 'error', text: 'Invoice not found in database' });
+        return;
+      }
+
+      // Delete from Supabase
+      const response = await InvoiceService.deleteInvoice(invoiceUpload.invoiceId);
+      
+      if (!response) {
+        throw new Error("Failed to delete invoice");
+      }
+
+      // Remove from local state
+      setInvoiceUploads(prev => prev.filter(invoice => invoice.id !== invoiceId));
+      setMessage({ type: 'success', text: 'Invoice deleted successfully' });
+      setTimeout(() => setMessage(null), 3000);
+    } catch (error) {
+      console.error("Error deleting invoice:", error);
+      setMessage({ type: 'error', text: 'Failed to delete invoice' });
+    }
   };
 
   // View invoice details
@@ -179,6 +360,24 @@ export default function InvoiceManagementPage(): JSX.Element {
             Upload and manage invoices for each project
           </p>
         </div>
+
+        {/* Message Display */}
+        {message && (
+          <div className={`mb-6 p-4 rounded-md border ${
+            message.type === 'success' 
+              ? 'bg-green-50 border-green-200 text-green-800' 
+              : 'bg-red-50 border-red-200 text-red-800'
+          }`}>
+            <div className="flex items-center">
+              {message.type === 'success' ? (
+                <CheckIcon className="h-5 w-5 mr-2 text-green-600" />
+              ) : (
+                <XMarkIcon className="h-5 w-5 mr-2 text-red-600" />
+              )}
+              <span className="font-medium">{message.text}</span>
+            </div>
+          </div>
+        )}
 
         {/* Project Tabs */}
         <div className="mb-8">
@@ -317,10 +516,10 @@ export default function InvoiceManagementPage(): JSX.Element {
               <div className="mt-4">
                 <button
                   onClick={handleSubmitInvoice}
-                  disabled={!uploadedFile}
+                  disabled={!uploadedFile || isLoading}
                   className="w-full bg-primary-600 hover:bg-primary-700 disabled:bg-gray-300 disabled:cursor-not-allowed text-white font-medium py-2 px-4 rounded-md transition-colors"
                 >
-                  Upload Invoice
+                  {isLoading ? "Uploading..." : "Upload Invoice"}
                 </button>
               </div>
             </div>

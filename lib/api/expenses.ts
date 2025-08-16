@@ -1,4 +1,4 @@
-import { supabase } from "@/lib/supabase";
+import { getSupabaseClient } from "@/lib/supabase";
 import { BaseFilters } from "@/types";
 
 export interface CreateExpenseData {
@@ -45,7 +45,7 @@ export class ExpenseService {
     limit = 20
   ): Promise<{ data: any[]; totalPages: number; page: number; limit: number }> {
     try {
-      let query = supabase
+      let query = getSupabaseClient()
         .from("expenses")
         .select(
           `
@@ -128,7 +128,7 @@ export class ExpenseService {
   // Get expense by ID
   static async getExpenseById(id: string): Promise<any> {
     try {
-      const { data, error } = await supabase
+      const { data, error } = await getSupabaseClient()
         .from("expenses")
         .select(
           `
@@ -154,7 +154,7 @@ export class ExpenseService {
   // Get expense by expense code
   static async getExpenseByCode(expenseCode: string): Promise<any> {
     try {
-      const { data, error } = await supabase
+      const { data, error } = await getSupabaseClient()
         .from("expenses")
         .select(
           `
@@ -183,7 +183,7 @@ export class ExpenseService {
       // Generate expense code
       const expenseCode = await this.generateExpenseCode();
 
-      const { data, error } = await supabase
+      const { data, error } = await getSupabaseClient()
         .from("expenses")
         .insert([{ ...expenseData, expense_code: expenseCode }])
         .select()
@@ -205,7 +205,7 @@ export class ExpenseService {
     expenseData: UpdateExpenseData
   ): Promise<any> {
     try {
-      const { data, error } = await supabase
+      const { data, error } = await getSupabaseClient()
         .from("expenses")
         .update(expenseData)
         .eq("id", id)
@@ -225,7 +225,7 @@ export class ExpenseService {
   // Delete expense
   static async deleteExpense(id: string): Promise<boolean> {
     try {
-      const { error } = await supabase.from("expenses").delete().eq("id", id);
+      const { error } = await getSupabaseClient().from("expenses").delete().eq("id", id);
 
       if (error) {
         throw error;
@@ -244,7 +244,7 @@ export class ExpenseService {
     approvalNotes?: string
   ): Promise<any> {
     try {
-      const { data, error } = await supabase
+      const { data, error } = await getSupabaseClient()
         .from("expenses")
         .update({
           status: "approved",
@@ -273,7 +273,7 @@ export class ExpenseService {
     rejectionReason: string
   ): Promise<any> {
     try {
-      const { data, error } = await supabase
+      const { data, error } = await getSupabaseClient()
         .from("expenses")
         .update({
           status: "rejected",
@@ -301,7 +301,7 @@ export class ExpenseService {
       const fileExt = file.name.split(".").pop();
       const fileName = `${expenseId}-${Date.now()}.${fileExt}`;
 
-      const { error } = await supabase.storage
+      const { error } = await getSupabaseClient().storage
         .from("receipts")
         .upload(fileName, file, {
           cacheControl: "3600",
@@ -313,7 +313,7 @@ export class ExpenseService {
       }
 
       // Update expense with receipt path
-      const { data: expenseData, error: updateError } = await supabase
+      const { data: expenseData, error: updateError } = await getSupabaseClient()
         .from("expenses")
         .update({ receipt_path: fileName })
         .eq("id", expenseId)
@@ -339,7 +339,7 @@ export class ExpenseService {
         return true;
       }
 
-      const { error } = await supabase.storage
+      const { error } = await getSupabaseClient().storage
         .from("receipts")
         .remove([expense.receipt_path]);
 
@@ -348,7 +348,7 @@ export class ExpenseService {
       }
 
       // Update expense to remove receipt path
-      await supabase
+      await getSupabaseClient()
         .from("expenses")
         .update({ receipt_path: null })
         .eq("id", expenseId);
@@ -363,7 +363,7 @@ export class ExpenseService {
   // Get expenses by user
   static async getExpensesByUser(userId: string): Promise<any[]> {
     try {
-      const { data, error } = await supabase
+      const { data, error } = await getSupabaseClient()
         .from("expenses")
         .select(
           `
@@ -388,7 +388,7 @@ export class ExpenseService {
   // Get expenses by project
   static async getExpensesByProject(projectId: string): Promise<any[]> {
     try {
-      const { data, error } = await supabase
+      const { data, error } = await getSupabaseClient()
         .from("expenses")
         .select(
           `
@@ -413,7 +413,7 @@ export class ExpenseService {
   // Get expenses by client
   static async getExpensesByClient(clientId: string): Promise<any[]> {
     try {
-      const { data, error } = await supabase
+      const { data, error } = await getSupabaseClient()
         .from("expenses")
         .select(
           `
@@ -438,7 +438,7 @@ export class ExpenseService {
   // Get expenses by status
   static async getExpensesByStatus(status: string): Promise<any[]> {
     try {
-      const { data, error } = await supabase
+      const { data, error } = await getSupabaseClient()
         .from("expenses")
         .select(
           `
@@ -464,7 +464,7 @@ export class ExpenseService {
   // Get expenses by category
   static async getExpensesByCategory(category: string): Promise<any[]> {
     try {
-      const { data, error } = await supabase
+      const { data, error } = await getSupabaseClient()
         .from("expenses")
         .select(
           `
@@ -502,7 +502,7 @@ export class ExpenseService {
     monthlyBreakdown: Record<string, number>;
   }> {
     try {
-      const { data, error } = await supabase
+      const { data, error } = await getSupabaseClient()
         .from("expenses")
         .select("status, amount, category, date, billable, reimbursable");
 
@@ -511,31 +511,31 @@ export class ExpenseService {
       }
 
       const total = data?.length ?? 0;
-      const pending = data?.filter(e => e.status === "pending").length ?? 0;
-      const approved = data?.filter(e => e.status === "approved").length ?? 0;
-      const rejected = data?.filter(e => e.status === "rejected").length ?? 0;
+      const pending = data?.filter((e: any) => e.status === "pending").length ?? 0;
+      const approved = data?.filter((e: any) => e.status === "approved").length ?? 0;
+      const rejected = data?.filter((e: any) => e.status === "rejected").length ?? 0;
       const totalAmount =
-        data?.reduce((sum, e) => sum + (e.amount ?? 0), 0) ?? 0;
+        data?.reduce((sum: number, e: any) => sum + (e.amount || 0), 0) ?? 0;
       const approvedAmount =
         data
-          ?.filter(e => e.status === "approved")
-          .reduce((sum, e) => sum + (e.amount ?? 0), 0) ?? 0;
+          ?.filter((e: any) => e.status === "approved")
+          .reduce((sum: number, e: any) => sum + (e.amount || 0), 0) ?? 0;
       const pendingAmount =
         data
-          ?.filter(e => e.status === "pending")
-          .reduce((sum, e) => sum + (e.amount ?? 0), 0) ?? 0;
+          ?.filter((e: any) => e.status === "pending")
+          .reduce((sum: number, e: any) => sum + (e.amount || 0), 0) ?? 0;
       const billableAmount =
         data
-          ?.filter(e => e.billable)
-          .reduce((sum, e) => sum + (e.amount ?? 0), 0) ?? 0;
+          ?.filter((e: any) => e.billable)
+          .reduce((sum: number, e: any) => sum + (e.amount || 0), 0) ?? 0;
       const reimbursableAmount =
         data
-          ?.filter(e => e.reimbursable)
-          .reduce((sum, e) => sum + (e.amount ?? 0), 0) ?? 0;
+          ?.filter((e: any) => e.reimbursable)
+          .reduce((sum: number, e: any) => sum + (e.amount || 0), 0) ?? 0;
 
       // Category breakdown
       const categoryBreakdown: Record<string, number> = {};
-      data?.forEach(expense => {
+      data?.forEach((expense: any) => {
         const category = expense.category ?? "Uncategorized";
         categoryBreakdown[category] =
           (categoryBreakdown[category] ?? 0) + (expense.amount ?? 0);
@@ -543,7 +543,7 @@ export class ExpenseService {
 
       // Monthly breakdown
       const monthlyBreakdown: Record<string, number> = {};
-      data?.forEach(expense => {
+      data?.forEach((expense: any) => {
         const month = expense.date?.substring(0, 7) ?? "Unknown";
         monthlyBreakdown[month] =
           (monthlyBreakdown[month] ?? 0) + (expense.amount ?? 0);
@@ -571,7 +571,7 @@ export class ExpenseService {
   // Search expenses
   static async searchExpenses(searchTerm: string): Promise<any[]> {
     try {
-      const { data, error } = await supabase
+      const { data, error } = await getSupabaseClient()
         .from("expenses")
         .select(
           `
@@ -597,7 +597,7 @@ export class ExpenseService {
   // Generate unique expense code
   private static async generateExpenseCode(): Promise<string> {
     try {
-      const { data, error } = await supabase
+      const { data, error } = await getSupabaseClient()
         .from("expenses")
         .select("expense_code")
         .order("expense_code", { ascending: false })
@@ -633,7 +633,7 @@ export class ExpenseService {
     updates: Array<{ id: string; data: UpdateExpenseData }>
   ): Promise<any[]> {
     try {
-      const { data, error } = await supabase
+      const { data, error } = await getSupabaseClient()
         .from("expenses")
         .upsert(updates.map(({ id, data }) => ({ id, ...data })))
         .select();
@@ -650,7 +650,7 @@ export class ExpenseService {
 
   static async bulkDeleteExpenses(ids: string[]): Promise<boolean> {
     try {
-      const { error } = await supabase.from("expenses").delete().in("id", ids);
+      const { error } = await getSupabaseClient().from("expenses").delete().in("id", ids);
 
       if (error) {
         throw error;
@@ -668,7 +668,7 @@ export class ExpenseService {
     approvedBy: string
   ): Promise<any[]> {
     try {
-      const { data, error } = await supabase
+      const { data, error } = await getSupabaseClient()
         .from("expenses")
         .update({
           status: "approved",
@@ -695,7 +695,7 @@ export class ExpenseService {
     rejectionReason: string
   ): Promise<any[]> {
     try {
-      const { data, error } = await supabase
+      const { data, error } = await getSupabaseClient()
         .from("expenses")
         .update({
           status: "rejected",
@@ -722,7 +722,7 @@ export class ExpenseService {
       return null;
     }
 
-    const { data } = supabase.storage
+    const { data } = getSupabaseClient().storage
       .from("receipts")
       .getPublicUrl(receiptPath);
     return data.publicUrl;

@@ -1,4 +1,4 @@
-import { supabase } from "@/lib/supabase";
+import { getSupabaseClient } from "@/lib/supabase";
 import { BaseFilters, Client } from "@/types";
 
 export interface CreateClientData {
@@ -53,7 +53,7 @@ export class ClientService {
     limit: number;
   }> {
     try {
-      let query = supabase
+      let query = getSupabaseClient()
         .from("clients")
         .select("*")
         .order("created_at", { ascending: false });
@@ -107,7 +107,7 @@ export class ClientService {
   // Get client by ID
   static async getClientById(id: string): Promise<Client | null> {
     try {
-      const { data, error } = await supabase
+      const { data, error } = await getSupabaseClient()
         .from("clients")
         .select("*")
         .eq("id", id)
@@ -126,7 +126,7 @@ export class ClientService {
   // Get client by client code
   static async getClientByCode(clientCode: string): Promise<Client | null> {
     try {
-      const { data, error } = await supabase
+      const { data, error } = await getSupabaseClient()
         .from("clients")
         .select("*")
         .eq("client_code", clientCode)
@@ -150,7 +150,7 @@ export class ClientService {
       // Generate client code
       const clientCode = await this.generateClientCode();
 
-      const { data, error } = await supabase
+      const { data, error } = await getSupabaseClient()
         .from("clients")
         .insert([{ ...clientData, client_code: clientCode }])
         .select()
@@ -172,7 +172,7 @@ export class ClientService {
     clientData: UpdateClientData
   ): Promise<Client | null> {
     try {
-      const { data, error } = await supabase
+      const { data, error } = await getSupabaseClient()
         .from("clients")
         .update(clientData)
         .eq("id", id)
@@ -192,7 +192,7 @@ export class ClientService {
   // Delete client
   static async deleteClient(id: string): Promise<boolean> {
     try {
-      const { error } = await supabase.from("clients").delete().eq("id", id);
+      const { error } = await getSupabaseClient().from("clients").delete().eq("id", id);
 
       if (error) {
         throw error;
@@ -211,15 +211,15 @@ export class ClientService {
     inactive: number;
   }> {
     try {
-      const { data, error } = await supabase.from("clients").select("status");
+      const { data, error } = await getSupabaseClient().from("clients").select("status");
 
       if (error) {
         throw error;
       }
 
       const total = data?.length ?? 0;
-      const active = data?.filter(c => c.status === "active").length ?? 0;
-      const inactive = data?.filter(c => c.status === "inactive").length ?? 0;
+      const active = data?.filter((c: any) => c.status === "active").length ?? 0;
+      const inactive = data?.filter((c: any) => c.status === "inactive").length ?? 0;
 
       return { total, active, inactive };
     } catch (error) {
@@ -231,7 +231,7 @@ export class ClientService {
   // Get clients by status
   static async getClientsByStatus(status: string): Promise<Client[]> {
     try {
-      const { data, error } = await supabase
+      const { data, error } = await getSupabaseClient()
         .from("clients")
         .select("*")
         .eq("status", status)
@@ -253,7 +253,7 @@ export class ClientService {
     state?: string
   ): Promise<Client[]> {
     try {
-      let query = supabase
+      let query = getSupabaseClient()
         .from("clients")
         .select("*")
         .order("created_at", { ascending: false });
@@ -281,7 +281,7 @@ export class ClientService {
   // Search clients
   static async searchClients(searchTerm: string): Promise<Client[]> {
     try {
-      const { data, error } = await supabase
+      const { data, error } = await getSupabaseClient()
         .from("clients")
         .select("*")
         .or(
@@ -302,7 +302,7 @@ export class ClientService {
   // Generate unique client code
   private static async generateClientCode(): Promise<string> {
     try {
-      const { data, error } = await supabase
+      const { data, error } = await getSupabaseClient()
         .from("clients")
         .select("client_code")
         .order("client_code", { ascending: false })
@@ -338,7 +338,7 @@ export class ClientService {
     updates: Array<{ id: string; data: UpdateClientData }>
   ): Promise<Client[]> {
     try {
-      const { data, error } = await supabase
+      const { data, error } = await getSupabaseClient()
         .from("clients")
         .upsert(updates.map(({ id, data }) => ({ id, ...data })))
         .select();
@@ -355,7 +355,7 @@ export class ClientService {
 
   static async bulkDeleteClients(ids: string[]): Promise<boolean> {
     try {
-      const { error } = await supabase.from("clients").delete().in("id", ids);
+      const { error } = await getSupabaseClient().from("clients").delete().in("id", ids);
 
       if (error) {
         throw error;

@@ -1,4 +1,4 @@
-import { supabase } from "@/lib/supabase";
+import { getSupabaseClient } from "@/lib/supabase";
 
 export interface MigrationProgress {
   total: number;
@@ -228,14 +228,14 @@ export class DataMigrationService {
       }
 
       // Check if company profile already exists
-      const { data: existing } = await supabase
+      const { data: existing } = await getSupabaseClient()
         .from("company_profiles")
         .select("id")
         .limit(1);
 
       if (existing && existing.length > 0) {
         // Update existing profile
-        await supabase
+        await getSupabaseClient()
           .from("company_profiles")
           .update({
             name: companyData.name || "Default Company",
@@ -254,7 +254,7 @@ export class DataMigrationService {
           .eq("id", existing[0]?.id);
       } else {
         // Create new profile
-        await supabase.from("company_profiles").insert([
+        await getSupabaseClient().from("company_profiles").insert([
           {
             name: companyData.name || "Default Company",
             address: companyData.address || "",
@@ -289,7 +289,7 @@ export class DataMigrationService {
       for (const user of usersData) {
         try {
           // Check if user already exists
-          const { data: existing } = await supabase
+          const { data: existing } = await getSupabaseClient()
             .from("user_profiles")
             .select("id")
             .eq("email", user.email)
@@ -297,7 +297,7 @@ export class DataMigrationService {
 
           if (!existing || existing.length === 0) {
             // Create new user profile
-            await supabase.from("user_profiles").insert([
+            await getSupabaseClient().from("user_profiles").insert([
               {
                 first_name: user.firstName || user.first_name || "",
                 last_name: user.lastName || user.last_name || "",
@@ -336,7 +336,7 @@ export class DataMigrationService {
       for (const client of clientsData) {
         try {
           // Check if client already exists
-          const { data: existing } = await supabase
+          const { data: existing } = await getSupabaseClient()
             .from("clients")
             .select("id")
             .eq("email", client.email)
@@ -344,7 +344,7 @@ export class DataMigrationService {
 
           if (!existing || existing.length === 0) {
             // Create new client
-            await supabase.from("clients").insert([
+            await getSupabaseClient().from("clients").insert([
               {
                 name: client.name || "",
                 company_name: client.companyName || client.company_name || "",
@@ -390,7 +390,7 @@ export class DataMigrationService {
       for (const project of projectsData) {
         try {
           // Check if project already exists
-          const { data: existing } = await supabase
+          const { data: existing } = await getSupabaseClient()
             .from("projects")
             .select("id")
             .eq("name", project.name)
@@ -398,7 +398,7 @@ export class DataMigrationService {
 
           if (!existing || existing.length === 0) {
             // Create new project
-            await supabase.from("projects").insert([
+            await getSupabaseClient().from("projects").insert([
               {
                 name: project.name || "",
                 description: project.description || "",
@@ -439,7 +439,7 @@ export class DataMigrationService {
       for (const timesheet of timesheetsData) {
         try {
           // Check if timesheet already exists
-          const { data: existing } = await supabase
+          const { data: existing } = await getSupabaseClient()
             .from("timesheets")
             .select("id")
             .eq("timesheet_code", timesheet.timesheetCode || timesheet.timesheet_code)
@@ -447,7 +447,7 @@ export class DataMigrationService {
 
           if (!existing || existing.length === 0) {
             // Create new timesheet
-            await supabase.from("timesheets").insert([
+            await getSupabaseClient().from("timesheets").insert([
               {
                 user_id: timesheet.userId || timesheet.user_id || null,
                 project_id: timesheet.projectId || timesheet.project_id || null,
@@ -485,7 +485,7 @@ export class DataMigrationService {
       for (const invoice of invoicesData) {
         try {
           // Check if invoice already exists
-          const { data: existing } = await supabase
+          const { data: existing } = await getSupabaseClient()
             .from("invoices")
             .select("id")
             .eq("invoice_number", invoice.invoiceNumber || invoice.invoice_number)
@@ -493,7 +493,7 @@ export class DataMigrationService {
 
           if (!existing || existing.length === 0) {
             // Create new invoice
-            await supabase.from("invoices").insert([
+            await getSupabaseClient().from("invoices").insert([
               {
                 client_id: invoice.clientId || invoice.client_id || null,
                 project_id: invoice.projectId || invoice.project_id || null,
@@ -536,7 +536,7 @@ export class DataMigrationService {
       for (const expense of expensesData) {
         try {
           // Check if expense already exists
-          const { data: existing } = await supabase
+          const { data: existing } = await getSupabaseClient()
             .from("expenses")
             .select("id")
             .eq("expense_code", expense.expenseCode || expense.expense_code)
@@ -544,7 +544,7 @@ export class DataMigrationService {
 
           if (!existing || existing.length === 0) {
             // Create new expense
-            await supabase.from("expenses").insert([
+            await getSupabaseClient().from("expenses").insert([
               {
                 user_id: expense.userId || expense.user_id || null,
                 project_id: expense.projectId || expense.project_id || null,

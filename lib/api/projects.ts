@@ -1,4 +1,4 @@
-import { supabase } from "@/lib/supabase";
+import { getSupabaseClient } from "@/lib/supabase";
 import { BaseFilters } from "@/types";
 
 export interface CreateProjectData {
@@ -36,7 +36,7 @@ export class ProjectService {
     limit = 20
   ): Promise<{ data: any[]; totalPages: number; page: number; limit: number }> {
     try {
-      let query = supabase
+      let query = getSupabaseClient()
         .from("projects")
         .select(
           `
@@ -104,7 +104,7 @@ export class ProjectService {
   // Get project by ID
   static async getProjectById(id: string): Promise<any> {
     try {
-      const { data, error } = await supabase
+      const { data, error } = await getSupabaseClient()
         .from("projects")
         .select(
           `
@@ -130,7 +130,7 @@ export class ProjectService {
   // Get project by project code
   static async getProjectByCode(projectCode: string): Promise<any> {
     try {
-      const { data, error } = await supabase
+      const { data, error } = await getSupabaseClient()
         .from("projects")
         .select(
           `
@@ -158,7 +158,7 @@ export class ProjectService {
       // Generate project code
       const projectCode = await this.generateProjectCode();
 
-      const { data, error } = await supabase
+      const { data, error } = await getSupabaseClient()
         .from("projects")
         .insert([{ ...projectData, project_code: projectCode }])
         .select()
@@ -180,7 +180,7 @@ export class ProjectService {
     projectData: UpdateProjectData
   ): Promise<any> {
     try {
-      const { data, error } = await supabase
+      const { data, error } = await getSupabaseClient()
         .from("projects")
         .update(projectData)
         .eq("id", id)
@@ -200,7 +200,7 @@ export class ProjectService {
   // Delete project
   static async deleteProject(id: string): Promise<boolean> {
     try {
-      const { error } = await supabase.from("projects").delete().eq("id", id);
+      const { error } = await getSupabaseClient().from("projects").delete().eq("id", id);
 
       if (error) {
         throw error;
@@ -215,7 +215,7 @@ export class ProjectService {
   // Get projects by client
   static async getProjectsByClient(clientId: string): Promise<any[]> {
     try {
-      const { data, error } = await supabase
+      const { data, error } = await getSupabaseClient()
         .from("projects")
         .select(
           `
@@ -239,7 +239,7 @@ export class ProjectService {
   // Get projects by status
   static async getProjectsByStatus(status: string): Promise<any[]> {
     try {
-      const { data, error } = await supabase
+      const { data, error } = await getSupabaseClient()
         .from("projects")
         .select(
           `
@@ -263,7 +263,7 @@ export class ProjectService {
   // Get projects by manager
   static async getProjectsByManager(managerId: string): Promise<any[]> {
     try {
-      const { data, error } = await supabase
+      const { data, error } = await getSupabaseClient()
         .from("projects")
         .select(
           `
@@ -287,7 +287,7 @@ export class ProjectService {
   // Get active projects
   static async getActiveProjects(): Promise<any[]> {
     try {
-      const { data, error } = await supabase
+      const { data, error } = await getSupabaseClient()
         .from("projects")
         .select(
           `
@@ -318,7 +318,7 @@ export class ProjectService {
     totalBudget: number;
   }> {
     try {
-      const { data, error } = await supabase
+      const { data, error } = await getSupabaseClient()
         .from("projects")
         .select("status, budget");
 
@@ -327,12 +327,12 @@ export class ProjectService {
       }
 
       const total = data?.length ?? 0;
-      const active = data?.filter(p => p.status === "active").length ?? 0;
-      const completed = data?.filter(p => p.status === "completed").length ?? 0;
-      const onHold = data?.filter(p => p.status === "on-hold").length ?? 0;
-      const cancelled = data?.filter(p => p.status === "cancelled").length ?? 0;
+      const active = data?.filter((p: any) => p.status === "active").length ?? 0;
+      const completed = data?.filter((p: any) => p.status === "completed").length ?? 0;
+      const onHold = data?.filter((p: any) => p.status === "on-hold").length ?? 0;
+      const cancelled = data?.filter((p: any) => p.status === "cancelled").length ?? 0;
       const totalBudget =
-        data?.reduce((sum, p) => sum + (p.budget ?? 0), 0) ?? 0;
+        data?.reduce((sum: number, p: any) => sum + (p.budget ?? 0), 0) ?? 0;
 
       return {
         total,
@@ -351,7 +351,7 @@ export class ProjectService {
   // Search projects
   static async searchProjects(searchTerm: string): Promise<any[]> {
     try {
-      const { data, error } = await supabase
+      const { data, error } = await getSupabaseClient()
         .from("projects")
         .select(
           `
@@ -385,7 +385,7 @@ export class ProjectService {
         throw new Error("User is already a team member");
       }
 
-      const { data, error } = await supabase
+      const { data, error } = await getSupabaseClient()
         .from("projects")
         .update({ team_members: [...currentMembers, userId] })
         .eq("id", projectId)
@@ -418,7 +418,7 @@ export class ProjectService {
         (id: string) => id !== userId
       );
 
-      const { data, error } = await supabase
+      const { data, error } = await getSupabaseClient()
         .from("projects")
         .update({ team_members: updatedMembers })
         .eq("id", projectId)
@@ -441,7 +441,7 @@ export class ProjectService {
     status: "active" | "completed" | "on-hold" | "cancelled"
   ): Promise<any> {
     try {
-      const { data, error } = await supabase
+      const { data, error } = await getSupabaseClient()
         .from("projects")
         .update({ status })
         .eq("id", projectId)
@@ -461,7 +461,7 @@ export class ProjectService {
   // Generate unique project code
   private static async generateProjectCode(): Promise<string> {
     try {
-      const { data, error } = await supabase
+      const { data, error } = await getSupabaseClient()
         .from("projects")
         .select("project_code")
         .order("project_code", { ascending: false })
@@ -497,7 +497,7 @@ export class ProjectService {
     updates: Array<{ id: string; data: UpdateProjectData }>
   ): Promise<any[]> {
     try {
-      const { data, error } = await supabase
+      const { data, error } = await getSupabaseClient()
         .from("projects")
         .upsert(updates.map(({ id, data }) => ({ id, ...data })))
         .select();
@@ -514,7 +514,7 @@ export class ProjectService {
 
   static async bulkDeleteProjects(ids: string[]): Promise<boolean> {
     try {
-      const { error } = await supabase.from("projects").delete().in("id", ids);
+      const { error } = await getSupabaseClient().from("projects").delete().in("id", ids);
 
       if (error) {
         throw error;

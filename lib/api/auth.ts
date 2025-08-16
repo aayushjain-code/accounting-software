@@ -1,4 +1,4 @@
-import { supabase } from "@/lib/supabase";
+import { getSupabaseClient } from "@/lib/supabase";
 
 export interface SignUpData {
   email: string;
@@ -48,7 +48,7 @@ export class AuthService {
   static async signUp(signUpData: SignUpData): Promise<{ user: any; profile: any }> {
     try {
       // Create user in Supabase Auth
-      const { data: authData, error: authError } = await supabase.auth.signUp({
+      const { data: authData, error: authError } = await getSupabaseClient().auth.signUp({
         email: signUpData.email,
         password: signUpData.password,
       });
@@ -59,7 +59,7 @@ export class AuthService {
 
       if (authData.user) {
         // Create user profile
-        const { data: profileData, error: profileError } = await supabase
+        const { data: profileData, error: profileError } = await getSupabaseClient()
           .from("user_profiles")
           .insert([
             {
@@ -96,7 +96,7 @@ export class AuthService {
   // Sign in existing user
   static async signIn(signInData: SignInData): Promise<any> {
     try {
-      const { data, error } = await supabase.auth.signInWithPassword({
+      const { data, error } = await getSupabaseClient().auth.signInWithPassword({
         email: signInData.email,
         password: signInData.password,
       });
@@ -120,7 +120,7 @@ export class AuthService {
   // Sign out user
   static async signOut(): Promise<boolean> {
     try {
-      const { error } = await supabase.auth.signOut();
+      const { error } = await getSupabaseClient().auth.signOut();
       if (error) {
         throw error;
       }
@@ -137,7 +137,7 @@ export class AuthService {
       const {
         data: { user },
         error,
-      } = await supabase.auth.getUser();
+      } = await getSupabaseClient().auth.getUser();
       if (error) {
         throw error;
       }
@@ -156,7 +156,7 @@ export class AuthService {
         return null;
       }
 
-      const { data, error } = await supabase
+      const { data, error } = await getSupabaseClient()
         .from("user_profiles")
         .select("*")
         .eq("user_id", user.id)
@@ -180,7 +180,7 @@ export class AuthService {
         throw new Error("User not authenticated");
       }
 
-      const { data, error } = await supabase
+      const { data, error } = await getSupabaseClient()
         .from("user_profiles")
         .update(profileData)
         .eq("user_id", user.id)
@@ -200,7 +200,7 @@ export class AuthService {
   // Update last login timestamp
   private static async updateLastLogin(userId: string): Promise<boolean> {
     try {
-      const { error } = await supabase
+      const { error } = await getSupabaseClient()
         .from("user_profiles")
         .update({ last_login: new Date().toISOString() })
         .eq("user_id", userId);
@@ -219,7 +219,7 @@ export class AuthService {
   // Request password reset
   static async requestPasswordReset(email: string): Promise<boolean> {
     try {
-      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+      const { error } = await getSupabaseClient().auth.resetPasswordForEmail(email, {
         redirectTo: `${window.location.origin}/reset-password`,
       });
 
@@ -236,7 +236,7 @@ export class AuthService {
   // Update password
   static async updatePassword(password: string): Promise<boolean> {
     try {
-      const { error } = await supabase.auth.updateUser({
+      const { error } = await getSupabaseClient().auth.updateUser({
         password: password,
       });
 
@@ -253,7 +253,7 @@ export class AuthService {
   // Get user by ID
   static async getUserById(userId: string): Promise<any> {
     try {
-      const { data, error } = await supabase
+      const { data, error } = await getSupabaseClient()
         .from("user_profiles")
         .select("*")
         .eq("id", userId)
@@ -272,7 +272,7 @@ export class AuthService {
   // Get all users
   static async getAllUsers(): Promise<any[]> {
     try {
-      const { data, error } = await supabase
+      const { data, error } = await getSupabaseClient()
         .from("user_profiles")
         .select("*")
         .order("created_at", { ascending: false });
@@ -293,7 +293,7 @@ export class AuthService {
     role: "admin" | "user" | "manager"
   ): Promise<any> {
     try {
-      const { data, error } = await supabase
+      const { data, error } = await getSupabaseClient()
         .from("user_profiles")
         .update({ role })
         .eq("id", userId)
@@ -313,7 +313,7 @@ export class AuthService {
   // Delete user
   static async deleteUser(userId: string): Promise<boolean> {
     try {
-      const { error } = await supabase
+      const { error } = await getSupabaseClient()
         .from("user_profiles")
         .delete()
         .eq("id", userId);
@@ -350,7 +350,7 @@ export class AuthService {
       const {
         data: { session },
         error,
-      } = await supabase.auth.getSession();
+      } = await getSupabaseClient().auth.getSession();
       if (error) {
         throw error;
       }
@@ -364,7 +364,7 @@ export class AuthService {
   // Refresh session
   static async refreshSession(): Promise<any> {
     try {
-      const { data, error } = await supabase.auth.refreshSession();
+      const { data, error } = await getSupabaseClient().auth.refreshSession();
       if (error) {
         throw error;
       }
@@ -377,7 +377,7 @@ export class AuthService {
 
   // Listen to auth state changes
   static onAuthStateChange(callback: (event: string, session: any) => void): any {
-    return supabase.auth.onAuthStateChange(callback);
+    return getSupabaseClient().auth.onAuthStateChange(callback);
   }
 
   // Get user avatar URL
@@ -386,7 +386,7 @@ export class AuthService {
       return null;
     }
 
-    const { data } = supabase.storage.from("avatars").getPublicUrl(avatarPath);
+    const { data } = getSupabaseClient().storage.from("avatars").getPublicUrl(avatarPath);
 
     return data.publicUrl;
   }
@@ -397,7 +397,7 @@ export class AuthService {
       const fileExt = file.name.split(".").pop();
       const fileName = `${userId}-${Date.now()}.${fileExt}`;
 
-      const { data, error } = await supabase.storage
+      const { data, error } = await getSupabaseClient().storage
         .from("avatars")
         .upload(fileName, file, {
           cacheControl: "3600",
@@ -421,7 +421,7 @@ export class AuthService {
   // Delete avatar
   static async deleteAvatar(avatarPath: string): Promise<boolean> {
     try {
-      const { error } = await supabase.storage
+      const { error } = await getSupabaseClient().storage
         .from("avatars")
         .remove([avatarPath]);
 

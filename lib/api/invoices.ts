@@ -1,4 +1,4 @@
-import { supabase } from "@/lib/supabase";
+import { getSupabaseClient } from "@/lib/supabase";
 import { BaseFilters } from "@/types";
 
 export interface CreateInvoiceData {
@@ -59,7 +59,7 @@ export class InvoiceService {
     limit = 20
   ): Promise<{ data: any[]; totalPages: number; page: number; limit: number }> {
     try {
-      let query = supabase
+      let query = getSupabaseClient()
         .from("invoices")
         .select(
           `
@@ -133,7 +133,7 @@ export class InvoiceService {
   // Get invoice by ID
   static async getInvoiceById(id: string): Promise<any> {
     try {
-      const { data, error } = await supabase
+      const { data, error } = await getSupabaseClient()
         .from("invoices")
         .select(
           `
@@ -159,7 +159,7 @@ export class InvoiceService {
   // Get invoice by invoice number
   static async getInvoiceByNumber(invoiceNumber: string): Promise<any> {
     try {
-      const { data, error } = await supabase
+      const { data, error } = await getSupabaseClient()
         .from("invoices")
         .select(
           `
@@ -190,7 +190,7 @@ export class InvoiceService {
         invoiceData.invoice_number = await this.generateInvoiceNumber();
       }
 
-      const { data, error } = await supabase
+      const { data, error } = await getSupabaseClient()
         .from("invoices")
         .insert([invoiceData])
         .select()
@@ -212,7 +212,7 @@ export class InvoiceService {
     invoiceData: UpdateInvoiceData
   ): Promise<any> {
     try {
-      const { data, error } = await supabase
+      const { data, error } = await getSupabaseClient()
         .from("invoices")
         .update(invoiceData)
         .eq("id", id)
@@ -232,7 +232,7 @@ export class InvoiceService {
   // Delete invoice
   static async deleteInvoice(id: string): Promise<boolean> {
     try {
-      const { error } = await supabase.from("invoices").delete().eq("id", id);
+      const { error } = await getSupabaseClient().from("invoices").delete().eq("id", id);
 
       if (error) {
         throw error;
@@ -250,7 +250,7 @@ export class InvoiceService {
     paymentDate?: string
   ): Promise<any> {
     try {
-      const { data, error } = await supabase
+      const { data, error } = await getSupabaseClient()
         .from("invoices")
         .update({
           status: "paid",
@@ -278,7 +278,7 @@ export class InvoiceService {
   ): Promise<any> {
     try {
       // Get timesheet data
-      const { data: timesheet, error: timesheetError } = await supabase
+      const { data: timesheet, error: timesheetError } = await getSupabaseClient()
         .from("timesheets")
         .select("*")
         .eq("id", timesheetId)
@@ -289,7 +289,7 @@ export class InvoiceService {
       }
 
       // Get timesheet entries
-      const { data: entries, error: entriesError } = await supabase
+      const { data: entries, error: entriesError } = await getSupabaseClient()
         .from("timesheet_entries")
         .select("*")
         .eq("timesheet_id", timesheetId);
@@ -300,7 +300,7 @@ export class InvoiceService {
 
       // Calculate totals
       const subtotal =
-        entries?.reduce((sum, entry) => sum + (entry.total_price ?? 0), 0) ?? 0;
+        entries?.reduce((sum: number, entry: any) => sum + (entry.total_price ?? 0), 0) ?? 0;
       const taxRate = 0.1; // 10% tax rate - you can make this configurable
       const taxAmount = subtotal * taxRate;
       const totalAmount = subtotal + taxAmount;
@@ -340,7 +340,7 @@ export class InvoiceService {
       }
 
       // Mark timesheet as invoiced
-      await supabase
+      await getSupabaseClient()
         .from("timesheets")
         .update({ status: "invoiced" })
         .eq("id", timesheetId);
@@ -355,7 +355,7 @@ export class InvoiceService {
   // Add invoice item
   static async addInvoiceItem(itemData: CreateInvoiceItemData): Promise<any> {
     try {
-      const { data, error } = await supabase
+      const { data, error } = await getSupabaseClient()
         .from("invoice_items")
         .insert([itemData])
         .select()
@@ -381,7 +381,7 @@ export class InvoiceService {
     itemData: UpdateInvoiceItemData
   ): Promise<any> {
     try {
-      const { data, error } = await supabase
+      const { data, error } = await getSupabaseClient()
         .from("invoice_items")
         .update(itemData)
         .eq("id", id)
@@ -407,13 +407,13 @@ export class InvoiceService {
   // Delete invoice item
   static async deleteInvoiceItem(id: string): Promise<boolean> {
     try {
-      const item = await supabase
+      const item = await getSupabaseClient()
         .from("invoice_items")
         .select("invoice_id")
         .eq("id", id)
         .single();
 
-      const { error } = await supabase
+      const { error } = await getSupabaseClient()
         .from("invoice_items")
         .delete()
         .eq("id", id);
@@ -437,7 +437,7 @@ export class InvoiceService {
   // Get invoice items
   static async getInvoiceItems(invoiceId: string): Promise<any[]> {
     try {
-      const { data, error } = await supabase
+      const { data, error } = await getSupabaseClient()
         .from("invoice_items")
         .select("*")
         .eq("invoice_id", invoiceId)
@@ -466,7 +466,7 @@ export class InvoiceService {
       const taxAmount = subtotal * taxRate;
       const totalAmount = subtotal + taxAmount;
 
-      await supabase
+      await getSupabaseClient()
         .from("invoices")
         .update({
           subtotal,
@@ -482,7 +482,7 @@ export class InvoiceService {
   // Get invoices by client
   static async getInvoicesByClient(clientId: string): Promise<any[]> {
     try {
-      const { data, error } = await supabase
+      const { data, error } = await getSupabaseClient()
         .from("invoices")
         .select(
           `
@@ -506,7 +506,7 @@ export class InvoiceService {
   // Get invoices by project
   static async getInvoicesByProject(projectId: string): Promise<any[]> {
     try {
-      const { data, error } = await supabase
+      const { data, error } = await getSupabaseClient()
         .from("invoices")
         .select(
           `
@@ -530,7 +530,7 @@ export class InvoiceService {
   // Get invoices by status
   static async getInvoicesByStatus(status: string): Promise<any[]> {
     try {
-      const { data, error } = await supabase
+      const { data, error } = await getSupabaseClient()
         .from("invoices")
         .select(
           `
@@ -555,7 +555,7 @@ export class InvoiceService {
   // Get overdue invoices
   static async getOverdueInvoices(): Promise<any[]> {
     try {
-      const { data, error } = await supabase
+      const { data, error } = await getSupabaseClient()
         .from("invoices")
         .select(
           `
@@ -592,7 +592,7 @@ export class InvoiceService {
     outstandingAmount: number;
   }> {
     try {
-      const { data, error } = await supabase
+      const { data, error } = await getSupabaseClient()
         .from("invoices")
         .select("status, total_amount");
 
@@ -601,18 +601,21 @@ export class InvoiceService {
       }
 
       const total = data?.length ?? 0;
-      const draft = data?.filter(i => i.status === "draft").length ?? 0;
-      const sent = data?.filter(i => i.status === "sent").length ?? 0;
-      const paid = data?.filter(i => i.status === "paid").length ?? 0;
-      const overdue = data?.filter(i => i.status === "overdue").length ?? 0;
-      const cancelled = data?.filter(i => i.status === "cancelled").length ?? 0;
+      const draft = data?.filter((i: any) => i.status === "draft").length ?? 0;
+      const sent = data?.filter((i: any) => i.status === "sent").length ?? 0;
+      const paid = data?.filter((i: any) => i.status === "paid").length ?? 0;
+      const overdue = data?.filter((i: any) => i.status === "overdue").length ?? 0;
+      const cancelled = data?.filter((i: any) => i.status === "cancelled").length ?? 0;
       const totalAmount =
-        data?.reduce((sum, i) => sum + (i.total_amount ?? 0), 0) ?? 0;
+        data?.reduce((sum: number, i: any) => sum + (i.total_amount ?? 0), 0) ?? 0;
       const paidAmount =
         data
-          ?.filter(i => i.status === "paid")
-          .reduce((sum, i) => sum + (i.total_amount ?? 0), 0) ?? 0;
-      const outstandingAmount = totalAmount - paidAmount;
+          ?.filter((i: any) => i.status === "paid")
+          .reduce((sum: number, i: any) => sum + (i.total_amount ?? 0), 0) ?? 0;
+      const outstandingAmount =
+        data
+          ?.filter((i: any) => i.status !== "paid")
+          .reduce((sum: number, i: any) => sum + (i.total_amount ?? 0), 0) ?? 0;
 
       return {
         total,
@@ -634,7 +637,7 @@ export class InvoiceService {
   // Search invoices
   static async searchInvoices(searchTerm: string): Promise<any[]> {
     try {
-      const { data, error } = await supabase
+      const { data, error } = await getSupabaseClient()
         .from("invoices")
         .select(
           `
@@ -659,7 +662,7 @@ export class InvoiceService {
   // Generate unique invoice number
   private static async generateInvoiceNumber(): Promise<string> {
     try {
-      const { data, error } = await supabase
+      const { data, error } = await getSupabaseClient()
         .from("invoices")
         .select("invoice_number")
         .order("invoice_number", { ascending: false })
@@ -695,7 +698,7 @@ export class InvoiceService {
     updates: Array<{ id: string; data: UpdateInvoiceData }>
   ): Promise<any[]> {
     try {
-      const { data, error } = await supabase
+      const { data, error } = await getSupabaseClient()
         .from("invoices")
         .upsert(updates.map(({ id, data }) => ({ id, ...data })))
         .select();
@@ -712,7 +715,7 @@ export class InvoiceService {
 
   static async bulkDeleteInvoices(ids: string[]): Promise<boolean> {
     try {
-      const { error } = await supabase.from("invoices").delete().in("id", ids);
+      const { error } = await getSupabaseClient().from("invoices").delete().in("id", ids);
 
       if (error) {
         throw error;
